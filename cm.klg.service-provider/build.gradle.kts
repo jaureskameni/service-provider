@@ -178,7 +178,7 @@ val mainOpenApiGenerate by tasks.registering(GenerateTask::class) {
     }
     onlyIf {
         !generatedSourceCodeDir.exists() ||
-                file(templateDir.get()!!).lastModified() > generatedSourceCodeDir.lastModified()
+            file(templateDir.get()!!).lastModified() > generatedSourceCodeDir.lastModified()
     }
 }
 
@@ -215,10 +215,9 @@ val uamDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
     }
     onlyIf {
         !generatedSourceCodeDir.exists() ||
-                file(inputSpec.get()).lastModified() > generatedSourceCodeDir.lastModified()
+            file(inputSpec.get()).lastModified() > generatedSourceCodeDir.lastModified()
     }
 }
-
 
 tasks.compileJava {
     dependsOn(
