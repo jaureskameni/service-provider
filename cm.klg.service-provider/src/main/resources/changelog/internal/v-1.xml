@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-1:1" author="kameni.nguematcha">
+		<createTable tableName="t_user">
+			<column name="c_id" type="uuid">
+				<constraints nullable="false" primaryKey="true"
+					primaryKeyName="pk_user" />
+			</column>
+			<column name="c_firstname" type="varchar(50)" />
+			<column name="c_lastname" type="varchar(50)" />
+			<column name="c_phone_number" type="varchar(20)" />
+			<column name="c_email_address" type="varchar(255)" />
+			<column name="c_created_at" type="datetime" />
+		</createTable>
+		<createTable tableName="t_inbox_event">
+			<column name="c_id" type="uuid">
+				<constraints nullable="false" primaryKey="true"
+					primaryKeyName="pk_inbox_event" />
+			</column>
+			<column name="c_type" type="varchar(30)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_topic" type="varchar(20)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_key" type="varchar(36)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_data" type="tex">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_status" type="varchar(15)" />
+			<column name="c_created_at" type="datetime">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_processed_at" type="datetime">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,13 @@
+bin/
+build/
+.gradle/
+.classpath
+lib/
+.idea/
+.project
+.settings/
+.springBeans
+gradle.prefs
+**/*.log
+.pgpass
+**/application-local.yml
