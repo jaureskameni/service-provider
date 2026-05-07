@@ -1,0 +1,3 @@
+[submodule "submodule/cm.klg.common.build"]
+	path = submodule/cm.klg.common.build
+	url = git@gitlab.com:shared.modules/library/cm.klg.common.build.git
