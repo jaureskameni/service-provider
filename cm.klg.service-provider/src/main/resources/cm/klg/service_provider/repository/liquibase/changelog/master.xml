@@ -6,6 +6,6 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
 	<includeAll
-		path="/cm.klg.service-provider/src/main/resources/changelog/internal" />
+		path="cm/klg/service_provider/repository/liquibase/changelog/internal" />
 
 </databaseChangeLog>
