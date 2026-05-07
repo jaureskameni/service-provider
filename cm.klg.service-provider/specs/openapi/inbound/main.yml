@@ -1,0 +1,67 @@
+---
+openapi: "3.0.3"
+info:
+  title: "SERVICE PROVIDER MANAGEMENT REST API"
+  description: "API for managing service provider"
+  version: "0.0.1-SNAPSHOT"
+paths:
+  /users:
+    post:
+      tags:
+      - "Users"
+      summary: "Register a new user"
+      description: "Register a new user"
+      operationId: "createNewUser"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegister"
+      responses:
+        "201":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreationResponse"
+        "409":
+          description: "UAM_409_001 || UAM_409_002 || UAM_409_003"
+        "503":
+          description: "UAM_503_001"
+components:
+  schemas:
+    UserRegister:
+      required:
+      - "lastname"
+      - "password"
+      - "phoneNumber"
+      type: "object"
+      properties:
+        password:
+          type: "string"
+        email:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        firstname:
+          type: "string"
+        lastname:
+          type: "string"
+    PhoneNumber:
+      type: "object"
+      required:
+      - "countryCode"
+      - "number"
+      properties:
+        countryCode:
+          type: "string"
+        number:
+          type: "string"
+    CreationResponse:
+      type: "object"
+      required:
+      - "newId"
+      properties:
+        newId:
+          type: "string"
+          format: "uuid"
