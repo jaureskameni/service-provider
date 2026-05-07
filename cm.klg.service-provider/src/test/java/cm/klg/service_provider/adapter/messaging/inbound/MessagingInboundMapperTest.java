@@ -2,8 +2,8 @@ package cm.klg.service_provider.adapter.messaging.inbound;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.PhoneNumberDTO;
-import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UserCreatedEventDTO;
+import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamPhoneNumberDTO;
+import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamUserCreatedEventDTO;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -16,13 +16,13 @@ class MessagingInboundMapperTest {
   void shouldMapUserCreatedEventDTOToCreateNewUserCommand() {
     // Given
     UUID id = UUID.randomUUID();
-    UserCreatedEventDTO dto = new UserCreatedEventDTO();
+    var dto = new UamUserCreatedEventDTO();
     dto.setId(id);
     dto.setFirstname("John");
     dto.setLastname("Doe");
     dto.setEmail("john.doe@example.com");
 
-    PhoneNumberDTO phoneNumberDTO = new PhoneNumberDTO();
+    UamPhoneNumberDTO phoneNumberDTO = new UamPhoneNumberDTO();
     phoneNumberDTO.setCountryCode("237");
     phoneNumberDTO.setNumber("699999999");
     dto.setPhoneNumber(phoneNumberDTO);
