@@ -39,6 +39,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+    implementation("org.springframework.boot:spring-boot-starter-integration")
     implementation("jakarta.mail:jakarta.mail-api")
     implementation("org.slf4j:slf4j-api:2.0.9")
     compileOnly("org.projectlombok:lombok")
@@ -187,6 +188,7 @@ val uamDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
     templateDir.set("$rootDir/specs/openapi/templates/spring-boot")
     inputSpec.set("$rootDir/specs/openapi/inbound/uam-domain-event.yml")
     modelPackage.set("cm.klg.generated.service.provider.adapter.messaging.inbound.dto")
+    modelNamePrefix.set("Uam")
     outputDir.set(
         layout.buildDirectory
             .dir("generated/sources/openapi")
