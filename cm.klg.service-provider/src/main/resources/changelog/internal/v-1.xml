@@ -31,7 +31,7 @@
 			<column name="c_key" type="varchar(36)">
 				<constraints nullable="false" />
 			</column>
-			<column name="c_data" type="tex">
+			<column name="c_data" type="text">
 				<constraints nullable="false" />
 			</column>
 			<column name="c_status" type="varchar(15)" />
