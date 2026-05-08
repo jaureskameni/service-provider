@@ -49,7 +49,10 @@ jk-dev:
         uri: "${KEYCLOAK_BASE_URL:http://localhost:8082}"
         realm: "${KEYCLOAK_REALM:z-link}"
   events-messaging:
-    enabled: "${DOMAIN_EVENTS_MESSAGING_CONSUMER_ENABLED:true}"
+    inbox:
+      enabled: "${DOMAIN_EVENTS_MESSAGING_CONSUMER_ENABLED:true}"
+      batchSize: "${SCHEDULER_EVENT_NOTIFICATION_BATCH_SIZE:1000}"
+      frequency: "${SCHEDULER_EVENT_NOTIFICATION_FREQUENCY:5000}"
     outbox:
       enabled: "${DOMAIN_EVENTS_MESSAGING_PUBLISHER_ENABLED:false}"
       batchSize: "${SCHEDULER_EVENT_NOTIFICATION_BATCH_SIZE:1000}"
