@@ -1,5 +1,6 @@
 package cm.klg.service_provider.config;
 
+import cm.klg.common.base.config.TransactionBeansProvider;
 import cm.klg.common.base.transaction.DomainToHttpExceptionTranslator;
 import cm.klg.service_provider.adapter.rest.inbound.DefaultDomainToHttpExceptionTranslator;
 import cm.klg.service_provider.application.outbound.UserRepository;
@@ -9,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 @Configuration
-public class ServiceProviderBeans {
+public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter() {
