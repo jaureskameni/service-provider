@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @Configuration
 @EntityScan(
     basePackages = {
-      "cm.klg.uam.adapter.persistence.outbound.jpa",
+      "cm.klg.service_provider.adapter.persistence.outbound.jpa",
     })
-@EnableJpaRepositories(basePackages = {"cm.klg.uam.adapter.persistence.outbound.jpa"})
+@EnableJpaRepositories(basePackages = {"cm.klg.service_provider.adapter.persistence.outbound.jpa"})
 public class JpaSpringBeans {
 
   @Bean
