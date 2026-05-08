@@ -13,7 +13,7 @@ public class InboundEventReception {
   private final EventReception eventReception;
 
   @Bean
-  public Consumer<Message<String>> user() {
+  public Consumer<Message<byte[]>> user() {
     return eventReception::receive;
   }
 }
