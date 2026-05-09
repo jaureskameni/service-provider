@@ -43,4 +43,8 @@
 			</column>
 		</createTable>
 	</changeSet>
+	<changeSet id="SP-7:1" author="kameni.nguematcha">
+		<dropNotNullConstraint tableName="t_inbox_event"
+			columnName="c_processed_at" columnDataType="datetime" />
+	</changeSet>
 </databaseChangeLog>
