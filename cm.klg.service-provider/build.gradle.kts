@@ -32,7 +32,7 @@ val nullAwayVersion = "0.12.4"
 dependencies {
     implementation("cm.klg:common.base:0.1.3-SNAPSHOT")
     implementation("cm.klg:common.service-bridge:0.0.1-SNAPSHOT")
-    implementation("cm.klg:emb-spring-boot-starter:0.3.6-SNAPSHOT")
+    implementation("cm.klg:emb-spring-boot-starter:0.3.7-SNAPSHOT")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-security")
