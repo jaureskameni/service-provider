@@ -1,5 +1,6 @@
 package cm.klg.service_provider.domain.user;
 
+import cm.klg.service_provider.domain.PhoneNumber;
 import org.jspecify.annotations.Nullable;
 
 public record UserProfile(

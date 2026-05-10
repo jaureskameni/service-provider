@@ -1,4 +1,4 @@
-package cm.klg.service_provider.domain.user;
+package cm.klg.service_provider.domain;
 
 import java.util.UUID;
 

@@ -5,18 +5,18 @@ info:
   description: "API for managing service provider"
   version: "0.0.1-SNAPSHOT"
 paths:
-  /users:
+  /service-provider:
     post:
       tags:
-      - "Users"
-      summary: "Register a new user"
-      description: "Register a new user"
-      operationId: "createNewUser"
+      - "ServiceProvider"
+      summary: "Become Service Provider"
+      description: "Become Service Provider"
+      operationId: "becomeServiceProvider"
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserRegister"
+              $ref: "#/components/schemas/ServiceProviderRegister"
       responses:
         "201":
           description: "Successful operation"
@@ -24,29 +24,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CreationResponse"
+        "404":
+          description: "SERVICE_PROVIDER_404_001"
         "409":
-          description: "UAM_409_001 || UAM_409_002 || UAM_409_003"
-        "503":
-          description: "UAM_503_001"
+          description: "SERVICE-PROVIDER_409_001"
 components:
   schemas:
-    UserRegister:
+    ServiceProviderRegister:
       required:
-      - "lastname"
-      - "password"
       - "phoneNumber"
+      - "city"
+      - "district"
+      - "serviceType"
       type: "object"
       properties:
-        password:
+        city:
           type: "string"
-        email:
+          format: "uuid"
+        district:
           type: "string"
+          format: "uuid"
         phoneNumber:
           $ref: "#/components/schemas/PhoneNumber"
-        firstname:
-          type: "string"
-        lastname:
-          type: "string"
+        serviceType:
+          $ref: "#/components/schemas/ServiceType"
     PhoneNumber:
       type: "object"
       required:
@@ -57,6 +58,21 @@ components:
           type: "string"
         number:
           type: "string"
+    ServiceType:
+      type: "object"
+      required:
+      - "id"
+      - "yearOfExperience"
+      - "document"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        yearOfExperience:
+          type: "integer"
+        document:
+          type: "string"
+          format: "uuid"
     CreationResponse:
       type: "object"
       required:

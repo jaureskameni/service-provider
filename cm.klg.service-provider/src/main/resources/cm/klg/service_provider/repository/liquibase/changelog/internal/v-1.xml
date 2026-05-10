@@ -47,4 +47,353 @@
 		<dropNotNullConstraint tableName="t_inbox_event"
 			columnName="c_processed_at" columnDataType="datetime" />
 	</changeSet>
+	<changeSet id="SP-8:1" author="kameni.nguematcha">
+		<createTable tableName="t_service_provider">
+			<column name="c_id" type="uuid">
+				<constraints primaryKey="true" nullable="false"
+					primaryKeyName="pk_service_provider" />
+			</column>
+			<column name="c_user_id" type="uuid">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_city" type="uuid">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_district" type="uuid">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_phone_number" type="varchar(15)" />
+			<column name="c_status" type="varchar(15)" />
+			<column name="c_approved_by" type="uuid" />
+			<column name="c_rejected_by" type="uuid" />
+			<column name="c_created_at" type="datetime" />
+			<column name="c_updated_at" type="datetime" />
+		</createTable>
+
+		<addForeignKeyConstraint
+			baseTableName="t_service_provider" baseColumnNames="c_user_id"
+			constraintName="fk_service_provider_user"
+			referencedTableName="t_user" referencedColumnNames="c_id"
+			onDelete="RESTRICT" onUpdate="CASCADE" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_service_provider" baseColumnNames="c_approved_by"
+			constraintName="fk_service_provider_approved_by"
+			referencedTableName="t_user" referencedColumnNames="c_id"
+			onDelete="SET NULL" onUpdate="CASCADE" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_service_provider" baseColumnNames="c_rejected_by"
+			constraintName="fk_service_provider_rejected_by"
+			referencedTableName="t_user" referencedColumnNames="c_id"
+			onDelete="SET NULL" onUpdate="CASCADE" />
+
+		<addUniqueConstraint
+			tableName="t_service_provider" columnNames="c_user_id"
+			constraintName="uq_service_provider_user_id" />
+
+		<createTable tableName="t_user_service">
+			<column name="c_service_provider_id" type="uuid" />
+			<column name="c_service_type_id" type="uuid" />
+			<column name="c_year_of_experience" type="int" />
+			<column name="c_user_document" type="uuid" />
+			<column name="c_created_at" type="datetime" />
+		</createTable>
+
+		<addPrimaryKey tableName="t_user_service"
+			columnNames="c_service_provider_id, c_service_type_id"
+			constraintName="pk_user_service" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_user_service"
+			baseColumnNames="c_service_provider_id"
+			constraintName="fk_user_service_provider"
+			referencedTableName="t_service_provider" referencedColumnNames="c_id"
+			onDelete="CASCADE" onUpdate="CASCADE" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_user_service" baseColumnNames="c_service_type_id"
+			constraintName="fk_user_service_type"
+			referencedTableName="t_service_type" referencedColumnNames="c_id"
+			onDelete="RESTRICT" onUpdate="CASCADE" />
+
+	</changeSet>
+	<changeSet id="SP-8:2" author="kameni.nguematcha">
+
+		<createTable tableName="t_service_type">
+			<column name="c_id" type="uuid">
+				<constraints primaryKey="true" nullable="false"
+					primaryKeyName="pk_service_type" />
+			</column>
+			<column name="c_name" type="varchar(100)" />
+			<column name="c_category" type="varchar(50)" />
+			<column name="c_is_active" type="boolean"
+				defaultValueBoolean="true" />
+			<column name="c_created_at" type="datetime" />
+			<column name="c_updated_at" type="datetime" />
+		</createTable>
+
+	</changeSet>
+	<changeSet id="SP-8:3" author="kameni.nguematcha">
+
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Électricien de bâtiment" />
+			<column name="c_category" value="BATIMENT_MAINTENANCE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Plombier" />
+			<column name="c_category" value="BATIMENT_MAINTENANCE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Frigoriste" />
+			<column name="c_category" value="BATIMENT_MAINTENANCE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Maçon et Carreleur" />
+			<column name="c_category" value="BATIMENT_MAINTENANCE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Peintre en bâtiment" />
+			<column name="c_category" value="BATIMENT_MAINTENANCE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Menuisier" />
+			<column name="c_category" value="BATIMENT_MAINTENANCE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Soudeur / Ferronnier" />
+			<column name="c_category" value="BATIMENT_MAINTENANCE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name"
+				value="Technicien de maintenance informatique" />
+			<column name="c_category" value="BATIMENT_MAINTENANCE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Répétiteur à domicile" />
+			<column name="c_category" value="SERVICES_PERSONNE_MAISON" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Ménagère / Agent d'entretien" />
+			<column name="c_category" value="SERVICES_PERSONNE_MAISON" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Lessiveur" />
+			<column name="c_category" value="SERVICES_PERSONNE_MAISON" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Nanny / Garde d'enfants" />
+			<column name="c_category" value="SERVICES_PERSONNE_MAISON" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Cuisinier à domicile" />
+			<column name="c_category" value="SERVICES_PERSONNE_MAISON" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Laveur de voitures" />
+			<column name="c_category" value="SERVICES_PERSONNE_MAISON" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Infographiste / Designer UI-UX" />
+			<column name="c_category" value="DIGITAL_COMMUNICATION" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Community Manager" />
+			<column name="c_category" value="DIGITAL_COMMUNICATION" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Photographe et Vidéaste" />
+			<column name="c_category" value="DIGITAL_COMMUNICATION" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Traducteur" />
+			<column name="c_category" value="DIGITAL_COMMUNICATION" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Rédacteur Web / SEO" />
+			<column name="c_category" value="DIGITAL_COMMUNICATION" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Couturier / Styliste" />
+			<column name="c_category" value="BEAUTE_MODE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Coiffeur / Coiffeuse" />
+			<column name="c_category" value="BEAUTE_MODE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Maquilleuse professionnelle" />
+			<column name="c_category" value="BEAUTE_MODE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name"
+				value="Esthéticienne / Prothésiste ongulaire" />
+			<column name="c_category" value="BEAUTE_MODE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Masseur / Masseuse" />
+			<column name="c_category" value="BEAUTE_MODE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Traiteur" />
+			<column name="c_category" value="EVENEMENTIEL" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Décorateur événementiel" />
+			<column name="c_category" value="EVENEMENTIEL" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Disc-Jockey (DJ)" />
+			<column name="c_category" value="EVENEMENTIEL" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Hôtesse d'accueil / Protocole" />
+			<column name="c_category" value="EVENEMENTIEL" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Maître de cérémonie (MC)" />
+			<column name="c_category" value="EVENEMENTIEL" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Livreur" />
+			<column name="c_category" value="TRANSPORT_LOGISTIQUE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Chauffeur privé" />
+			<column name="c_category" value="TRANSPORT_LOGISTIQUE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+		<insert tableName="t_service_type">
+			<column name="c_id" valueComputed="gen_random_uuid()" />
+			<column name="c_name" value="Déménageur" />
+			<column name="c_category" value="TRANSPORT_LOGISTIQUE" />
+			<column name="c_is_active" valueBoolean="true" />
+			<column name="c_created_at" valueComputed="NOW()" />
+			<column name="c_updated_at" valueComputed="NULL" />
+		</insert>
+	</changeSet>
 </databaseChangeLog>
