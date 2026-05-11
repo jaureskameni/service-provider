@@ -396,4 +396,11 @@
 			<column name="c_updated_at" valueComputed="NULL" />
 		</insert>
 	</changeSet>
+	<changeSet id="SP-11:1" author="kameni.nguematcha">
+		<addColumn tableName="t_service_provider">
+			<column name="c_deleted" type="boolean"
+				defaultValueBoolean="false" />
+			<column name="c_version" type="int8" defaultValueNumeric="0" />
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>
