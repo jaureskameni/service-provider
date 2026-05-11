@@ -422,4 +422,49 @@
 		<modifyDataType tableName="t_user_service"
 			columnName="c_user_document" newDataType="varchar(36)" />
 	</changeSet>
+	<changeSet id="SP-12:2" author="kameni.nguematcha">
+		<dropForeignKeyConstraint
+			baseTableName="t_service_provider"
+			constraintName="fk_service_provider_user" />
+		<dropForeignKeyConstraint
+			baseTableName="t_service_provider"
+			constraintName="fk_service_provider_approved_by" />
+		<dropForeignKeyConstraint
+			baseTableName="t_service_provider"
+			constraintName="fk_service_provider_rejected_by" />
+		<dropForeignKeyConstraint
+			baseTableName="t_user_service"
+			constraintName="fk_user_service_provider" />
+		<dropForeignKeyConstraint
+			baseTableName="t_user_service" constraintName="fk_user_service_type" />
+
+		<modifyDataType tableName="t_service_provider"
+			columnName="c_user_id" newDataType="varchar(36)" />
+		<modifyDataType tableName="t_service_provider"
+			columnName="c_city" newDataType="varchar(36)" />
+		<modifyDataType tableName="t_service_provider"
+			columnName="c_district" newDataType="varchar(36)" />
+		<modifyDataType tableName="t_service_provider"
+			columnName="c_approved_by" newDataType="varchar(36)" />
+		<modifyDataType tableName="t_service_provider"
+			columnName="c_rejected_by" newDataType="varchar(36)" />
+		<modifyDataType tableName="t_user_service"
+			columnName="c_service_provider_id" newDataType="varchar(36)" />
+		<modifyDataType tableName="t_user_service"
+			columnName="c_service_type_id" newDataType="varchar(36)" />
+		<modifyDataType tableName="t_user_service"
+			columnName="c_user_document" newDataType="varchar(36)" />
+
+		<modifyDataType tableName="t_user" columnName="c_id"
+			newDataType="varchar(36)" />
+
+		<modifyDataType tableName="t_inbox_event"
+			columnName="c_id" newDataType="varchar(36)" />
+
+		<modifyDataType tableName="t_service_provider"
+			columnName="c_id" newDataType="varchar(36)" />
+
+		<modifyDataType tableName="t_service_type"
+			columnName="c_id" newDataType="varchar(36)" />
+	</changeSet>
 </databaseChangeLog>
