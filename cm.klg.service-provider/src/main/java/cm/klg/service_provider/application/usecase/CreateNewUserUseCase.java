@@ -1,13 +1,15 @@
 package cm.klg.service_provider.application.usecase;
 
+import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.application.outbound.UserRepository;
+import cm.klg.service_provider.domain.PhoneNumber;
+import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.user.EmailAddress;
 import cm.klg.service_provider.domain.user.Firstname;
 import cm.klg.service_provider.domain.user.Lastname;
-import cm.klg.service_provider.domain.user.PhoneNumber;
 import cm.klg.service_provider.domain.user.User;
-import cm.klg.service_provider.domain.user.UserId;
 import cm.klg.service_provider.domain.user.UserProfile;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -21,7 +23,9 @@ public record CreateNewUserUseCase(UserRepository userRepository) {
     Lastname lastname = Lastname.from(command.lastname());
 
     UserProfile userProfile = new UserProfile(firstname, lastname, emailAddress, phoneNumber);
-    User newUser = User.reconstitute(UserId.from(command.id()), userProfile);
+    User newUser =
+        User.reconstitute(
+            UserId.from(command.id()), userProfile, CreatedAt.from(command.createdAt));
 
     userRepository.insert(newUser);
   }
@@ -32,5 +36,6 @@ public record CreateNewUserUseCase(UserRepository userRepository) {
       @Nullable String firstname,
       @Nullable String email,
       String countryCode,
-      String phoneNumber) {}
+      String phoneNumber,
+      LocalDateTime createdAt) {}
 }

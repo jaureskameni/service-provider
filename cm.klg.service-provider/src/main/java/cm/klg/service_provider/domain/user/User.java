@@ -1,7 +1,8 @@
 package cm.klg.service_provider.domain.user;
 
 import cm.klg.common.base.domain.CreatedAt;
-import java.time.LocalDateTime;
+import cm.klg.service_provider.domain.PhoneNumber;
+import cm.klg.service_provider.domain.UserId;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -23,7 +24,7 @@ public class User {
     this.createdAt = createdAt;
   }
 
-  public static User reconstitute(UserId id, UserProfile userProfile) {
-    return new User(id, userProfile, CreatedAt.from(LocalDateTime.now()));
+  public static User reconstitute(UserId id, UserProfile userProfile, CreatedAt createdAt) {
+    return new User(id, userProfile, createdAt);
   }
 }

@@ -12,6 +12,7 @@ import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamDomain
 import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamUserCreatedEventDTO;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import com.emb.domain.inboxevent.InboxEventCommand;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +47,7 @@ class CreateUserInboundEventHandlerTest {
     InboxEventCommand inboxEventCommand = mock(InboxEventCommand.class);
     CreateNewUserUseCase.CreateNewUserCommand command =
         new CreateNewUserUseCase.CreateNewUserCommand(
-            UUID.randomUUID(), "Doe", "John", "john@doe.com", "237", "699");
+            UUID.randomUUID(), "Doe", "John", "john@doe.com", "237", "699", LocalDateTime.now());
 
     when(messagingInboundMapper.toCreateUserCommand(userCreatedEventDTO)).thenReturn(command);
 

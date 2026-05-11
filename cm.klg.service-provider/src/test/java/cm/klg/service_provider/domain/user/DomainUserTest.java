@@ -3,6 +3,7 @@ package cm.klg.service_provider.domain.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import cm.klg.service_provider.domain.PhoneNumber;
 import org.junit.jupiter.api.Test;
 
 class DomainUserTest {
@@ -37,8 +38,8 @@ class DomainUserTest {
 
   @Test
   void phoneNumberShouldStoreValues() {
-    PhoneNumber phoneNumber = PhoneNumber.from("237", "699999999");
-    assertThat(phoneNumber.countryCode()).isEqualTo("237");
+    PhoneNumber phoneNumber = PhoneNumber.from("+237", "699999999");
+    assertThat(phoneNumber.countryCode()).isEqualTo("+237");
     assertThat(phoneNumber.number()).isEqualTo("699999999");
   }
 }

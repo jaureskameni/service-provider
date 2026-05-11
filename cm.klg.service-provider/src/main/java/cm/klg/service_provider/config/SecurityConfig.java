@@ -3,6 +3,7 @@ package cm.klg.service_provider.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,25 +16,31 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final KeycloakJwtConverter jwtOauthConverter;
+  private final KeycloakJwtConverter keycloakJwtConverter;
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  @Order(0)
+  public SecurityFilterChain publicEndpoints(HttpSecurity http) {
+    return http.securityMatcher(HttpMethod.POST.name(), "/users")
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+        .build();
+  }
+
+  @Bean
+  @Order(1)
+  public SecurityFilterChain protectedEndpoints(HttpSecurity http) {
     return http.csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
-            authorize ->
-                authorize
-                    .requestMatchers(HttpMethod.POST, "/users")
-                    .permitAll()
+            auth ->
+                auth.requestMatchers(HttpMethod.POST, "/service-provider")
+                    .authenticated()
                     .anyRequest()
-                    .authenticated())
+                    .denyAll())
         .oauth2ResourceServer(
-            httpSecurityOAuth2ResourceServerConfigurer ->
-                httpSecurityOAuth2ResourceServerConfigurer.jwt(
-                    jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtOauthConverter)))
+            oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(keycloakJwtConverter)))
         .sessionManagement(
-            sessionManagement ->
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .build();
   }
 }

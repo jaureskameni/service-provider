@@ -34,4 +34,7 @@ module cm.klg.service_provider.main {
   requires org.apache.httpcomponents.core5.httpcore5;
   requires org.apache.logging.log4j;
   requires spring.messaging;
+  requires biz.aQute.bnd.annotation;
+  requires tools.jackson.databind;
+  requires org.aspectj.weaver;
 }
