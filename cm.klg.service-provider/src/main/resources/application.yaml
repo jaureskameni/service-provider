@@ -19,6 +19,10 @@ spring:
     hibernate:
       ddl-auto: "validate"
     show-sql: false
+    properties:
+      hibernate:
+        type:
+          preferred_uuid_jdbc_type: "varchar"
   liquibase:
     change-log: "classpath:cm/klg/service_provider/repository/liquibase/changelog/master.xml"
     enabled: true
