@@ -63,7 +63,7 @@ public class ServiceProviderJpa extends AggregateRootEntity<UUID> {
   private LocalDateTime updatedAt;
 
   @OneToMany(
-      mappedBy = "serviceProviderId",
+      mappedBy = "id.serviceProviderId",
       fetch = FetchType.LAZY,
       cascade = CascadeType.ALL,
       orphanRemoval = true)
