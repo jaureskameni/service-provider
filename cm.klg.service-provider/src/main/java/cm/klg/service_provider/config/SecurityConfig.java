@@ -20,8 +20,8 @@ public class SecurityConfig {
 
   @Bean
   @Order(0)
-  public SecurityFilterChain publicEndpoints(HttpSecurity http) {
-    return http.securityMatcher(HttpMethod.POST.name(), "/users")
+  public SecurityFilterChain publicEndpoints(HttpSecurity http) throws Exception {
+    return http.securityMatcher("/users")
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .build();
