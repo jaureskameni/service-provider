@@ -48,6 +48,22 @@
 			columnName="c_processed_at" columnDataType="datetime" />
 	</changeSet>
 	<changeSet id="SP-8:1" author="kameni.nguematcha">
+
+		<createTable tableName="t_service_type">
+			<column name="c_id" type="uuid">
+				<constraints primaryKey="true" nullable="false"
+					primaryKeyName="pk_service_type" />
+			</column>
+			<column name="c_name" type="varchar(100)" />
+			<column name="c_category" type="varchar(50)" />
+			<column name="c_is_active" type="boolean"
+				defaultValueBoolean="true" />
+			<column name="c_created_at" type="datetime" />
+			<column name="c_updated_at" type="datetime" />
+		</createTable>
+
+	</changeSet>
+	<changeSet id="SP-8:2" author="kameni.nguematcha">
 		<createTable tableName="t_service_provider">
 			<column name="c_id" type="uuid">
 				<constraints primaryKey="true" nullable="false"
@@ -116,22 +132,6 @@
 			constraintName="fk_user_service_type"
 			referencedTableName="t_service_type" referencedColumnNames="c_id"
 			onDelete="RESTRICT" onUpdate="CASCADE" />
-
-	</changeSet>
-	<changeSet id="SP-8:2" author="kameni.nguematcha">
-
-		<createTable tableName="t_service_type">
-			<column name="c_id" type="uuid">
-				<constraints primaryKey="true" nullable="false"
-					primaryKeyName="pk_service_type" />
-			</column>
-			<column name="c_name" type="varchar(100)" />
-			<column name="c_category" type="varchar(50)" />
-			<column name="c_is_active" type="boolean"
-				defaultValueBoolean="true" />
-			<column name="c_created_at" type="datetime" />
-			<column name="c_updated_at" type="datetime" />
-		</createTable>
 
 	</changeSet>
 	<changeSet id="SP-8:3" author="kameni.nguematcha">
