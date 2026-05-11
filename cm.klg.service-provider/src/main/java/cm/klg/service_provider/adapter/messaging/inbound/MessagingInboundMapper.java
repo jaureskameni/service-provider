@@ -21,6 +21,7 @@ public interface MessagingInboundMapper {
   @Mapping(target = "countryCode", source = "phoneNumber.countryCode")
   @Mapping(target = "phoneNumber", source = "phoneNumber.number")
   @Mapping(target = "email", source = "email")
+  @Mapping(target = "createdAt", source = "createdAt")
   CreateNewUserUseCase.CreateNewUserCommand toCreateUserCommand(
       UamUserCreatedEventDTO userCreatedEventDTO);
 }

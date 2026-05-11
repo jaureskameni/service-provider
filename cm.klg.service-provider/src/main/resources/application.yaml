@@ -36,18 +36,8 @@ spring:
           auto-add-partitions: true
       output-bindings: "user"
 jk-dev:
-  external-services:
-    o-auth2-client-credentials:
-      client-credentials:
-        token-url: "${TOKEN_URL}"
-        client-id: "${CLIENT_ID}"
-        client-secret: "${CLIENT_SECRET}"
-      scopes:
-      - "openid"
-    services:
-      keycloak:
-        uri: "${KEYCLOAK_BASE_URL:http://localhost:8082}"
-        realm: "${KEYCLOAK_REALM:z-link}"
+  client-credentials:
+    client-id: "${CLIENT_ID}"
   events-messaging:
     inbox:
       enabled: "${DOMAIN_EVENTS_MESSAGING_CONSUMER_ENABLED:true}"
