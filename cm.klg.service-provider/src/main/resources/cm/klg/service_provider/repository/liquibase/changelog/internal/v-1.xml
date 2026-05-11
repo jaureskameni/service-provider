@@ -404,25 +404,6 @@
 		</addColumn>
 	</changeSet>
 	<changeSet id="SP-12:1" author="kameni.nguematcha">
-		<modifyDataType tableName="t_service_provider"
-			columnName="c_user_id" newDataType="varchar(36)" />
-		<modifyDataType tableName="t_service_provider"
-			columnName="c_city" newDataType="varchar(36)" />
-		<modifyDataType tableName="t_service_provider"
-			columnName="c_district" newDataType="varchar(36)" />
-		<modifyDataType tableName="t_service_provider"
-			columnName="c_approved_by" newDataType="varchar(36)" />
-		<modifyDataType tableName="t_service_provider"
-			columnName="c_rejected_by" newDataType="varchar(36)" />
-
-		<modifyDataType tableName="t_user_service"
-			columnName="c_service_provider_id" newDataType="varchar(36)" />
-		<modifyDataType tableName="t_user_service"
-			columnName="c_service_type_id" newDataType="varchar(36)" />
-		<modifyDataType tableName="t_user_service"
-			columnName="c_user_document" newDataType="varchar(36)" />
-	</changeSet>
-	<changeSet id="SP-12:2" author="kameni.nguematcha">
 		<dropForeignKeyConstraint
 			baseTableName="t_service_provider"
 			constraintName="fk_service_provider_user" />
