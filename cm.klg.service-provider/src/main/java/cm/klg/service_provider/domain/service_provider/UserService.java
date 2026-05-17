@@ -1,7 +1,7 @@
-package cm.klg.service_provider.domain.ServiceProvider;
+package cm.klg.service_provider.domain.service_provider;
 
 import cm.klg.common.base.domain.CreatedAt;
-import cm.klg.service_provider.domain.ServiceType.ServiceTypeId;
+import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.time.LocalDateTime;
 import lombok.Getter;
 
@@ -37,5 +37,15 @@ public class UserService {
         yearOfExperience,
         userDocument,
         CreatedAt.from(LocalDateTime.now()));
+  }
+
+  public static UserService reconstitute(
+      ServiceProviderId serviceProviderId,
+      ServiceTypeId serviceTypeId,
+      YearOfExperience yearOfExperience,
+      UserDocument userDocument,
+      CreatedAt createdAt) {
+    return new UserService(
+        serviceProviderId, serviceTypeId, yearOfExperience, userDocument, createdAt);
   }
 }

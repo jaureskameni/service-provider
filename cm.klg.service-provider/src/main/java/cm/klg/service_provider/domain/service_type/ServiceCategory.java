@@ -1,4 +1,4 @@
-package cm.klg.service_provider.domain.ServiceType;
+package cm.klg.service_provider.domain.service_type;
 
 public enum ServiceCategory {
   BATIMENT_MAINTENANCE,

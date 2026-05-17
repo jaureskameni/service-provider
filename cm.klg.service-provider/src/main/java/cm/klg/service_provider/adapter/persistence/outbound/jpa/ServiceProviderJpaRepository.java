@@ -1,8 +1,12 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
+import cm.klg.common.base.entity.PhoneNumberJpa;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProvider;
+import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ServiceProvider;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderNotFoundException;
 import org.jspecify.annotations.NonNull;
 
 public record ServiceProviderJpaRepository(
@@ -16,5 +20,30 @@ public record ServiceProviderJpaRepository(
   @Override
   public boolean existsByUserId(@NonNull UserId userId) {
     return serviceProviderSpringRepository.existsByUserId(userId.value());
+  }
+
+  @Override
+  public boolean existsByPhoneNumber(@NonNull PhoneNumber phoneNumber) {
+    return serviceProviderSpringRepository.existsByPhoneNumber(
+        new PhoneNumberJpa(phoneNumber.countryCode(), phoneNumber.number()));
+  }
+
+  @Override
+  public ServiceProvider load(@NonNull ServiceProviderId serviceProviderId) {
+    return serviceProviderSpringRepository
+        .findAggregateById(serviceProviderId.value())
+        .map(jpaMapper::toServiceProviderDomain)
+        .orElseThrow(ServiceProviderNotFoundException::new);
+  }
+
+  @Override
+  public void update(@NonNull ServiceProvider serviceProvider) {
+    serviceProviderSpringRepository
+        .findAggregateById(serviceProvider.getId().value())
+        .ifPresent(
+            serviceProviderJpa -> {
+              jpaMapper.toServiceProviderJpa(serviceProviderJpa, serviceProvider);
+              serviceProviderSpringRepository.save(serviceProviderJpa);
+            });
   }
 }
