@@ -3,13 +3,14 @@ package cm.klg.service_provider.adapter.rest.inbound;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,5 +60,25 @@ class ServiceProviderControllerTest {
         // spotless:on
     // Then
     assertThat(result.getNewId()).isEqualTo(serviceProviderId.value());
+  }
+
+  @Test
+  void approveServiceProvider_shouldReturnNoContent_whenSuccessful() {
+    // Given
+    UUID serviceProviderId = UUID.randomUUID();
+
+    // When
+    // spotless:off
+    given()
+            .standaloneSetup(objectUnderTest)
+            .contentType(MediaType.APPLICATION_JSON)
+    .when()
+            .post("/service-provider/{serviceProviderId}/approve", serviceProviderId)
+    .then()
+            .statusCode(HttpStatus.NO_CONTENT.value());
+    // spotless:on
+
+    // Then
+    verify(useCaseExecutor).runCommand(any());
   }
 }
