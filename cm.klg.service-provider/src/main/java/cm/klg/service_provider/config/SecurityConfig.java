@@ -42,6 +42,11 @@ public class SecurityConfig {
                         "/service-provider/{serviceProviderId:%s}/approve"
                             .formatted(REGEX_UUID_WITH_DELIMITER))
                     .hasAnyAuthority(Scopes.SERVICE_PROVIDER_APPROVE)
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/service-provider/{serviceProviderId:%s}/reject"
+                            .formatted(REGEX_UUID_WITH_DELIMITER))
+                    .hasAnyAuthority(Scopes.SERVICE_PROVIDER_REJECT)
                     .anyRequest()
                     .denyAll())
         .oauth2ResourceServer(
