@@ -9,6 +9,7 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationRespon
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import java.util.UUID;
@@ -23,13 +24,22 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final RestMapper restMapper;
   private final BecomeServiceProviderUseCase becomeServiceProviderUseCase;
   private final ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase;
+  private final RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
 
   @Override
   public ResponseEntity<Void> approveServiceProvider(UUID serviceProviderId) {
-
     useCaseExecutor.runCommand(
         () ->
             approveServiceProviderRequestUseCase.execute(
+                new UserId(getCurrentUserId()), new ServiceProviderId(serviceProviderId)));
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> rejectServiceProvider(UUID serviceProviderId) {
+    useCaseExecutor.runCommand(
+        () ->
+            rejectServiceProviderRequestUseCase.execute(
                 new UserId(getCurrentUserId()), new ServiceProviderId(serviceProviderId)));
     return ResponseEntity.noContent().build();
   }

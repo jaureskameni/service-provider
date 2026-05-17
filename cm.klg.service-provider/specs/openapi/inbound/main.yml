@@ -29,7 +29,7 @@ paths:
         "404":
           description: "SERVICE_PROVIDER_404_001"
         "409":
-          description: "SERVICE-PROVIDER_409_001"
+          description: "SERVICE-PROVIDER_409_001| SERVICE-PROVIDER_409_002"
   /service-provider/{serviceProviderId}/approve:
     post:
       tags:
@@ -40,6 +40,28 @@ paths:
       security:
       - oAuth:
         - "service-provider:approve"
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "204":
+          description: "Successful operation"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
+  /service-provider/{serviceProviderId}/reject:
+    post:
+      tags:
+      - "ServiceProvider"
+      summary: "Reject Service Provider Request"
+      description: "Reject Service Provider Request"
+      operationId: "RejectServiceProvider"
+      security:
+      - oAuth:
+        - "service-provider:reject"
       parameters:
       - name: "serviceProviderId"
         in: "path"

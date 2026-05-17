@@ -8,6 +8,7 @@ import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
+import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -40,5 +41,11 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   public ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new ApproveServiceProviderRequestUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new RejectServiceProviderRequestUseCase(serviceProviderRepository);
   }
 }

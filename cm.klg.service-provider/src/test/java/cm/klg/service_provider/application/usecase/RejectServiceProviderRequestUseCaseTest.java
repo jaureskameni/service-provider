@@ -21,11 +21,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ApproveServiceProviderRequestUseCaseTest {
+class RejectServiceProviderRequestUseCaseTest {
 
   @Mock private ServiceProviderRepository serviceProviderRepository;
 
-  @InjectMocks private ApproveServiceProviderRequestUseCase objectUnderTest;
+  @InjectMocks private RejectServiceProviderRequestUseCase objectUnderTest;
 
   @Test
   void execute_shouldLoadApproveAndUpdateServiceProvider() {
@@ -46,7 +46,7 @@ class ApproveServiceProviderRequestUseCaseTest {
     objectUnderTest.execute(adminId, serviceProviderId);
 
     // Then
-    assertThat(serviceProvider.getStatus()).isEqualTo(ServiceProviderStatus.APPROVED);
+    assertThat(serviceProvider.getStatus()).isEqualTo(ServiceProviderStatus.REJECTED);
     verify(serviceProviderRepository).load(serviceProviderId);
     verify(serviceProviderRepository).update(serviceProvider);
   }
