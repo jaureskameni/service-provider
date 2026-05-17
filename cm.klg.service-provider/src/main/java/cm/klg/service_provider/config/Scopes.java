@@ -5,4 +5,5 @@ public class Scopes {
   private Scopes() {}
 
   public static final String SERVICE_PROVIDER_APPROVE = "SCOPE_service-provider:approve";
+  public static final String SERVICE_PROVIDER_REJECT = "SCOPE_service-provider:reject";
 }

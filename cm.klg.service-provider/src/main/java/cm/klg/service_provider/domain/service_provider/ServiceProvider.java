@@ -90,4 +90,13 @@ public class ServiceProvider {
     this.approvedBy = userId;
     this.updatedAt = CreatedAt.from(LocalDateTime.now());
   }
+
+  public void reject(UserId userId) {
+    if (!Objects.equals(this.status, ServiceProviderStatus.PENDING)) {
+      return;
+    }
+    this.status = ServiceProviderStatus.REJECTED;
+    this.rejectedBy = userId;
+    this.updatedAt = CreatedAt.from(LocalDateTime.now());
+  }
 }
