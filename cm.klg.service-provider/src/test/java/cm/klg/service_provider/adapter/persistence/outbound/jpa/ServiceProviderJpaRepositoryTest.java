@@ -5,10 +5,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cm.klg.service_provider.domain.PhoneNumber;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProvider;
-import cm.klg.service_provider.domain.ServiceProvider.UserCityId;
-import cm.klg.service_provider.domain.ServiceProvider.UserDistrictId;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ProviderAudit;
+import cm.klg.service_provider.domain.service_provider.ProviderContact;
+import cm.klg.service_provider.domain.service_provider.ProviderReview;
+import cm.klg.service_provider.domain.service_provider.ServiceProvider;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
+import cm.klg.service_provider.domain.service_provider.UserCityId;
+import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -74,5 +80,64 @@ class ServiceProviderJpaRepositoryTest {
     // Then
     assertThat(exists).isFalse();
     verify(serviceProviderSpringRepository).existsByUserId(userId.value());
+  }
+
+  @Test
+  void load_shouldReturnServiceProvider_whenFound() {
+    // Given
+    ServiceProviderId serviceProviderId = new ServiceProviderId(UUID.randomUUID());
+    ServiceProviderJpa serviceProviderJpa = new ServiceProviderJpa();
+    serviceProviderJpa.setId(serviceProviderId.value());
+    serviceProviderJpa.setStatus("PENDING");
+
+    ServiceProvider serviceProvider =
+        ServiceProvider.reconstitute(
+            serviceProviderId,
+            new UserId(UUID.randomUUID()),
+            new ProviderContact(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new PhoneNumber("+237", "678901234")),
+            new ProviderReview(ServiceProviderStatus.PENDING, null, null),
+            new ProviderAudit(cm.klg.common.base.domain.CreatedAt.from(LocalDateTime.now()), null),
+            new ArrayList<>());
+
+    when(serviceProviderSpringRepository.findAggregateById(serviceProviderId.value()))
+        .thenReturn(java.util.Optional.of(serviceProviderJpa));
+    when(jpaMapper.toServiceProviderDomain(serviceProviderJpa)).thenReturn(serviceProvider);
+
+    // When
+    ServiceProvider result = objectUnderTest.load(serviceProviderId);
+
+    // Then
+    assertThat(result).isEqualTo(serviceProvider);
+    verify(serviceProviderSpringRepository).findAggregateById(serviceProviderId.value());
+    verify(jpaMapper).toServiceProviderDomain(serviceProviderJpa);
+  }
+
+  @Test
+  void update_shouldMapAndSaveServiceProvider_whenFound() {
+    // Given
+    ServiceProvider serviceProvider =
+        ServiceProvider.of(
+            new UserId(UUID.randomUUID()),
+            new UserCityId(UUID.randomUUID()),
+            new UserDistrictId(UUID.randomUUID()),
+            new PhoneNumber("+237", "678901234"),
+            new ArrayList<>());
+
+    ServiceProviderJpa serviceProviderJpa = new ServiceProviderJpa();
+    serviceProviderJpa.setId(serviceProvider.getId().value());
+
+    when(serviceProviderSpringRepository.findAggregateById(serviceProvider.getId().value()))
+        .thenReturn(java.util.Optional.of(serviceProviderJpa));
+
+    // When
+    objectUnderTest.update(serviceProvider);
+
+    // Then
+    verify(serviceProviderSpringRepository).findAggregateById(serviceProvider.getId().value());
+    verify(jpaMapper).toServiceProviderJpa(serviceProviderJpa, serviceProvider);
+    verify(serviceProviderSpringRepository).save(serviceProviderJpa);
   }
 }

@@ -1,4 +1,4 @@
-package cm.klg.service_provider.domain.ServiceType;
+package cm.klg.service_provider.domain.service_type;
 
 import cm.klg.common.base.domain.CreatedAt;
 import java.time.LocalDateTime;

@@ -12,6 +12,8 @@ paths:
       summary: "Become Service Provider"
       description: "Become Service Provider"
       operationId: "becomeServiceProvider"
+      security:
+      - bearerAuth: []
       requestBody:
         content:
           application/json:
@@ -28,6 +30,28 @@ paths:
           description: "SERVICE_PROVIDER_404_001"
         "409":
           description: "SERVICE-PROVIDER_409_001"
+  /service-provider/{serviceProviderId}/approve:
+    post:
+      tags:
+      - "ServiceProvider"
+      summary: "Approve Service Provider Request"
+      description: "Approve Service Provider Request"
+      operationId: "ApproveServiceProvider"
+      security:
+      - oAuth:
+        - "service-provider:approve"
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "204":
+          description: "Successful operation"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
 components:
   schemas:
     ServiceProviderRegister:

@@ -1,5 +1,7 @@
 package cm.klg.service_provider.config;
 
+import static cm.klg.service_provider.utils.Constants.REGEX_UUID_WITH_DELIMITER;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +37,11 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(HttpMethod.POST, "/service-provider")
                     .authenticated()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/service-provider/{serviceProviderId:%s}/approve"
+                            .formatted(REGEX_UUID_WITH_DELIMITER))
+                    .hasAnyAuthority(Scopes.SERVICE_PROVIDER_APPROVE)
                     .anyRequest()
                     .denyAll())
         .oauth2ResourceServer(
