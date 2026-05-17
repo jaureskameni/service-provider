@@ -5,6 +5,7 @@ import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.ServiceProvider.ServiceProvider;
 import cm.klg.service_provider.domain.ServiceProvider.ServiceProviderAlreadyExistsException;
 import cm.klg.service_provider.domain.ServiceProvider.ServiceProviderId;
+import cm.klg.service_provider.domain.ServiceProvider.ServiceProviderWithPhoneNumberAlreadyExistsException;
 import cm.klg.service_provider.domain.ServiceProvider.UserCityId;
 import cm.klg.service_provider.domain.ServiceProvider.UserDistrictId;
 import cm.klg.service_provider.domain.ServiceProvider.UserDocument;
@@ -17,6 +18,9 @@ public record BecomeServiceProviderUseCase(ServiceProviderRepository serviceProv
   public ServiceProviderId execute(BecomeServiceProviderCommand command) {
     if (serviceProviderRepository.existsByUserId(command.userId())) {
       throw new ServiceProviderAlreadyExistsException();
+    }
+    if (serviceProviderRepository.existsByPhoneNumber(command.phoneNumber())) {
+      throw new ServiceProviderWithPhoneNumberAlreadyExistsException();
     }
 
     ServiceProvider serviceProvider =
