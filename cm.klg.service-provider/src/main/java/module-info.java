@@ -37,4 +37,5 @@ module cm.klg.service_provider.main {
   requires biz.aQute.bnd.annotation;
   requires tools.jackson.databind;
   requires org.aspectj.weaver;
+  requires io.swagger.v3.oas.models;
 }

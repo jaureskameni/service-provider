@@ -5,16 +5,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.common.base.entity.PhoneNumberJpa;
 import cm.klg.service_provider.domain.PhoneNumber;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProvider;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProviderId;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProviderStatus;
-import cm.klg.service_provider.domain.ServiceProvider.UserCityId;
-import cm.klg.service_provider.domain.ServiceProvider.UserDistrictId;
-import cm.klg.service_provider.domain.ServiceProvider.UserDocument;
-import cm.klg.service_provider.domain.ServiceProvider.UserService;
-import cm.klg.service_provider.domain.ServiceProvider.YearOfExperience;
-import cm.klg.service_provider.domain.ServiceType.ServiceTypeId;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ProviderAudit;
+import cm.klg.service_provider.domain.service_provider.ProviderContact;
+import cm.klg.service_provider.domain.service_provider.ProviderReview;
+import cm.klg.service_provider.domain.service_provider.ServiceProvider;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
+import cm.klg.service_provider.domain.service_provider.UserCityId;
+import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import cm.klg.service_provider.domain.service_provider.UserDocument;
+import cm.klg.service_provider.domain.service_provider.UserService;
+import cm.klg.service_provider.domain.service_provider.YearOfExperience;
+import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import cm.klg.service_provider.domain.user.EmailAddress;
 import cm.klg.service_provider.domain.user.Firstname;
 import cm.klg.service_provider.domain.user.Lastname;
@@ -85,17 +88,12 @@ class JpaMapperTest {
         new UserService(serviceProviderId, serviceTypeId, yearOfExperience, document, createdAt);
 
     ServiceProvider serviceProvider =
-        new ServiceProvider(
+        ServiceProvider.reconstitute(
             serviceProviderId,
             userId,
-            cityId,
-            districtId,
-            phoneNumber,
-            status,
-            approvedBy,
-            rejectedBy,
-            createdAt,
-            updatedAt,
+            new ProviderContact(cityId, districtId, phoneNumber),
+            new ProviderReview(status, approvedBy, rejectedBy),
+            new ProviderAudit(createdAt, updatedAt),
             List.of(userService));
 
     UserServiceJpaId userServiceJpaId = new UserServiceJpaId();

@@ -2,14 +2,26 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.domain.PhoneNumber;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProvider;
-import cm.klg.service_provider.domain.ServiceProvider.UserService;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ProviderAudit;
+import cm.klg.service_provider.domain.service_provider.ProviderContact;
+import cm.klg.service_provider.domain.service_provider.ProviderReview;
+import cm.klg.service_provider.domain.service_provider.ServiceProvider;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
+import cm.klg.service_provider.domain.service_provider.UserCityId;
+import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import cm.klg.service_provider.domain.service_provider.UserDocument;
+import cm.klg.service_provider.domain.service_provider.UserService;
+import cm.klg.service_provider.domain.service_provider.YearOfExperience;
+import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import cm.klg.service_provider.domain.user.EmailAddress;
 import cm.klg.service_provider.domain.user.Firstname;
 import cm.klg.service_provider.domain.user.Lastname;
 import cm.klg.service_provider.domain.user.User;
 import cm.klg.service_provider.domain.user.UserProfile;
+import java.util.ArrayList;
+import java.util.List;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
@@ -84,4 +96,62 @@ public interface JpaMapper {
     target.setUserServices(
         serviceProvider.getUserServices().stream().map(this::toUserServiceJpa).toList());
   }
+
+  default ServiceProvider toServiceProviderDomain(ServiceProviderJpa serviceProviderJpa) {
+    ServiceProvider serviceProvider =
+        ServiceProvider.reconstitute(
+            new ServiceProviderId(serviceProviderJpa.getId()),
+            new UserId(serviceProviderJpa.getUserId()),
+            new ProviderContact(
+                new UserCityId(serviceProviderJpa.getCity()),
+                new UserDistrictId(serviceProviderJpa.getDistrict()),
+                new PhoneNumber(
+                    serviceProviderJpa.getPhoneNumber().getCountryCode(),
+                    serviceProviderJpa.getPhoneNumber().getNumber())),
+            new ProviderReview(
+                ServiceProviderStatus.valueOf(serviceProviderJpa.getStatus()),
+                serviceProviderJpa.getApprovedBy() != null
+                    ? new UserId(serviceProviderJpa.getApprovedBy())
+                    : null,
+                serviceProviderJpa.getRejectedBy() != null
+                    ? new UserId(serviceProviderJpa.getRejectedBy())
+                    : null),
+            new ProviderAudit(
+                new CreatedAt(serviceProviderJpa.getCreatedAt()),
+                serviceProviderJpa.getUpdatedAt() != null
+                    ? new CreatedAt(serviceProviderJpa.getUpdatedAt())
+                    : null),
+            new ArrayList<>());
+    serviceProvider.addAllUserService(
+        this.toUserServiceDomain(serviceProviderJpa.getUserServices()));
+    return serviceProvider;
+  }
+
+  default List<UserService> toUserServiceDomain(List<UserServiceJpa> userServices) {
+    return userServices.stream()
+        .map(
+            userServiceJpa ->
+                UserService.reconstitute(
+                    new ServiceProviderId(userServiceJpa.getId().getServiceProviderId()),
+                    new ServiceTypeId(userServiceJpa.getId().getServiceTypeId()),
+                    new YearOfExperience(userServiceJpa.getYearOfExperience()),
+                    new UserDocument(userServiceJpa.getUserDocument()),
+                    new CreatedAt(userServiceJpa.getCreatedAt())))
+        .toList();
+  }
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "id", source = "id.value")
+  @Mapping(target = "userId", source = "userId.value")
+  @Mapping(target = "status", source = "status")
+  @Mapping(target = "city", source = "city.value")
+  @Mapping(target = "district", source = "district.value")
+  @Mapping(target = "approvedBy", source = "approvedBy.value")
+  @Mapping(target = "rejectedBy", source = "rejectedBy.value")
+  @Mapping(target = "phoneNumber.number", source = "phoneNumber.number")
+  @Mapping(target = "phoneNumber.countryCode", source = "phoneNumber.countryCode")
+  @Mapping(target = "createdAt", source = "createdAt.value")
+  @Mapping(target = "updatedAt", source = "updatedAt.value")
+  void toServiceProviderJpa(
+      @MappingTarget ServiceProviderJpa serviceProviderJpa, ServiceProvider serviceProvider);
 }

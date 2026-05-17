@@ -2,16 +2,16 @@ package cm.klg.service_provider.application.usecase;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProvider;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProviderAlreadyExistsException;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProviderId;
-import cm.klg.service_provider.domain.ServiceProvider.ServiceProviderWithPhoneNumberAlreadyExistsException;
-import cm.klg.service_provider.domain.ServiceProvider.UserCityId;
-import cm.klg.service_provider.domain.ServiceProvider.UserDistrictId;
-import cm.klg.service_provider.domain.ServiceProvider.UserDocument;
-import cm.klg.service_provider.domain.ServiceProvider.YearOfExperience;
-import cm.klg.service_provider.domain.ServiceType.ServiceTypeId;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ServiceProvider;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExistsException;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderWithPhoneNumberAlreadyExistsException;
+import cm.klg.service_provider.domain.service_provider.UserCityId;
+import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import cm.klg.service_provider.domain.service_provider.UserDocument;
+import cm.klg.service_provider.domain.service_provider.YearOfExperience;
+import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.ArrayList;
 
 public record BecomeServiceProviderUseCase(ServiceProviderRepository serviceProviderRepository) {
