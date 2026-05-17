@@ -95,7 +95,7 @@ public class ServiceProvider {
     if (!Objects.equals(this.status, ServiceProviderStatus.PENDING)) {
       return;
     }
-    this.status = ServiceProviderStatus.APPROVED;
+    this.status = ServiceProviderStatus.REJECTED;
     this.rejectedBy = userId;
     this.updatedAt = CreatedAt.from(LocalDateTime.now());
   }
