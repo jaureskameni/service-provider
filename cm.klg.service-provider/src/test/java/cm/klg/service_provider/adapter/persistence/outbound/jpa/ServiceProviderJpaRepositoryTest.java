@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cm.klg.common.base.entity.PhoneNumberJpa;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
@@ -14,14 +16,19 @@ import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import cm.klg.service_provider.utils.PaginationFetchRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class ServiceProviderJpaRepositoryTest {
@@ -139,5 +146,92 @@ class ServiceProviderJpaRepositoryTest {
     verify(serviceProviderSpringRepository).findAggregateById(serviceProvider.getId().value());
     verify(jpaMapper).toServiceProviderJpa(serviceProviderJpa, serviceProvider);
     verify(serviceProviderSpringRepository).save(serviceProviderJpa);
+  }
+
+  @Test
+  void loadAll_shouldReturnAllAsView1ServiceProviders_whenStatusIsNull() {
+    // Given
+    ServiceProviderJpa serviceProviderJpa = serviceProviderJpa(ServiceProviderStatus.PENDING);
+    ServiceProviderView1 serviceProviderView = Mockito.mock(ServiceProviderView1.class);
+    var pageable = PageRequest.of(0, 10);
+    when(serviceProviderSpringRepository.findAllAggregate(pageable))
+        .thenReturn(new PageImpl<>(List.of(serviceProviderJpa), pageable, 1));
+    when(jpaMapper.toServiceProviderView1(serviceProviderJpa)).thenReturn(serviceProviderView);
+
+    // When
+    var result = objectUnderTest.loadAllAsView1(new PaginationFetchRequest(10, 0));
+
+    // Then
+    assertThat(result.total()).isEqualTo(1);
+    assertThat(result.elements()).containsExactly(serviceProviderView);
+    verify(serviceProviderSpringRepository).findAllAggregate(pageable);
+    verify(jpaMapper).toServiceProviderView1(serviceProviderJpa);
+  }
+
+  @Test
+  void loadAllByStatusAsView1_shouldReturnFilteredServiceProviders_whenStatusIsProvided() {
+    // Given
+    ServiceProviderJpa serviceProviderJpa = serviceProviderJpa(ServiceProviderStatus.APPROVED);
+    ServiceProviderView1 serviceProviderView = Mockito.mock(ServiceProviderView1.class);
+    var pageable = PageRequest.of(1, 5);
+    when(serviceProviderSpringRepository.findAllAggregateByStatus("APPROVED", pageable))
+        .thenReturn(new PageImpl<>(List.of(serviceProviderJpa), pageable, 12));
+    when(jpaMapper.toServiceProviderView1(serviceProviderJpa)).thenReturn(serviceProviderView);
+
+    // When
+    var result =
+        objectUnderTest.loadAllByStatusAsView1(
+            ServiceProviderStatus.APPROVED, new PaginationFetchRequest(5, 1));
+
+    // Then
+    assertThat(result.total()).isEqualTo(12);
+    assertThat(result.elements()).containsExactly(serviceProviderView);
+    verify(serviceProviderSpringRepository).findAllAggregateByStatus("APPROVED", pageable);
+    verify(jpaMapper).toServiceProviderView1(serviceProviderJpa);
+  }
+
+  @Test
+  void loadAllByStatusAsView1_shouldReturnEmptyPage_whenNoServiceProviderFound() {
+    // Given
+    var pageable = PageRequest.of(0, 10);
+    when(serviceProviderSpringRepository.findAllAggregateByStatus("REJECTED", pageable))
+        .thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+    // When
+    var result =
+        objectUnderTest.loadAllByStatusAsView1(
+            ServiceProviderStatus.REJECTED, new PaginationFetchRequest(10, 0));
+
+    // Then
+    assertThat(result.total()).isZero();
+    assertThat(result.elements()).isEmpty();
+    verify(serviceProviderSpringRepository).findAllAggregateByStatus("REJECTED", pageable);
+  }
+
+  private ServiceProviderJpa serviceProviderJpa(ServiceProviderStatus status) {
+    UUID serviceProviderId = UUID.randomUUID();
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    UserServiceJpaId userServiceJpaId = new UserServiceJpaId();
+    userServiceJpaId.setServiceProviderId(serviceProviderId);
+    userServiceJpaId.setServiceTypeId(UUID.randomUUID());
+
+    UserServiceJpa userServiceJpa = new UserServiceJpa();
+    userServiceJpa.setId(userServiceJpaId);
+    userServiceJpa.setYearOfExperience(5);
+    userServiceJpa.setUserDocument(UUID.randomUUID());
+    userServiceJpa.setCreatedAt(createdAt);
+
+    ServiceProviderJpa serviceProviderJpa = new ServiceProviderJpa();
+    serviceProviderJpa.setId(serviceProviderId);
+    serviceProviderJpa.setUserId(UUID.randomUUID());
+    serviceProviderJpa.setCity(UUID.randomUUID());
+    serviceProviderJpa.setDistrict(UUID.randomUUID());
+    serviceProviderJpa.setPhoneNumber(new PhoneNumberJpa("+237", "678901234"));
+    serviceProviderJpa.setStatus(status.name());
+    serviceProviderJpa.setCreatedAt(createdAt);
+    serviceProviderJpa.setUpdatedAt(createdAt.plusDays(1));
+    serviceProviderJpa.setUserServices(List.of(userServiceJpa));
+    return serviceProviderJpa;
   }
 }
