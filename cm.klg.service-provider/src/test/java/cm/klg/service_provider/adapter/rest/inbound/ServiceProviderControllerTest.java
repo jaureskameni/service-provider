@@ -102,6 +102,28 @@ class ServiceProviderControllerTest {
   }
 
   @Test
+  void addNewService_shouldReturnNoContent_whenSuccessful() {
+    // Given
+    var serviceTypeDTO =
+        new ServiceTypeDTO().id(UUID.randomUUID()).yearOfExperience(5).document(UUID.randomUUID());
+
+    // When
+    // spotless:off
+    given()
+            .standaloneSetup(objectUnderTest)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(serviceTypeDTO)
+    .when()
+            .put("/service-provider/add-service")
+    .then()
+            .statusCode(HttpStatus.NO_CONTENT.value());
+    // spotless:on
+
+    // Then
+    verify(useCaseExecutor).runCommand(any());
+  }
+
+  @Test
   void getServiceProviderById_shouldReturnOkWithServiceProvider_whenFound() {
     // Given
     UUID serviceProviderId = UUID.randomUUID();

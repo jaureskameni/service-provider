@@ -7,6 +7,7 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProvide
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO;
+import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.views.ServiceProviderViews;
@@ -40,6 +41,14 @@ public interface RestMapper {
   @Mapping(target = "phoneNumber.number", source = "serviceProviderRegisterDTO.phoneNumber.number")
   BecomeServiceProviderCommand toBecomeServiceProviderCommand(
       ServiceProviderRegisterDTO serviceProviderRegisterDTO, UUID currentUserId);
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "userId.value", source = "currentUserId")
+  @Mapping(target = "serviceTypeId.value", source = "serviceTypeDTO.id")
+  @Mapping(target = "yearOfExperience.value", source = "serviceTypeDTO.yearOfExperience")
+  @Mapping(target = "userDocument.value", source = "serviceTypeDTO.document")
+  AddNewServiceUseCase.AddNewServiceCommand toAddNewServiceCommand(
+      ServiceTypeDTO serviceTypeDTO, UUID currentUserId);
 
   ServiceProviderStatus toServiceProviderStatus(ServiceProviderStatusDTO status);
 

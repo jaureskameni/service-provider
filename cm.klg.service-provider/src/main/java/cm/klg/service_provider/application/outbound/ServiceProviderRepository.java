@@ -18,6 +18,8 @@ public interface ServiceProviderRepository {
 
   ServiceProvider load(ServiceProviderId serviceProviderId);
 
+  ServiceProvider loadByUserId(UserId userId);
+
   void update(ServiceProvider serviceProvider);
 
   PageData<ServiceProviderView1> loadAllAsView1(PaginationFetchRequest pagination);

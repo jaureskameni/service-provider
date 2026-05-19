@@ -179,10 +179,6 @@ val mainOpenApiGenerate by tasks.registering(GenerateTask::class) {
     doFirst {
         generatedSourceCodeDir.deleteRecursively()
     }
-    onlyIf {
-        !generatedSourceCodeDir.exists() ||
-            file(templateDir.get()!!).lastModified() > generatedSourceCodeDir.lastModified()
-    }
 }
 
 val uamDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {

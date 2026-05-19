@@ -111,6 +111,25 @@ paths:
           description: "Successful operation"
         "404":
           description: "SERVICE_PROVIDER_404_002"
+  /service-provider/add-service:
+    put:
+      tags:
+      - "ServiceProvider"
+      summary: "Add new service to provide"
+      description: "Add new service to provide"
+      operationId: "addNewService"
+      security:
+      - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceType"
+      responses:
+        "204":
+          description: "Successful operation"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
   /service-provider/{serviceProviderId}/reject:
     put:
       tags:

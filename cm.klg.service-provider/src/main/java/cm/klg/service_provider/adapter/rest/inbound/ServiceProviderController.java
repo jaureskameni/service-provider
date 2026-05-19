@@ -11,6 +11,8 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProvide
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
+import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
@@ -34,6 +36,16 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final GetServiceProviderByIdUseCase getServiceProviderByIdUseCase;
   private final ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase;
   private final RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
+  private final AddNewServiceUseCase addNewServiceUseCase;
+
+  @Override
+  public ResponseEntity<Void> addNewService(ServiceTypeDTO serviceTypeDTO) {
+    useCaseExecutor.runCommand(
+        () ->
+            addNewServiceUseCase.execute(
+                restMapper.toAddNewServiceCommand(serviceTypeDTO, getCurrentUserId())));
+    return ResponseEntity.noContent().build();
+  }
 
   @Override
   public ResponseEntity<Void> approveServiceProvider(UUID serviceProviderId) {
