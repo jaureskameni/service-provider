@@ -2,12 +2,19 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.common.base.entity.PhoneNumberJpa;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderNotFoundException;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
+import cm.klg.service_provider.utils.PageData;
+import cm.klg.service_provider.utils.PaginationFetchRequest;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 public record ServiceProviderJpaRepository(
     ServiceProviderSpringRepository serviceProviderSpringRepository, JpaMapper jpaMapper)
@@ -45,5 +52,27 @@ public record ServiceProviderJpaRepository(
               jpaMapper.toServiceProviderJpa(serviceProviderJpa, serviceProvider);
               serviceProviderSpringRepository.save(serviceProviderJpa);
             });
+  }
+
+  @Override
+  public PageData<ServiceProviderView1> loadAllAsView1(@NonNull PaginationFetchRequest pagination) {
+    Pageable pageable = PageRequest.of(pagination.pageIndex(), pagination.limit());
+    return toPageData(serviceProviderSpringRepository.findAllAggregate(pageable));
+  }
+
+  @Override
+  public PageData<ServiceProviderView1> loadAllByStatusAsView1(
+      @NonNull ServiceProviderStatus serviceProviderStatus,
+      @NonNull PaginationFetchRequest pagination) {
+    Pageable pageable = PageRequest.of(pagination.pageIndex(), pagination.limit());
+    return toPageData(
+        serviceProviderSpringRepository.findAllAggregateByStatus(
+            serviceProviderStatus.name(), pageable));
+  }
+
+  private PageData<ServiceProviderView1> toPageData(Page<ServiceProviderJpa> serviceProviders) {
+    return new PageData<>(
+        serviceProviders.getTotalElements(),
+        serviceProviders.getContent().stream().map(jpaMapper::toServiceProviderView1).toList());
   }
 }
