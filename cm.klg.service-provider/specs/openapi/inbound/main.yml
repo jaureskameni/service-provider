@@ -64,8 +64,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceProviderPaginate"
+  /service-provider/{serviceProviderId}:
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "Get Service Provider By Id"
+      description: "Get Service Provider By Id"
+      operationId: "GetServiceProviderById"
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceProvider"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
   /service-provider/{serviceProviderId}/approve:
-    post:
+    put:
       tags:
       - "ServiceProvider"
       summary: "Approve Service Provider Request"
@@ -87,7 +112,7 @@ paths:
         "404":
           description: "SERVICE_PROVIDER_404_002"
   /service-provider/{serviceProviderId}/reject:
-    post:
+    put:
       tags:
       - "ServiceProvider"
       summary: "Reject Service Provider Request"
