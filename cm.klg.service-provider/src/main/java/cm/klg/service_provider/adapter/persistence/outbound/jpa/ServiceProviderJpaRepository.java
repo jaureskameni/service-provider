@@ -70,6 +70,14 @@ public record ServiceProviderJpaRepository(
             serviceProviderStatus.name(), pageable));
   }
 
+  @Override
+  public ServiceProviderView1 loadAsView1(@NonNull ServiceProviderId serviceProviderId) {
+    return serviceProviderSpringRepository
+        .findAggregateById(serviceProviderId.value())
+        .map(jpaMapper::toServiceProviderView1)
+        .orElseThrow(ServiceProviderNotFoundException::new);
+  }
+
   private PageData<ServiceProviderView1> toPageData(Page<ServiceProviderJpa> serviceProviders) {
     return new PageData<>(
         serviceProviders.getTotalElements(),
