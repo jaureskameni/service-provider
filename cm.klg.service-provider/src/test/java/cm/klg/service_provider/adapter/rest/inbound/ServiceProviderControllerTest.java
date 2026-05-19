@@ -17,6 +17,7 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
@@ -39,6 +40,7 @@ class ServiceProviderControllerTest {
   @Mock private RestMapper restMapper;
   @Mock private BecomeServiceProviderUseCase becomeServiceProviderUseCase;
   @Mock private GetAllServiceProviderUseCase getAllServiceProviderUseCase;
+  @Mock private GetServiceProviderByIdUseCase getServiceProviderByIdUseCase;
   @Mock private ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase;
   @Mock private RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
 
@@ -90,13 +92,46 @@ class ServiceProviderControllerTest {
             .standaloneSetup(objectUnderTest)
             .contentType(MediaType.APPLICATION_JSON)
     .when()
-            .post("/service-provider/{serviceProviderId}/approve", serviceProviderId)
+            .put("/service-provider/{serviceProviderId}/approve", serviceProviderId)
     .then()
             .statusCode(HttpStatus.NO_CONTENT.value());
     // spotless:on
 
     // Then
     verify(useCaseExecutor).runCommand(any());
+  }
+
+  @Test
+  void getServiceProviderById_shouldReturnOkWithServiceProvider_whenFound() {
+    // Given
+    UUID serviceProviderId = UUID.randomUUID();
+    ServiceProviderView1 serviceProviderView = BDDMockito.mock(ServiceProviderView1.class);
+    ServiceProviderDTO serviceProviderDTO = new ServiceProviderDTO().id(serviceProviderId);
+
+    when(useCaseExecutor.executeQuery(any()))
+        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
+    when(getServiceProviderByIdUseCase.execute(new ServiceProviderId(serviceProviderId)))
+        .thenReturn(serviceProviderView);
+    when(restMapper.toServiceProviderDTO(serviceProviderView)).thenReturn(serviceProviderDTO);
+
+    // When
+    var result =
+        // spotless:off
+        given()
+                .standaloneSetup(objectUnderTest)
+                .contentType(MediaType.APPLICATION_JSON)
+        .when()
+                .get("/service-provider/{serviceProviderId}", serviceProviderId)
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(ServiceProviderDTO.class);
+        // spotless:on
+
+    // Then
+    assertThat(result.getId()).isEqualTo(serviceProviderId);
+    verify(getServiceProviderByIdUseCase).execute(new ServiceProviderId(serviceProviderId));
+    verify(restMapper).toServiceProviderDTO(serviceProviderView);
   }
 
   @Test

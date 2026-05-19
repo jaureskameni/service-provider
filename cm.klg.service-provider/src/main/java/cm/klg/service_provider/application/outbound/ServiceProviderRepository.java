@@ -24,4 +24,6 @@ public interface ServiceProviderRepository {
 
   PageData<ServiceProviderView1> loadAllByStatusAsView1(
       ServiceProviderStatus serviceProviderStatus, PaginationFetchRequest pagination);
+
+  ServiceProviderView1 loadAsView1(ServiceProviderId serviceProviderId);
 }
