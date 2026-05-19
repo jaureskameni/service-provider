@@ -44,6 +44,14 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
+  public ServiceProvider loadByUserId(@NonNull UserId userId) {
+    return serviceProviderSpringRepository
+        .findAggregateByUserId(userId.value())
+        .map(jpaMapper::toServiceProviderDomain)
+        .orElseThrow(ServiceProviderNotFoundException::new);
+  }
+
+  @Override
   public void update(@NonNull ServiceProvider serviceProvider) {
     serviceProviderSpringRepository
         .findAggregateById(serviceProvider.getId().value())
