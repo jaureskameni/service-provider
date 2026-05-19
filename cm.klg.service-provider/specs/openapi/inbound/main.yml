@@ -30,6 +30,40 @@ paths:
           description: "SERVICE_PROVIDER_404_001"
         "409":
           description: "SERVICE-PROVIDER_409_001| SERVICE-PROVIDER_409_002"
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "Get All Service Provider"
+      description: "Get All Service Provider"
+      operationId: "getAllServiceProvider"
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: "status"
+        in: "query"
+        required: false
+        schema:
+          $ref: "#/components/schemas/ServiceProviderStatus"
+      - name: "page"
+        in: "query"
+        required: false
+        schema:
+          type: "integer"
+          minimum: "0"
+      - name: "limit"
+        in: "query"
+        required: true
+        description: "represents the number of service provider to fetch per page."
+        schema:
+          type: "integer"
+          minimum: "10"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceProviderPaginate"
   /service-provider/{serviceProviderId}/approve:
     post:
       tags:
@@ -94,6 +128,74 @@ components:
           $ref: "#/components/schemas/PhoneNumber"
         serviceType:
           $ref: "#/components/schemas/ServiceType"
+    ServiceProviderPaginate:
+      type: "object"
+      required:
+      - "serviceProvider"
+      - "count"
+      properties:
+        serviceProvider:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ServiceProvider"
+        count:
+          type: "integer"
+          format: "int64"
+    ServiceProvider:
+      required:
+      - "id"
+      - "userId"
+      - "city"
+      - "district"
+      - "serviceProviderStatus"
+      - "phoneNumber"
+      - "createdAt"
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        city:
+          type: "string"
+          format: "uuid"
+        district:
+          type: "string"
+          format: "uuid"
+        createdAt:
+          type: "string"
+          format: "date-time"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        serviceProviderStatus:
+          $ref: "#/components/schemas/ServiceProviderStatus"
+        userServices:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/UserService"
+    UserService:
+      type: "object"
+      required:
+      - "serviceProviderId"
+      - "serviceTypeId"
+      - "createdAt"
+      properties:
+        serviceProviderId:
+          type: "string"
+          format: "uuid"
+        document:
+          type: "string"
+          format: "uuid"
+        createdAt:
+          type: "string"
+          format: "date-time"
+        serviceType:
+          $ref: "#/components/schemas/ServiceType"
     PhoneNumber:
       type: "object"
       required:
@@ -119,6 +221,12 @@ components:
         document:
           type: "string"
           format: "uuid"
+    ServiceProviderStatus:
+      type: "string"
+      enum:
+      - "PENDING"
+      - "APPROVED"
+      - "REJECTED"
     CreationResponse:
       type: "object"
       required:

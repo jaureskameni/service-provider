@@ -37,6 +37,8 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(HttpMethod.POST, "/service-provider")
                     .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/service-provider")
+                    .authenticated()
                     .requestMatchers(
                         HttpMethod.GET,
                         "/service-provider/{serviceProviderId:%s}/approve"
