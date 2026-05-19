@@ -1,14 +1,18 @@
 package cm.klg.service_provider.adapter.rest.inbound;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 import cm.klg.common.base.adapter.inbound.rest.WithAuthenticationSupport;
 import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.api.ServiceProviderApi;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
@@ -23,6 +27,7 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final UseCaseExecutor useCaseExecutor;
   private final RestMapper restMapper;
   private final BecomeServiceProviderUseCase becomeServiceProviderUseCase;
+  private final GetAllServiceProviderUseCase getAllServiceProviderUseCase;
   private final ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase;
   private final RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
 
@@ -54,6 +59,17 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
                     restMapper.toBecomeServiceProviderCommand(
                         serviceProviderRegisterDTO, getCurrentUserId())));
     return ResponseEntity.status(CREATED).body(new CreationResponseDTO().newId(result.value()));
+  }
+
+  @Override
+  public ResponseEntity<ServiceProviderPaginateDTO> getAllServiceProvider(
+      Integer limit, ServiceProviderStatusDTO status, Integer page) {
+    var result =
+        useCaseExecutor.executeQuery(
+            () ->
+                getAllServiceProviderUseCase.execute(
+                    restMapper.toGetAllServiceProviderCommand(limit, status, page)));
+    return ResponseEntity.status(OK).body(restMapper.toServiceProviderPaginateDTO(result));
   }
 
   private UUID getCurrentUserId() {

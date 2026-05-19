@@ -1,6 +1,8 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.common.base.domain.CreatedAt;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
@@ -20,8 +22,11 @@ import cm.klg.service_provider.domain.user.Firstname;
 import cm.klg.service_provider.domain.user.Lastname;
 import cm.klg.service_provider.domain.user.User;
 import cm.klg.service_provider.domain.user.UserProfile;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
@@ -154,4 +159,98 @@ public interface JpaMapper {
   @Mapping(target = "updatedAt", source = "updatedAt.value")
   void toServiceProviderJpa(
       @MappingTarget ServiceProviderJpa serviceProviderJpa, ServiceProvider serviceProvider);
+
+  default ServiceProviderView1 toServiceProviderView1(ServiceProviderJpa serviceProviderJpa) {
+    return new ServiceProviderView1() {
+      @Override
+      public UUID getId() {
+        return serviceProviderJpa.getId();
+      }
+
+      @Override
+      public UUID getUserId() {
+        return serviceProviderJpa.getUserId();
+      }
+
+      @Override
+      public UUID getCityId() {
+        return serviceProviderJpa.getCity();
+      }
+
+      @Override
+      public UUID getDistrictId() {
+        return serviceProviderJpa.getDistrict();
+      }
+
+      @Override
+      @Nullable
+      public UUID getApproveBy() {
+        return serviceProviderJpa.getApprovedBy();
+      }
+
+      @Override
+      @Nullable
+      public UUID getRejectBy() {
+        return serviceProviderJpa.getRejectedBy();
+      }
+
+      @Override
+      public PhoneNumber getPhoneNumber() {
+        return PhoneNumber.from(
+            serviceProviderJpa.getPhoneNumber().getCountryCode(),
+            serviceProviderJpa.getPhoneNumber().getNumber());
+      }
+
+      @Override
+      public String getStatus() {
+        return serviceProviderJpa.getStatus();
+      }
+
+      @Override
+      public LocalDateTime getCreatedAt() {
+        return serviceProviderJpa.getCreatedAt();
+      }
+
+      @Override
+      public LocalDateTime getUpdatedAt() {
+        return serviceProviderJpa.getUpdatedAt();
+      }
+
+      @Override
+      public List<UserServiceView> getUserService() {
+        return serviceProviderJpa.getUserServices().stream()
+            .map(JpaMapper.this::toUserServiceView)
+            .toList();
+      }
+    };
+  }
+
+  default UserServiceView toUserServiceView(UserServiceJpa userServiceJpa) {
+    return new UserServiceView() {
+      @Override
+      public UUID getServiceProviderId() {
+        return userServiceJpa.getId().getServiceProviderId();
+      }
+
+      @Override
+      public UUID getServiceTypeId() {
+        return userServiceJpa.getId().getServiceTypeId();
+      }
+
+      @Override
+      public int getYearOfExperience() {
+        return userServiceJpa.getYearOfExperience();
+      }
+
+      @Override
+      public UUID getUserDocument() {
+        return userServiceJpa.getUserDocument();
+      }
+
+      @Override
+      public LocalDateTime getCreatedAt() {
+        return userServiceJpa.getCreatedAt();
+      }
+    };
+  }
 }

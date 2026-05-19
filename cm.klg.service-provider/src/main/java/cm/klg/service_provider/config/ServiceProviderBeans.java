@@ -8,6 +8,7 @@ import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
+import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,12 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   public BecomeServiceProviderUseCase becomeServiceProviderUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new BecomeServiceProviderUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public GetAllServiceProviderUseCase getAllServiceProviderUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new GetAllServiceProviderUseCase(serviceProviderRepository);
   }
 
   @Bean

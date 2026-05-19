@@ -189,4 +189,63 @@ class JpaMapperTest {
     // Then
     assertThat(user).usingRecursiveComparison().isEqualTo(expectedUser);
   }
+
+  @Test
+  void toServiceProviderView1_shouldMapAllFieldsCorrectly() {
+    // Given
+    UUID serviceProviderId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    UUID cityId = UUID.randomUUID();
+    UUID districtId = UUID.randomUUID();
+    UUID approvedBy = UUID.randomUUID();
+    UUID serviceTypeId = UUID.randomUUID();
+    UUID documentId = UUID.randomUUID();
+    LocalDateTime createdAt = LocalDateTime.now();
+    LocalDateTime updatedAt = createdAt.plusDays(1);
+
+    UserServiceJpaId userServiceJpaId = new UserServiceJpaId();
+    userServiceJpaId.setServiceProviderId(serviceProviderId);
+    userServiceJpaId.setServiceTypeId(serviceTypeId);
+
+    UserServiceJpa userServiceJpa = new UserServiceJpa();
+    userServiceJpa.setId(userServiceJpaId);
+    userServiceJpa.setUserDocument(documentId);
+    userServiceJpa.setYearOfExperience(7);
+    userServiceJpa.setCreatedAt(createdAt);
+
+    ServiceProviderJpa serviceProviderJpa = new ServiceProviderJpa();
+    serviceProviderJpa.setId(serviceProviderId);
+    serviceProviderJpa.setUserId(userId);
+    serviceProviderJpa.setCity(cityId);
+    serviceProviderJpa.setDistrict(districtId);
+    serviceProviderJpa.setApprovedBy(approvedBy);
+    serviceProviderJpa.setRejectedBy(null);
+    serviceProviderJpa.setPhoneNumber(new PhoneNumberJpa("+237", "678901234"));
+    serviceProviderJpa.setStatus("APPROVED");
+    serviceProviderJpa.setCreatedAt(createdAt);
+    serviceProviderJpa.setUpdatedAt(updatedAt);
+    serviceProviderJpa.setUserServices(List.of(userServiceJpa));
+
+    // When
+    var result = objectUnderTest.toServiceProviderView1(serviceProviderJpa);
+
+    // Then
+    assertThat(result.getId()).isEqualTo(serviceProviderId);
+    assertThat(result.getUserId()).isEqualTo(userId);
+    assertThat(result.getCityId()).isEqualTo(cityId);
+    assertThat(result.getDistrictId()).isEqualTo(districtId);
+    assertThat(result.getApproveBy()).isEqualTo(approvedBy);
+    assertThat(result.getRejectBy()).isNull();
+    assertThat(result.getPhoneNumber()).isEqualTo(PhoneNumber.from("+237", "678901234"));
+    assertThat(result.getStatus()).isEqualTo("APPROVED");
+    assertThat(result.getCreatedAt()).isEqualTo(createdAt);
+    assertThat(result.getUpdatedAt()).isEqualTo(updatedAt);
+    assertThat(result.getUserService()).hasSize(1);
+    assertThat(result.getUserService().getFirst().getServiceProviderId())
+        .isEqualTo(serviceProviderId);
+    assertThat(result.getUserService().getFirst().getServiceTypeId()).isEqualTo(serviceTypeId);
+    assertThat(result.getUserService().getFirst().getYearOfExperience()).isEqualTo(7);
+    assertThat(result.getUserService().getFirst().getUserDocument()).isEqualTo(documentId);
+    assertThat(result.getUserService().getFirst().getCreatedAt()).isEqualTo(createdAt);
+  }
 }
