@@ -9,9 +9,20 @@ import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderNotFoundException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
+import cm.klg.service_provider.domain.service_provider.UserCityId;
+import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import cm.klg.service_provider.domain.service_provider.UserQuarterId;
+import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import cm.klg.service_provider.utils.PageData;
 import cm.klg.service_provider.utils.PaginationFetchRequest;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -65,7 +76,7 @@ public record ServiceProviderJpaRepository(
   @Override
   public PageData<ServiceProviderView1> loadAllAsView1(@NonNull PaginationFetchRequest pagination) {
     Pageable pageable = PageRequest.of(pagination.pageIndex(), pagination.limit());
-    return toPageData(serviceProviderSpringRepository.findAllAggregate(pageable));
+    return toPageData(serviceProviderSpringRepository.findAllIds(pageable));
   }
 
   @Override
@@ -74,8 +85,26 @@ public record ServiceProviderJpaRepository(
       @NonNull PaginationFetchRequest pagination) {
     Pageable pageable = PageRequest.of(pagination.pageIndex(), pagination.limit());
     return toPageData(
-        serviceProviderSpringRepository.findAllAggregateByStatus(
-            serviceProviderStatus.name(), pageable));
+        serviceProviderSpringRepository.findAllIdsByStatus(serviceProviderStatus.name(), pageable));
+  }
+
+  @Override
+  public PageData<ServiceProviderView1> searchByLocationAndStatus(
+      @NonNull ServiceTypeId serviceTypeId,
+      @NonNull UserCityId cityId,
+      @Nullable UserDistrictId districtId,
+      @Nullable UserQuarterId quarterId,
+      @NonNull ServiceProviderStatus status,
+      @NonNull PaginationFetchRequest pagination) {
+    Pageable pageable = PageRequest.of(pagination.pageIndex(), pagination.limit());
+    return toPageData(
+        serviceProviderSpringRepository.searchIdsByLocationAndStatus(
+            serviceTypeId.value(),
+            cityId.value(),
+            districtId != null ? districtId.value() : null,
+            quarterId != null ? quarterId.value() : null,
+            status.name(),
+            pageable));
   }
 
   @Override
@@ -86,9 +115,19 @@ public record ServiceProviderJpaRepository(
         .orElseThrow(ServiceProviderNotFoundException::new);
   }
 
-  private PageData<ServiceProviderView1> toPageData(Page<ServiceProviderJpa> serviceProviders) {
+  private PageData<ServiceProviderView1> toPageData(Page<UUID> serviceProviderIds) {
+    if (serviceProviderIds.isEmpty()) {
+      return new PageData<>(serviceProviderIds.getTotalElements(), Collections.emptyList());
+    }
+    List<UUID> ids = serviceProviderIds.getContent();
+    Map<UUID, ServiceProviderJpa> serviceProvidersById =
+        serviceProviderSpringRepository.findAllAggregatesByIdIn(ids).stream()
+            .collect(Collectors.toMap(ServiceProviderJpa::getId, Function.identity()));
     return new PageData<>(
-        serviceProviders.getTotalElements(),
-        serviceProviders.getContent().stream().map(jpaMapper::toServiceProviderView1).toList());
+        serviceProviderIds.getTotalElements(),
+        ids.stream()
+            .map(serviceProvidersById::get)
+            .map(jpaMapper::toServiceProviderView1)
+            .toList());
   }
 }

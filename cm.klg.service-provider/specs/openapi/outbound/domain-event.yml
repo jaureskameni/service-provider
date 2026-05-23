@@ -1,0 +1,47 @@
+---
+openapi: "3.0.3"
+info:
+  title: "SERVICE-PROVIDER-EVENT"
+  description: "Service provider domain event"
+  version: "2026-W17"
+servers:
+- url: "https"
+- url: "http"
+paths: {}
+components:
+  schemas:
+    DomainEventType:
+      type: "string"
+      enum:
+      - "SERVICE_PROVIDER_APPROVED"
+    ServiceProviderApprovedEventDTO:
+      type: "object"
+      properties:
+        serviceProviderId:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        lastname:
+          type: "string"
+        firstname:
+          type: "string"
+        email:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumberDTO"
+        approvedAt:
+          type: "string"
+          format: "date-time"
+    PhoneNumberDTO:
+      type: "object"
+      properties:
+        countryCode:
+          type: "string"
+          description: "the international code for the country"
+          example: "237 for Cameroon"
+        number:
+          type: "string"
+          description: "the phone number"
+          example: "653492410"

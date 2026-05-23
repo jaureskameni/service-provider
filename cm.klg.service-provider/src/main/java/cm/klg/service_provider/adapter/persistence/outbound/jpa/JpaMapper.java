@@ -2,11 +2,13 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView1;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
 import cm.klg.service_provider.domain.service_provider.ProviderContact;
+import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ProviderReview;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
@@ -14,6 +16,7 @@ import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserDocument;
+import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_provider.UserService;
 import cm.klg.service_provider.domain.service_provider.YearOfExperience;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
@@ -54,8 +57,9 @@ public interface JpaMapper {
   @Mapping(target = "id", source = "id.value")
   @Mapping(target = "userId", source = "userId.value")
   @Mapping(target = "status", source = "status")
-  @Mapping(target = "city", source = "city.value")
-  @Mapping(target = "district", source = "district.value")
+  @Mapping(target = "city", source = "location.cityId.value")
+  @Mapping(target = "district", source = "location.districtId.value")
+  @Mapping(target = "quarter", source = "location.quarterId.value")
   @Mapping(target = "approvedBy", source = "approvedBy.value")
   @Mapping(target = "rejectedBy", source = "rejectedBy.value")
   @Mapping(target = "phoneNumber.number", source = "phoneNumber.number")
@@ -108,8 +112,10 @@ public interface JpaMapper {
             new ServiceProviderId(serviceProviderJpa.getId()),
             new UserId(serviceProviderJpa.getUserId()),
             new ProviderContact(
-                new UserCityId(serviceProviderJpa.getCity()),
-                new UserDistrictId(serviceProviderJpa.getDistrict()),
+                new ProviderLocation(
+                    new UserCityId(serviceProviderJpa.getCity()),
+                    new UserDistrictId(serviceProviderJpa.getDistrict()),
+                    new UserQuarterId(serviceProviderJpa.getQuarter())),
                 new PhoneNumber(
                     serviceProviderJpa.getPhoneNumber().getCountryCode(),
                     serviceProviderJpa.getPhoneNumber().getNumber())),
@@ -149,8 +155,9 @@ public interface JpaMapper {
   @Mapping(target = "id", source = "id.value")
   @Mapping(target = "userId", source = "userId.value")
   @Mapping(target = "status", source = "status")
-  @Mapping(target = "city", source = "city.value")
-  @Mapping(target = "district", source = "district.value")
+  @Mapping(target = "city", source = "location.cityId.value")
+  @Mapping(target = "district", source = "location.districtId.value")
+  @Mapping(target = "quarter", source = "location.quarterId.value")
   @Mapping(target = "approvedBy", source = "approvedBy.value")
   @Mapping(target = "rejectedBy", source = "rejectedBy.value")
   @Mapping(target = "phoneNumber.number", source = "phoneNumber.number")
@@ -180,6 +187,11 @@ public interface JpaMapper {
       @Override
       public UUID getDistrictId() {
         return serviceProviderJpa.getDistrict();
+      }
+
+      @Override
+      public UUID getQuarterId() {
+        return serviceProviderJpa.getQuarter();
       }
 
       @Override
@@ -250,6 +262,30 @@ public interface JpaMapper {
       @Override
       public LocalDateTime getCreatedAt() {
         return userServiceJpa.getCreatedAt();
+      }
+    };
+  }
+
+  default ServiceTypeView1 toServiceTypeView1(ServiceTypeJpa serviceTypeJpa) {
+    return new ServiceTypeView1() {
+      @Override
+      public java.util.UUID getId() {
+        return serviceTypeJpa.getId();
+      }
+
+      @Override
+      public String getName() {
+        return serviceTypeJpa.getName();
+      }
+
+      @Override
+      public String getCategory() {
+        return serviceTypeJpa.getCategory();
+      }
+
+      @Override
+      public boolean getIsActive() {
+        return serviceTypeJpa.isActive();
       }
     };
   }

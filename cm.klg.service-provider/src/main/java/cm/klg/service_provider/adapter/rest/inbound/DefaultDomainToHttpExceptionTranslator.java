@@ -1,11 +1,15 @@
 package cm.klg.service_provider.adapter.rest.inbound;
 
+import cm.klg.common.base.exception.BadRequestException;
 import cm.klg.common.base.exception.ConflictException;
 import cm.klg.common.base.exception.HttpErrorException;
 import cm.klg.common.base.exception.InternalException;
 import cm.klg.common.base.exception.ResourceNotFoundException;
 import cm.klg.common.base.transaction.DomainToHttpExceptionTranslator;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderDataException;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderStatusTransitionException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExistsException;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyProvidesServiceException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderNotFoundException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderWithPhoneNumberAlreadyExistsException;
 import cm.klg.service_provider.domain.user.UserNotFoundException;
@@ -19,8 +23,11 @@ public record DefaultDomainToHttpExceptionTranslator() implements DomainToHttpEx
       case UserNotFoundException _, ServiceProviderNotFoundException _ ->
           new ResourceNotFoundException(message);
       case ServiceProviderAlreadyExistsException _,
-          ServiceProviderWithPhoneNumberAlreadyExistsException _ ->
+          ServiceProviderWithPhoneNumberAlreadyExistsException _,
+          ServiceProviderAlreadyProvidesServiceException _,
+          InvalidServiceProviderStatusTransitionException _ ->
           new ConflictException(message);
+      case InvalidServiceProviderDataException _ -> new BadRequestException(message);
       default -> new InternalException(message, ex);
     };
   }

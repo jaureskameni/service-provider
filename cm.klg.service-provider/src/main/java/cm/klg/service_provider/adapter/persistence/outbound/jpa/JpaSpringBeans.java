@@ -1,6 +1,7 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
+import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
@@ -25,5 +26,11 @@ public class JpaSpringBeans {
   public ServiceProviderRepository serviceProviderRepository(
       ServiceProviderSpringRepository serviceProviderSpringRepository, JpaMapper jpaMapper) {
     return new ServiceProviderJpaRepository(serviceProviderSpringRepository, jpaMapper);
+  }
+
+  @Bean
+  public ServiceTypeRepository serviceTypeRepository(
+      ServiceTypeSpringRepository serviceTypeSpringRepository, JpaMapper jpaMapper) {
+    return new ServiceProviderServiceTypeJpaRepository(serviceTypeSpringRepository, jpaMapper);
   }
 }

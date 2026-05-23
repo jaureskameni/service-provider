@@ -11,7 +11,13 @@ public enum ServiceProviderErrorCode implements ErrorCode {
   // ERROR-409,
   SERVICE_PROVIDER_409_001("SERVICE_PROVIDER-409-001", "This User Is Already Service Provider"),
   SERVICE_PROVIDER_409_002(
-      "SERVICE_PROVIDER-409-002", "Service Provider Already Exists With this Phone Number");
+      "SERVICE_PROVIDER-409-002", "Service Provider Already Exists With this Phone Number"),
+  SERVICE_PROVIDER_409_003("SERVICE_PROVIDER-409-003", "Service Provider Already Provides Service"),
+  SERVICE_PROVIDER_409_004(
+      "SERVICE_PROVIDER-409-004", "Invalid Service Provider Status Transition"),
+
+  // ERROR-400
+  SERVICE_PROVIDER_400_001("SERVICE_PROVIDER-400-001", "Invalid Service Provider Data");
 
   private final String value;
   @Getter private final String description;
