@@ -7,10 +7,12 @@ import static org.mockito.Mockito.when;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserDocument;
+import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_provider.YearOfExperience;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.ArrayList;
@@ -43,8 +45,10 @@ class AddNewServiceUseCaseTest {
     ServiceProvider serviceProvider =
         ServiceProvider.of(
             userId,
-            new UserCityId(UUID.randomUUID()),
-            new UserDistrictId(UUID.randomUUID()),
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             new ArrayList<>());
 

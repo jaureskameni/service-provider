@@ -25,15 +25,10 @@ class CreateNewUserUseCaseTest {
   void shouldCreateNewUser() {
     // Given
     UUID userId = UUID.randomUUID();
+    LocalDateTime now = LocalDateTime.now();
     CreateNewUserUseCase.CreateNewUserCommand command =
         new CreateNewUserUseCase.CreateNewUserCommand(
-            userId,
-            "Doe",
-            "John",
-            "john.doe@example.com",
-            "+237",
-            "699999999",
-            LocalDateTime.now());
+            userId, "Doe", "John", "john.doe@example.com", "+237", "699999999", now);
 
     // When
     createNewUserUseCase.execute(command);
@@ -43,13 +38,14 @@ class CreateNewUserUseCaseTest {
     verify(userRepository).insert(userCaptor.capture());
 
     assertThat(userCaptor.getValue())
-        .extracting(
-            u -> u.getId().value(),
-            u -> u.getLastname().value(),
-            u -> u.getFirstname().value(),
-            u -> u.getEmail().value(),
-            u -> u.getPhoneNumber().countryCode(),
-            u -> u.getPhoneNumber().number())
-        .containsExactly(userId, "Doe", "John", "john.doe@example.com", "+237", "699999999");
+        .satisfies(
+            u -> {
+              assertThat(u.getId().value()).isEqualTo(userId);
+              assertThat(u.getLastname().value()).isEqualTo("Doe");
+              assertThat(u.getFirstname().value()).isEqualTo("John");
+              assertThat(u.getEmail().value()).isEqualTo("john.doe@example.com");
+              assertThat(u.getPhoneNumber().countryCode()).isEqualTo("+237");
+              assertThat(u.getPhoneNumber().number()).isEqualTo("699999999");
+            });
   }
 }

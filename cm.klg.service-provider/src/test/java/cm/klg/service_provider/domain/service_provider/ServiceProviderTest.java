@@ -1,6 +1,7 @@
 package cm.klg.service_provider.domain.service_provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.domain.PhoneNumber;
@@ -19,8 +20,10 @@ class ServiceProviderTest {
     ServiceProvider serviceProvider =
         ServiceProvider.of(
             new UserId(UUID.randomUUID()),
-            new UserCityId(UUID.randomUUID()),
-            new UserDistrictId(UUID.randomUUID()),
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             new ArrayList<>());
 
@@ -40,8 +43,10 @@ class ServiceProviderTest {
     ServiceProvider serviceProvider =
         ServiceProvider.of(
             new UserId(UUID.randomUUID()),
-            new UserCityId(UUID.randomUUID()),
-            new UserDistrictId(UUID.randomUUID()),
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             new ArrayList<>());
 
@@ -55,7 +60,7 @@ class ServiceProviderTest {
   }
 
   @Test
-  void approve_shouldNotChangeStatus_whenStatusIsNotPending() {
+  void approve_shouldThrow_whenStatusIsNotPending() {
     // Given
     UserId adminId = new UserId(UUID.randomUUID());
     ServiceProvider serviceProvider =
@@ -63,18 +68,41 @@ class ServiceProviderTest {
             ServiceProviderId.generate(),
             new UserId(UUID.randomUUID()),
             new ProviderContact(
-                new UserCityId(UUID.randomUUID()),
-                new UserDistrictId(UUID.randomUUID()),
+                new ProviderLocation(
+                    new UserCityId(UUID.randomUUID()),
+                    new UserDistrictId(UUID.randomUUID()),
+                    new UserQuarterId(UUID.randomUUID())),
                 new PhoneNumber("+237", "678901234")),
             new ProviderReview(ServiceProviderStatus.REJECTED, null, new UserId(UUID.randomUUID())),
             new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
             new ArrayList<>());
 
-    // When
-    serviceProvider.approve(adminId);
+    assertThatThrownBy(() -> serviceProvider.approve(adminId))
+        .isInstanceOf(InvalidServiceProviderStatusTransitionException.class);
+  }
 
-    // Then
-    assertThat(serviceProvider.getStatus()).isEqualTo(ServiceProviderStatus.REJECTED);
-    assertThat(serviceProvider.getApprovedBy()).isNull();
+  @Test
+  void addUserService_shouldThrow_whenServiceIsAlreadyProvided() {
+    ServiceProvider serviceProvider =
+        ServiceProvider.of(
+            new UserId(UUID.randomUUID()),
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
+            new PhoneNumber("+237", "678901234"),
+            new ArrayList<>());
+    var serviceTypeId =
+        new cm.klg.service_provider.domain.service_type.ServiceTypeId(UUID.randomUUID());
+
+    serviceProvider.addUserService(
+        serviceTypeId, new YearOfExperience(3), new UserDocument(UUID.randomUUID()));
+
+    var yearOfExperience = new YearOfExperience(4);
+    var userDocument = new UserDocument(UUID.randomUUID());
+
+    assertThatThrownBy(
+            () -> serviceProvider.addUserService(serviceTypeId, yearOfExperience, userDocument))
+        .isInstanceOf(ServiceProviderAlreadyProvidesServiceException.class);
   }
 }
