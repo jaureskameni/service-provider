@@ -80,7 +80,7 @@ tasks.named<JavaCompile>("compileJava") {
         excludedPaths.set(".*/build/generated/sources/.*")
         disableAllChecks.set(true)
         check("NullAway", CheckSeverity.ERROR)
-        option("NullAway:AnnotatedPackages", "cm.klg.service-provider")
+        option("NullAway:AnnotatedPackages", "cm.klg.service_provider")
         option("NullAway:JSpecifyMode", true)
         option("NullAway:TreatGeneratedAsUnannotated", true)
         option("NullAway:CheckOptionalEmptiness", true)
@@ -179,6 +179,47 @@ val mainOpenApiGenerate by tasks.registering(GenerateTask::class) {
     doFirst {
         generatedSourceCodeDir.deleteRecursively()
     }
+    onlyIf {
+        !generatedSourceCodeDir.exists() ||
+            file(inputSpec.get()).lastModified() > generatedSourceCodeDir.lastModified()
+    }
+}
+
+val mainDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
+    generatorName.set("spring")
+    templateDir.set("$rootDir/specs/openapi/templates/spring-boot")
+    inputSpec.set("$rootDir/specs/openapi/outbound/domain-event.yml")
+    modelPackage.set("cm.klg.generated.service.provider.adapter.messaging.outbound.dto")
+    outputDir.set(
+        layout.buildDirectory
+            .dir("generated/sources/openapi")
+            .get()
+            .asFile.path,
+    )
+    configOptions.set(
+        mapOf(
+            "dateLibrary" to "java8-localdatetime",
+            "library" to "spring-boot",
+            "interfaceOnly" to "true",
+            "useTags" to "true",
+            "skipDefaultInterface" to "true",
+            "useSpringBoot3" to "true",
+        ),
+    )
+    typeMappings.set(
+        mapOf(
+            "time" to "java.time.LocalTime",
+        ),
+    )
+    val generatedSourceCodeDir =
+        file(outputDir.get() + "/src/main/java/cm/klg/generated/service/provider/adapter/messaging/outbound")
+    doFirst {
+        generatedSourceCodeDir.deleteRecursively()
+    }
+    onlyIf {
+        !generatedSourceCodeDir.exists() ||
+            file(inputSpec.get()).lastModified() > generatedSourceCodeDir.lastModified()
+    }
 }
 
 val uamDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
@@ -222,6 +263,7 @@ val uamDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
 tasks.compileJava {
     dependsOn(
         mainOpenApiGenerate,
+        mainDomainEventsOpenApiGenerate,
         uamDomainEventsOpenApiGenerate,
     )
 }

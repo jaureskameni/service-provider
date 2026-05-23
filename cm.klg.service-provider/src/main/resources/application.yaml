@@ -31,6 +31,9 @@ spring:
       definition: "user"
     stream:
       bindings:
+        service-provider-out-0:
+          group: "${spring.application.name}"
+          destination: "service-provider"
         user-in-0:
           group: "${spring.application.name}"
           destination: "user"
@@ -38,7 +41,7 @@ spring:
         binder:
           brokers: "${KAFKA_URL}"
           auto-add-partitions: true
-      output-bindings: "user"
+      output-bindings: "service-provider"
 jk-dev:
   client-credentials:
     client-id: "${CLIENT_ID}"

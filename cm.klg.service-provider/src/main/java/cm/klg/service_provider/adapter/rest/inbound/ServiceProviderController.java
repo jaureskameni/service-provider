@@ -18,6 +18,7 @@ import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
+import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
@@ -37,6 +38,7 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase;
   private final RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
   private final AddNewServiceUseCase addNewServiceUseCase;
+  private final SearchServiceProviderUseCase searchServiceProviderUseCase;
 
   @Override
   public ResponseEntity<Void> addNewService(ServiceTypeDTO serviceTypeDTO) {
@@ -63,6 +65,23 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
             rejectServiceProviderRequestUseCase.execute(
                 new UserId(getCurrentUserId()), new ServiceProviderId(serviceProviderId)));
     return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<ServiceProviderPaginateDTO> searchServiceProviders(
+      UUID serviceTypeId,
+      UUID cityId,
+      Integer limit,
+      UUID districtId,
+      UUID quarterId,
+      Integer page) {
+    var result =
+        useCaseExecutor.executeQuery(
+            () ->
+                searchServiceProviderUseCase.execute(
+                    restMapper.toSearchServiceProviderCommand(
+                        serviceTypeId, cityId, districtId, quarterId, page, limit)));
+    return ResponseEntity.status(OK).body(restMapper.toServiceProviderPaginateDTO(result));
   }
 
   @Override

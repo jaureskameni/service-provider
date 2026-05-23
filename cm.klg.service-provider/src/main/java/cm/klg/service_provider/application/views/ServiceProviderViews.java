@@ -16,6 +16,8 @@ public interface ServiceProviderViews {
 
     UUID getDistrictId();
 
+    UUID getQuarterId();
+
     @Nullable UUID getApproveBy();
 
     @Nullable UUID getRejectBy();
