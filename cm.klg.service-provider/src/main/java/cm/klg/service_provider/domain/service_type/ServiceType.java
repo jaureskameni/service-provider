@@ -2,6 +2,7 @@ package cm.klg.service_provider.domain.service_type;
 
 import cm.klg.common.base.domain.CreatedAt;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -17,17 +18,25 @@ public class ServiceType {
   public ServiceType(
       ServiceTypeId serviceTypeId,
       ServiceTypeName serviceTypeName,
+      ServiceCategory serviceCategory,
       boolean isActive,
       CreatedAt createdAt,
       @Nullable CreatedAt updated) {
-    this.serviceTypeId = serviceTypeId;
-    this.serviceTypeName = serviceTypeName;
+    this.serviceTypeId = Objects.requireNonNull(serviceTypeId);
+    this.serviceTypeName = Objects.requireNonNull(serviceTypeName);
+    this.serviceCategory = Objects.requireNonNull(serviceCategory);
     this.isActive = isActive;
-    this.createdAt = createdAt;
+    this.createdAt = Objects.requireNonNull(createdAt);
     this.updated = updated;
   }
 
-  public ServiceType of(ServiceTypeName name, boolean active) {
-    return new ServiceType(serviceTypeId, name, active, CreatedAt.from(LocalDateTime.now()), null);
+  public static ServiceType of(ServiceTypeName name, ServiceCategory category, boolean active) {
+    return new ServiceType(
+        ServiceTypeId.generate(),
+        name,
+        category,
+        active,
+        CreatedAt.from(LocalDateTime.now()),
+        null);
   }
 }

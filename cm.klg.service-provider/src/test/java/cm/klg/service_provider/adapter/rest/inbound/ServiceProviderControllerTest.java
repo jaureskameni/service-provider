@@ -12,16 +12,20 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
-import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
+import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
+import cm.klg.service_provider.domain.service_provider.UserCityId;
+import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import cm.klg.service_provider.domain.service_provider.UserQuarterId;
+import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -43,6 +47,8 @@ class ServiceProviderControllerTest {
   @Mock private GetServiceProviderByIdUseCase getServiceProviderByIdUseCase;
   @Mock private ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase;
   @Mock private RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
+  @Mock private AddNewServiceUseCase addNewServiceUseCase;
+  @Mock private SearchServiceProviderUseCase searchServiceProviderUseCase;
 
   @InjectMocks private ServiceProviderController objectUnderTest;
 
@@ -53,6 +59,7 @@ class ServiceProviderControllerTest {
         new ServiceProviderRegisterDTO()
             .city(UUID.randomUUID())
             .district(UUID.randomUUID())
+            .quarter(UUID.randomUUID())
             .phoneNumber(new PhoneNumberDTO().number("1259863").countryCode("+237"))
             .serviceType(
                 new ServiceTypeDTO()
@@ -82,95 +89,34 @@ class ServiceProviderControllerTest {
   }
 
   @Test
-  void approveServiceProvider_shouldReturnNoContent_whenSuccessful() {
+  void searchServiceProviders_shouldReturnOkWithPrioritizedProviders_whenMandatoryFieldsProvided() {
     // Given
-    UUID serviceProviderId = UUID.randomUUID();
+    UUID serviceTypeId = UUID.randomUUID();
+    UUID cityId = UUID.randomUUID();
+    UUID districtId = UUID.randomUUID();
+    UUID quarterId = UUID.randomUUID();
 
-    // When
-    // spotless:off
-    given()
-            .standaloneSetup(objectUnderTest)
-            .contentType(MediaType.APPLICATION_JSON)
-    .when()
-            .put("/service-provider/{serviceProviderId}/approve", serviceProviderId)
-    .then()
-            .statusCode(HttpStatus.NO_CONTENT.value());
-    // spotless:on
-
-    // Then
-    verify(useCaseExecutor).runCommand(any());
-  }
-
-  @Test
-  void addNewService_shouldReturnNoContent_whenSuccessful() {
-    // Given
-    var serviceTypeDTO =
-        new ServiceTypeDTO().id(UUID.randomUUID()).yearOfExperience(5).document(UUID.randomUUID());
-
-    // When
-    // spotless:off
-    given()
-            .standaloneSetup(objectUnderTest)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(serviceTypeDTO)
-    .when()
-            .put("/service-provider/add-service")
-    .then()
-            .statusCode(HttpStatus.NO_CONTENT.value());
-    // spotless:on
-
-    // Then
-    verify(useCaseExecutor).runCommand(any());
-  }
-
-  @Test
-  void getServiceProviderById_shouldReturnOkWithServiceProvider_whenFound() {
-    // Given
-    UUID serviceProviderId = UUID.randomUUID();
-    ServiceProviderView1 serviceProviderView = BDDMockito.mock(ServiceProviderView1.class);
-    ServiceProviderDTO serviceProviderDTO = new ServiceProviderDTO().id(serviceProviderId);
-
-    when(useCaseExecutor.executeQuery(any()))
-        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
-    when(getServiceProviderByIdUseCase.execute(new ServiceProviderId(serviceProviderId)))
-        .thenReturn(serviceProviderView);
-    when(restMapper.toServiceProviderDTO(serviceProviderView)).thenReturn(serviceProviderDTO);
-
-    // When
-    var result =
-        // spotless:off
-        given()
-                .standaloneSetup(objectUnderTest)
-                .contentType(MediaType.APPLICATION_JSON)
-        .when()
-                .get("/service-provider/{serviceProviderId}", serviceProviderId)
-        .then()
-                .statusCode(HttpStatus.OK.value())
-                .extract()
-                .as(ServiceProviderDTO.class);
-        // spotless:on
-
-    // Then
-    assertThat(result.getId()).isEqualTo(serviceProviderId);
-    verify(getServiceProviderByIdUseCase).execute(new ServiceProviderId(serviceProviderId));
-    verify(restMapper).toServiceProviderDTO(serviceProviderView);
-  }
-
-  @Test
-  void getAllServiceProvider_shouldReturnOkWithAllServiceProviders_whenStatusIsNotProvided() {
-    // Given
-    ServiceProviderView1 serviceProviderView = BDDMockito.mock(ServiceProviderView1.class);
     ServiceProviderDTO serviceProviderDTO = new ServiceProviderDTO().id(UUID.randomUUID());
-    var useCaseResponse =
-        new GetAllServiceProviderUseCase.Response(List.of(serviceProviderView), 1L);
+    var useCaseResponse = new SearchServiceProviderUseCase.Response(List.of(), 1L);
     var paginateDTO =
         new ServiceProviderPaginateDTO().count(1L).serviceProvider(List.of(serviceProviderDTO));
-    var command = new GetAllServiceProviderUseCase.Command(null, 10, 0);
+
+    var command =
+        new SearchServiceProviderUseCase.Command(
+            new ServiceTypeId(serviceTypeId),
+            new UserCityId(cityId),
+            new UserDistrictId(districtId),
+            new UserQuarterId(quarterId),
+            ServiceProviderStatus.APPROVED,
+            10,
+            0);
 
     when(useCaseExecutor.executeQuery(any()))
         .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
-    when(restMapper.toGetAllServiceProviderCommand(10, null, 0)).thenReturn(command);
-    when(getAllServiceProviderUseCase.execute(command)).thenReturn(useCaseResponse);
+    when(restMapper.toSearchServiceProviderCommand(
+            serviceTypeId, cityId, districtId, quarterId, 0, 10))
+        .thenReturn(command);
+    when(searchServiceProviderUseCase.execute(command)).thenReturn(useCaseResponse);
     when(restMapper.toServiceProviderPaginateDTO(useCaseResponse)).thenReturn(paginateDTO);
 
     // When
@@ -179,8 +125,14 @@ class ServiceProviderControllerTest {
         given()
                 .standaloneSetup(objectUnderTest)
                 .contentType(MediaType.APPLICATION_JSON)
+                .queryParam("serviceTypeId", serviceTypeId.toString())
+                .queryParam("cityId", cityId.toString())
+                .queryParam("districtId", districtId.toString())
+                .queryParam("quarterId", quarterId.toString())
+                .queryParam("page", "0")
+                .queryParam("limit", "10")
         .when()
-                .get("/service-provider?limit=10&page=0")
+                .get("/service-provider/search")
         .then()
                 .statusCode(HttpStatus.OK.value())
                 .extract()
@@ -190,96 +142,8 @@ class ServiceProviderControllerTest {
     // Then
     assertThat(result.getCount()).isEqualTo(1);
     assertThat(result.getServiceProvider()).hasSize(1);
-    assertThat(result.getServiceProvider().getFirst().getId())
-        .isEqualTo(serviceProviderDTO.getId());
-    verify(restMapper).toGetAllServiceProviderCommand(10, null, 0);
-    verify(getAllServiceProviderUseCase).execute(command);
-    verify(restMapper).toServiceProviderPaginateDTO(useCaseResponse);
-  }
-
-  @Test
-  void getAllServiceProvider_shouldReturnOkWithFilteredServiceProviders_whenStatusIsProvided() {
-    // Given
-    ServiceProviderView1 serviceProviderView = BDDMockito.mock(ServiceProviderView1.class);
-    ServiceProviderDTO serviceProviderDTO =
-        new ServiceProviderDTO()
-            .id(UUID.randomUUID())
-            .serviceProviderStatus(ServiceProviderStatusDTO.APPROVED);
-    var useCaseResponse =
-        new GetAllServiceProviderUseCase.Response(List.of(serviceProviderView), 1L);
-    var paginateDTO =
-        new ServiceProviderPaginateDTO().count(1L).serviceProvider(List.of(serviceProviderDTO));
-    var command = new GetAllServiceProviderUseCase.Command(ServiceProviderStatus.APPROVED, 5, 2);
-
-    when(useCaseExecutor.executeQuery(any()))
-        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
-    when(restMapper.toGetAllServiceProviderCommand(5, ServiceProviderStatusDTO.APPROVED, 2))
-        .thenReturn(command);
-    when(getAllServiceProviderUseCase.execute(command)).thenReturn(useCaseResponse);
-    when(restMapper.toServiceProviderPaginateDTO(useCaseResponse)).thenReturn(paginateDTO);
-
-    // When
-    var result =
-        // spotless:off
-        given()
-                .standaloneSetup(objectUnderTest)
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("limit", "5")
-                .queryParam("status", "APPROVED")
-                .queryParam("page", "2")
-        .when()
-                .get("/service-provider")
-        .then()
-                .statusCode(HttpStatus.OK.value())
-                .extract()
-                .as(ServiceProviderPaginateDTO.class);
-        // spotless:on
-
-    // Then
-    assertThat(result.getCount()).isEqualTo(1);
-    assertThat(result.getServiceProvider().getFirst().getServiceProviderStatus())
-        .isEqualTo(ServiceProviderStatusDTO.APPROVED);
-    verify(restMapper).toGetAllServiceProviderCommand(5, ServiceProviderStatusDTO.APPROVED, 2);
-    verify(getAllServiceProviderUseCase).execute(command);
-    verify(restMapper).toServiceProviderPaginateDTO(useCaseResponse);
-  }
-
-  @Test
-  void getAllServiceProvider_shouldReturnOkWithEmptyList_whenNoServiceProviderFound() {
-    // Given
-    var useCaseResponse = new GetAllServiceProviderUseCase.Response(List.of(), 0L);
-    var paginateDTO = new ServiceProviderPaginateDTO().count(0L).serviceProvider(List.of());
-    var command = new GetAllServiceProviderUseCase.Command(ServiceProviderStatus.REJECTED, 10, 0);
-
-    when(useCaseExecutor.executeQuery(any()))
-        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
-    when(restMapper.toGetAllServiceProviderCommand(10, ServiceProviderStatusDTO.REJECTED, 0))
-        .thenReturn(command);
-    when(getAllServiceProviderUseCase.execute(command)).thenReturn(useCaseResponse);
-    when(restMapper.toServiceProviderPaginateDTO(useCaseResponse)).thenReturn(paginateDTO);
-
-    // When
-    var result =
-        // spotless:off
-        given()
-                .standaloneSetup(objectUnderTest)
-                .contentType(MediaType.APPLICATION_JSON)
-                .queryParam("limit", "10")
-                .queryParam("status", "REJECTED")
-                .queryParam("page", "0")
-        .when()
-                .get("/service-provider")
-        .then()
-                .statusCode(HttpStatus.OK.value())
-                .extract()
-                .as(ServiceProviderPaginateDTO.class);
-        // spotless:on
-
-    // Then
-    assertThat(result.getCount()).isZero();
-    assertThat(result.getServiceProvider()).isEmpty();
-    verify(restMapper).toGetAllServiceProviderCommand(10, ServiceProviderStatusDTO.REJECTED, 0);
-    verify(getAllServiceProviderUseCase).execute(command);
-    verify(restMapper).toServiceProviderPaginateDTO(useCaseResponse);
+    verify(restMapper)
+        .toSearchServiceProviderCommand(serviceTypeId, cityId, districtId, quarterId, 0, 10);
+    verify(searchServiceProviderUseCase).execute(command);
   }
 }

@@ -32,13 +32,15 @@ class MessagingInboundMapperTest {
 
     // Then
     assertThat(command)
-        .extracting(
-            CreateNewUserUseCase.CreateNewUserCommand::id,
-            CreateNewUserUseCase.CreateNewUserCommand::firstname,
-            CreateNewUserUseCase.CreateNewUserCommand::lastname,
-            CreateNewUserUseCase.CreateNewUserCommand::email,
-            CreateNewUserUseCase.CreateNewUserCommand::countryCode,
-            CreateNewUserUseCase.CreateNewUserCommand::phoneNumber)
-        .containsExactly(id, "John", "Doe", "john.doe@example.com", "237", "699999999");
+        .isNotNull()
+        .satisfies(
+            c -> {
+              assertThat(c.id()).isEqualTo(id);
+              assertThat(c.firstname()).isEqualTo("John");
+              assertThat(c.lastname()).isEqualTo("Doe");
+              assertThat(c.email()).isEqualTo("john.doe@example.com");
+              assertThat(c.countryCode()).isEqualTo("237");
+              assertThat(c.phoneNumber()).isEqualTo("699999999");
+            });
   }
 }

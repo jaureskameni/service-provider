@@ -16,6 +16,7 @@ public class GetAllServiceProviderUseCase {
 
   public Response execute(Command command) {
     var pagination = new PaginationFetchRequest(command.limit(), command.page());
+
     if (command.status() == null) {
       return toResponse(serviceProviderRepository.loadAllAsView1(pagination));
     }

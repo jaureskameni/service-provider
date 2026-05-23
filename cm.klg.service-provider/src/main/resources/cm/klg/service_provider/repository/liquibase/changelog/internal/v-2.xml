@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-21:1" author="kameni.nguematcha">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="t_service_provider"
+					columnName="c_quarter" />
+			</not>
+			<not>
+				<uniqueConstraintExists
+					tableName="t_service_provider"
+					constraintName="uq_service_provider_phone_number" />
+			</not>
+			<not>
+				<indexExists tableName="t_service_provider"
+					indexName="idx_service_provider_search" />
+			</not>
+			<not>
+				<indexExists tableName="t_user_service"
+					indexName="idx_user_service_type" />
+			</not>
+		</preConditions>
+		<addColumn tableName="t_service_provider">
+			<column name="c_quarter" type="varchar(36)" />
+		</addColumn>
+		<addUniqueConstraint
+			tableName="t_service_provider" columnNames="c_phone_number"
+			constraintName="uq_service_provider_phone_number" />
+		<createIndex tableName="t_service_provider"
+			indexName="idx_service_provider_search">
+			<column name="c_status" />
+			<column name="c_city" />
+			<column name="c_district" />
+			<column name="c_quarter" />
+			<column name="c_created_at" />
+		</createIndex>
+		<createIndex tableName="t_user_service"
+			indexName="idx_user_service_type">
+			<column name="c_service_type_id" />
+		</createIndex>
+	</changeSet>
+</databaseChangeLog>

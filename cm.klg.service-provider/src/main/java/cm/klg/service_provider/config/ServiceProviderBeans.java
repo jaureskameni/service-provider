@@ -3,13 +3,17 @@ package cm.klg.service_provider.config;
 import cm.klg.common.base.config.TransactionBeansProvider;
 import cm.klg.common.base.transaction.DomainToHttpExceptionTranslator;
 import cm.klg.service_provider.adapter.rest.inbound.DefaultDomainToHttpExceptionTranslator;
+import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
+import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
+import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -46,13 +50,28 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new ApproveServiceProviderRequestUseCase(serviceProviderRepository);
+      ServiceProviderRepository serviceProviderRepository,
+      UserRepository userRepository,
+      DomainEventPublisher domainEventPublisher) {
+    return new ApproveServiceProviderRequestUseCase(
+        serviceProviderRepository, userRepository, domainEventPublisher);
   }
 
   @Bean
   public RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new RejectServiceProviderRequestUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public GetAllServiceTypesUseCase getAllServiceTypesUseCase(
+      ServiceTypeRepository serviceTypeRepository) {
+    return new GetAllServiceTypesUseCase(serviceTypeRepository);
+  }
+
+  @Bean
+  public SearchServiceProviderUseCase searchServiceProviderUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new SearchServiceProviderUseCase(serviceProviderRepository);
   }
 }

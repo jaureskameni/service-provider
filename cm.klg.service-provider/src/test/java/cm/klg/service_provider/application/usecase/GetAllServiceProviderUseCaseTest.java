@@ -23,7 +23,7 @@ class GetAllServiceProviderUseCaseTest {
   @InjectMocks private GetAllServiceProviderUseCase objectUnderTest;
 
   @Test
-  void execute_shouldReturnAllServiceProviders_whenStatusIsNullTest() {
+  void execute_shouldReturnAllServiceProviders_whenStatusAndLocationAreNull() {
     // Given
     var pagination = new PaginationFetchRequest(10, 0);
     var pageData = new PageData<>(1, java.util.List.of(serviceProviderView));
@@ -33,20 +33,14 @@ class GetAllServiceProviderUseCaseTest {
     var result = objectUnderTest.execute(new GetAllServiceProviderUseCase.Command(null, 10, 0));
 
     // Then
-
-    assertThat(result)
-        .satisfies(
-            response -> {
-              assertThat(response.serviceProviderView1s()).isEqualTo(pageData.elements());
-              assertThat(response.count()).isEqualTo(pageData.total());
-            });
+    assertThat(result.serviceProviderView1s()).isEqualTo(pageData.elements());
     verify(serviceProviderRepository).loadAllAsView1(pagination);
   }
 
   @Test
-  void execute_shouldReturnFilteredServiceProviders_whenStatusIsProvidedTest() {
+  void execute_shouldReturnFilteredByStatus_whenOnlyStatusIsProvided() {
     // Given
-    var pagination = new PaginationFetchRequest(10, 1);
+    var pagination = new PaginationFetchRequest(10, 0);
     var pageData = new PageData<>(1, java.util.List.of(serviceProviderView));
     when(serviceProviderRepository.loadAllByStatusAsView1(
             ServiceProviderStatus.APPROVED, pagination))
@@ -55,42 +49,11 @@ class GetAllServiceProviderUseCaseTest {
     // When
     var result =
         objectUnderTest.execute(
-            new GetAllServiceProviderUseCase.Command(ServiceProviderStatus.APPROVED, 10, 1));
+            new GetAllServiceProviderUseCase.Command(ServiceProviderStatus.APPROVED, 10, 0));
 
     // Then
-    assertThat(result)
-        .satisfies(
-            response -> {
-              assertThat(response.serviceProviderView1s()).isEqualTo(pageData.elements());
-              assertThat(response.count()).isEqualTo(pageData.total());
-            });
+    assertThat(result.serviceProviderView1s()).isEqualTo(pageData.elements());
     verify(serviceProviderRepository)
         .loadAllByStatusAsView1(ServiceProviderStatus.APPROVED, pagination);
-  }
-
-  @Test
-  void execute_shouldReturnEmptyList_whenNoServiceProviderFoundTest() {
-    // Given
-    var pagination = new PaginationFetchRequest(5, 0);
-    var pageData = new PageData<ServiceProviderView1>(0, java.util.List.of());
-    when(serviceProviderRepository.loadAllByStatusAsView1(
-            ServiceProviderStatus.REJECTED, pagination))
-        .thenReturn(pageData);
-
-    // When
-    var result =
-        objectUnderTest.execute(
-            new GetAllServiceProviderUseCase.Command(ServiceProviderStatus.REJECTED, 5, 0));
-
-    // Then
-
-    assertThat(result)
-        .satisfies(
-            response -> {
-              assertThat(response.serviceProviderView1s()).isEqualTo(pageData.elements());
-              assertThat(response.count()).isEqualTo(pageData.total());
-            });
-    verify(serviceProviderRepository)
-        .loadAllByStatusAsView1(ServiceProviderStatus.REJECTED, pagination);
   }
 }

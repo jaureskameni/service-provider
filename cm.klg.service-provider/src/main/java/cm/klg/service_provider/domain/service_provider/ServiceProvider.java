@@ -5,7 +5,9 @@ import static cm.klg.service_provider.domain.service_provider.ServiceProviderSta
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderApprovedEvent;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
+import cm.klg.service_provider.domain.user.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +19,7 @@ import org.jspecify.annotations.Nullable;
 public class ServiceProvider {
   private ServiceProviderId id;
   private UserId userId;
-  private UserCityId city;
-  private UserDistrictId district;
+  private ProviderLocation location;
   private PhoneNumber phoneNumber;
   private ServiceProviderStatus status;
   @Nullable private UserId approvedBy;
@@ -36,8 +37,7 @@ public class ServiceProvider {
       List<UserService> userServices) {
     this.id = id;
     this.userId = userId;
-    this.city = contact.city();
-    this.district = contact.district();
+    this.location = contact.location();
     this.phoneNumber = contact.phoneNumber();
     this.status = review.status();
     this.approvedBy = review.approvedBy();
@@ -49,14 +49,13 @@ public class ServiceProvider {
 
   public static ServiceProvider of(
       UserId userId,
-      UserCityId city,
-      UserDistrictId districtId,
+      ProviderLocation location,
       PhoneNumber phoneNumber,
       List<UserService> userServices) {
     return new ServiceProvider(
         ServiceProviderId.generate(),
         userId,
-        new ProviderContact(city, districtId, phoneNumber),
+        new ProviderContact(location, phoneNumber),
         new ProviderReview(PENDING, null, null),
         new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
         userServices);
@@ -74,6 +73,12 @@ public class ServiceProvider {
 
   public void addUserService(
       ServiceTypeId serviceTypeId, YearOfExperience yearOfExperience, UserDocument document) {
+    boolean alreadyProvided =
+        this.userServices.stream()
+            .anyMatch(userService -> Objects.equals(userService.getServiceTypeId(), serviceTypeId));
+    if (alreadyProvided) {
+      throw new ServiceProviderAlreadyProvidesServiceException();
+    }
     UserService userService = UserService.of(this.id, serviceTypeId, yearOfExperience, document);
     this.userServices.add(userService);
   }
@@ -84,7 +89,7 @@ public class ServiceProvider {
 
   public void approve(UserId userId) {
     if (!Objects.equals(this.status, ServiceProviderStatus.PENDING)) {
-      return;
+      throw new InvalidServiceProviderStatusTransitionException();
     }
     this.status = ServiceProviderStatus.APPROVED;
     this.approvedBy = userId;
@@ -93,10 +98,14 @@ public class ServiceProvider {
 
   public void reject(UserId userId) {
     if (!Objects.equals(this.status, ServiceProviderStatus.PENDING)) {
-      return;
+      throw new InvalidServiceProviderStatusTransitionException();
     }
     this.status = ServiceProviderStatus.REJECTED;
     this.rejectedBy = userId;
     this.updatedAt = CreatedAt.from(LocalDateTime.now());
+  }
+
+  public ServiceProviderApprovedEvent toApprovedEvent(User user) {
+    return new ServiceProviderApprovedEvent(this.id, this.userId, user, LocalDateTime.now());
   }
 }

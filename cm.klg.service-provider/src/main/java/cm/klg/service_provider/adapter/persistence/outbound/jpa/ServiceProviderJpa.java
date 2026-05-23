@@ -43,6 +43,9 @@ public class ServiceProviderJpa extends AggregateRootEntity<UUID> {
   @Column(name = "c_district")
   private UUID district;
 
+  @Column(name = "c_quarter")
+  private UUID quarter;
+
   @Convert(converter = PhoneNumberJpaConverter.class)
   @Column(name = "c_phone_number")
   private PhoneNumberJpa phoneNumber;

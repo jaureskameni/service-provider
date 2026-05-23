@@ -3,12 +3,11 @@ package cm.klg.service_provider.application.usecase;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExistsException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderWithPhoneNumberAlreadyExistsException;
-import cm.klg.service_provider.domain.service_provider.UserCityId;
-import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserDocument;
 import cm.klg.service_provider.domain.service_provider.YearOfExperience;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
@@ -25,7 +24,7 @@ public record BecomeServiceProviderUseCase(ServiceProviderRepository serviceProv
 
     ServiceProvider serviceProvider =
         ServiceProvider.of(
-            command.userId, command.city, command.district, command.phoneNumber, new ArrayList<>());
+            command.userId, command.location, command.phoneNumber, new ArrayList<>());
 
     serviceProvider.addUserService(
         command.serviceTypeId, command.yearOfExperience, command.document);
@@ -37,8 +36,7 @@ public record BecomeServiceProviderUseCase(ServiceProviderRepository serviceProv
 
   public record BecomeServiceProviderCommand(
       UserId userId,
-      UserCityId city,
-      UserDistrictId district,
+      ProviderLocation location,
       PhoneNumber phoneNumber,
       ServiceTypeId serviceTypeId,
       YearOfExperience yearOfExperience,
