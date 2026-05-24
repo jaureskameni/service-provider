@@ -44,4 +44,27 @@
 			<column name="c_service_type_id" />
 		</createIndex>
 	</changeSet>
+	<changeSet id="UAM-22:1" author="kameni.nguematcha">
+		<createTable tableName="t_outbox_event">
+			<column autoIncrement="false" name="c_id" type="varchar(36)">
+				<constraints nullable="false" primaryKey="true"
+					primaryKeyName="pk_outbox_event" />
+			</column>
+			<column name="c_type" type="varchar(30)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_topic" type="varchar(20)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_key" type="varchar(36)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_data" type="varchar(255)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_created_at" type="timestamp">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
 </databaseChangeLog>
