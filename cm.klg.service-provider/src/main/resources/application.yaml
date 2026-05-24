@@ -31,9 +31,9 @@ spring:
       definition: "user"
     stream:
       bindings:
-        service-provider-out-0:
+        serviceProvider-out-0:
           group: "${spring.application.name}"
-          destination: "service-provider"
+          destination: "serviceProvider"
         user-in-0:
           group: "${spring.application.name}"
           destination: "user"
@@ -41,17 +41,15 @@ spring:
         binder:
           brokers: "${KAFKA_URL}"
           auto-add-partitions: true
-      output-bindings: "service-provider"
+      output-bindings: "serviceProvider"
 jk-dev:
-  client-credentials:
-    client-id: "${CLIENT_ID}"
   events-messaging:
     inbox:
       enabled: "${DOMAIN_EVENTS_MESSAGING_CONSUMER_ENABLED:true}"
       batchSize: "${SCHEDULER_EVENT_NOTIFICATION_BATCH_SIZE:1000}"
       frequency: "${SCHEDULER_EVENT_NOTIFICATION_FREQUENCY:5000}"
     outbox:
-      enabled: "${DOMAIN_EVENTS_MESSAGING_PUBLISHER_ENABLED:false}"
+      enabled: "${DOMAIN_EVENTS_MESSAGING_PUBLISHER_ENABLED:true}"
       batchSize: "${SCHEDULER_EVENT_NOTIFICATION_BATCH_SIZE:1000}"
       frequency: "${SCHEDULER_EVENT_NOTIFICATION_FREQUENCY:5000}"
 logging:
