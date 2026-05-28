@@ -13,3 +13,11 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("libs") {
+            from(files(settingsDir.resolve("../submodule/cm.klg.common.build/gradle/libs.versions.toml")))
+        }
+    }
+}
