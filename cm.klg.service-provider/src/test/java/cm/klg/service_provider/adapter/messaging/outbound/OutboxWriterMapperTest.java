@@ -41,6 +41,7 @@ class OutboxWriterMapperTest {
                 Lastname.from(lastname),
                 EmailAddress.from(email),
                 PhoneNumber.from(countryCode, number)),
+            false,
             CreatedAt.from(LocalDateTime.now().minusDays(1)));
 
     ServiceProviderApprovedEvent event =

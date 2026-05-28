@@ -40,6 +40,9 @@ public class UserJpa {
   @Column(name = "c_phone_number")
   private PhoneNumberJpa phoneNumber;
 
+  @Column(name = "c_is_service_provider")
+  private boolean isServiceProvider;
+
   @Column(name = "c_created_at")
   private LocalDateTime createdAt;
 

@@ -23,7 +23,7 @@ public class SecurityConfig {
   @Bean
   @Order(0)
   public SecurityFilterChain publicEndpoints(HttpSecurity http) throws Exception {
-    return http.securityMatcher("/users", "/service-catalog")
+    return http.securityMatcher("/service-catalog")
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .build();

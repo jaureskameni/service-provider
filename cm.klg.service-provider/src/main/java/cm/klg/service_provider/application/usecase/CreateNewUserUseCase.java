@@ -25,7 +25,7 @@ public record CreateNewUserUseCase(UserRepository userRepository) {
     UserProfile userProfile = new UserProfile(firstname, lastname, emailAddress, phoneNumber);
     User newUser =
         User.reconstitute(
-            UserId.from(command.id()), userProfile, CreatedAt.from(command.createdAt));
+            UserId.from(command.id()), userProfile, false, CreatedAt.from(command.createdAt));
 
     userRepository.insert(newUser);
   }

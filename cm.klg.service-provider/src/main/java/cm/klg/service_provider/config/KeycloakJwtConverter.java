@@ -19,7 +19,7 @@ public class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticati
   @Override
   public AbstractAuthenticationToken convert(Jwt jwt) {
     Collection<GrantedAuthority> authorities = jwtGrantedAuthoritiesConverter.convert(jwt);
-    String principalName = jwt.getClaimAsString("sub");
-    return new JwtAuthenticationToken(jwt, authorities, principalName);
+    String principal = jwt.getSubject();
+    return new JwtAuthenticationToken(jwt, authorities, principal);
   }
 }

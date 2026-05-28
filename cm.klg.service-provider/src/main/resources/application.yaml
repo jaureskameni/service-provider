@@ -31,7 +31,7 @@ spring:
       definition: "user"
     stream:
       bindings:
-        serviceProvider-out-0:
+        service-provider-out-0:
           group: "${spring.application.name}"
           destination: "serviceProvider"
         user-in-0:
@@ -55,8 +55,10 @@ jk-dev:
 logging:
   level:
     root: "INFO"
-    cm.klg.service_provider: "INFO"
-    cm: "INFO"
+    cm.klg.service_provider: "DEBUG"
     org.springframework.web: "INFO"
     org.springframework.security: "INFO"
     org.hibernate: "INFO"
+    org.springframework.boot.autoconfigure.liquibase: "DEBUG"
+    liquibase: "INFO"
+    org.hibernate.tool.schema: "DEBUG"

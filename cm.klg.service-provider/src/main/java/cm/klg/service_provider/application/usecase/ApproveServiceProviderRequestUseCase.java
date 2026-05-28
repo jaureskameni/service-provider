@@ -15,13 +15,18 @@ public class ApproveServiceProviderRequestUseCase {
   private final UserRepository userRepository;
   private final DomainEventPublisher domainEventPublisher;
 
-  public void execute(UserId userId, ServiceProviderId serviceProviderId) {
+  public void execute(UserId adminId, ServiceProviderId serviceProviderId) {
     ServiceProvider serviceProvider = serviceProviderRepository.load(serviceProviderId);
-    User providerUser = userRepository.load(serviceProvider.getUserId());
 
-    serviceProvider.approve(userId);
+    serviceProvider.approve(adminId);
 
     serviceProviderRepository.update(serviceProvider);
+
+    User providerUser = userRepository.load(serviceProvider.getUserId());
+
+    // Set the boolean flag as requested
+    providerUser.promoteToProvider();
+    userRepository.update(providerUser);
 
     domainEventPublisher.serviceProviderApprovedEvent(
         serviceProvider.toApprovedEvent(providerUser));
