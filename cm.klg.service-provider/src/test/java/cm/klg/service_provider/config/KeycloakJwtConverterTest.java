@@ -32,6 +32,25 @@ class KeycloakJwtConverterTest {
         .doesNotContain(Scopes.SERVICE_PROVIDER_REJECT);
   }
 
+  @Test
+  void convert_shouldSetPrincipalName_whenSubClaimIsPresent() {
+    // Given
+    Jwt jwt =
+        new Jwt(
+            "token",
+            Instant.now(),
+            Instant.now().plusSeconds(300),
+            Map.of("alg", "none"),
+            Map.of("sub", "user-id"));
+
+    // When
+    var result = objectUnderTest.convert(jwt);
+
+    // Then
+    assertThat(result.getName()).isEqualTo("user-id");
+    assertThat(result.getAuthorities()).isNotNull();
+  }
+
   private Jwt jwt(Map<String, Object> claims) {
     return new Jwt(
         "token", Instant.now(), Instant.now().plusSeconds(300), Map.of("alg", "none"), claims);

@@ -38,6 +38,7 @@ class UserJpaRepositoryTest {
                 Lastname.from("Doe"),
                 EmailAddress.from("john.doe@example.com"),
                 PhoneNumber.from("+237", "699999999")),
+            false,
             CreatedAt.from(LocalDateTime.now()));
     UserJpa userJpa = new UserJpa();
     when(jpaMapper.toUserJpa(user)).thenReturn(userJpa);

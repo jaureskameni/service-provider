@@ -50,6 +50,7 @@ public interface JpaMapper {
   @Mapping(target = "firstname", source = "firstname.value")
   @Mapping(target = "emailAddress", source = "email.value")
   @Mapping(target = "phoneNumber", source = "phoneNumber")
+  @Mapping(target = "serviceProvider", source = "serviceProvider")
   @Mapping(target = "createdAt", source = "createdAt.value")
   UserJpa toUserJpa(User user);
 
@@ -82,6 +83,7 @@ public interface JpaMapper {
   @Mapping(target = "firstname", source = "firstname.value")
   @Mapping(target = "emailAddress", source = "email.value")
   @Mapping(target = "phoneNumber", source = "phoneNumber")
+  @Mapping(target = "serviceProvider", source = "serviceProvider")
   @Mapping(target = "createdAt", source = "createdAt.value")
   void toUserJpa(User user, @MappingTarget UserJpa userJpa);
 
@@ -96,7 +98,10 @@ public interface JpaMapper {
             EmailAddress.from(userJpa.getEmailAddress()),
             phoneNumber);
     return User.reconstitute(
-        new UserId(userJpa.getId()), userProfile, CreatedAt.from(userJpa.getCreatedAt()));
+        new UserId(userJpa.getId()),
+        userProfile,
+        userJpa.isServiceProvider(),
+        CreatedAt.from(userJpa.getCreatedAt()));
   }
 
   @AfterMapping
@@ -267,26 +272,28 @@ public interface JpaMapper {
   }
 
   default ServiceTypeView1 toServiceTypeView1(ServiceTypeJpa serviceTypeJpa) {
-    return new ServiceTypeView1() {
-      @Override
-      public java.util.UUID getId() {
-        return serviceTypeJpa.getId();
-      }
+    return new ServiceTypeView1Impl(serviceTypeJpa);
+  }
 
-      @Override
-      public String getName() {
-        return serviceTypeJpa.getName();
-      }
+  record ServiceTypeView1Impl(ServiceTypeJpa jpa) implements ServiceTypeView1 {
+    @Override
+    public java.util.UUID getId() {
+      return jpa.getId();
+    }
 
-      @Override
-      public String getCategory() {
-        return serviceTypeJpa.getCategory();
-      }
+    @Override
+    public String getName() {
+      return jpa.getName();
+    }
 
-      @Override
-      public boolean getIsActive() {
-        return serviceTypeJpa.isActive();
-      }
-    };
+    @Override
+    public String getCategory() {
+      return jpa.getCategory();
+    }
+
+    @Override
+    public boolean getIsActive() {
+      return jpa.isActive();
+    }
   }
 }

@@ -7,4 +7,6 @@ public interface UserRepository {
   void insert(User newUser);
 
   User load(UserId userId);
+
+  void update(User user);
 }

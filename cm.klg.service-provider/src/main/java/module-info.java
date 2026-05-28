@@ -38,4 +38,5 @@ module cm.klg.service_provider.main {
   requires tools.jackson.databind;
   requires org.aspectj.weaver;
   requires io.swagger.v3.oas.models;
+  requires spring.security.oauth2.core;
 }

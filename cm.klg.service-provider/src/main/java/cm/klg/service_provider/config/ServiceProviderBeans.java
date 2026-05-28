@@ -7,11 +7,13 @@ import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
+import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import org.springframework.context.annotation.Bean;
@@ -73,5 +75,17 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   public SearchServiceProviderUseCase searchServiceProviderUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new SearchServiceProviderUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public GetServiceProviderByIdUseCase getServiceProviderByIdUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new GetServiceProviderByIdUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public AddNewServiceUseCase addNewServiceUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new AddNewServiceUseCase(serviceProviderRepository);
   }
 }

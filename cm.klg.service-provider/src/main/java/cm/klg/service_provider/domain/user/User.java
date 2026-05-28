@@ -13,18 +13,25 @@ public class User {
   private Lastname lastname;
   @Nullable private EmailAddress email;
   private PhoneNumber phoneNumber;
+  private boolean isServiceProvider;
   private CreatedAt createdAt;
 
-  public User(UserId id, UserProfile userProfile, CreatedAt createdAt) {
+  public User(UserId id, UserProfile userProfile, boolean isServiceProvider, CreatedAt createdAt) {
     this.id = id;
     this.firstname = userProfile.firstname();
     this.lastname = userProfile.lastname();
     this.email = userProfile.email();
     this.phoneNumber = userProfile.phoneNumber();
+    this.isServiceProvider = isServiceProvider;
     this.createdAt = createdAt;
   }
 
-  public static User reconstitute(UserId id, UserProfile userProfile, CreatedAt createdAt) {
-    return new User(id, userProfile, createdAt);
+  public static User reconstitute(
+      UserId id, UserProfile userProfile, boolean isServiceProvider, CreatedAt createdAt) {
+    return new User(id, userProfile, isServiceProvider, createdAt);
+  }
+
+  public void promoteToProvider() {
+    this.isServiceProvider = true;
   }
 }

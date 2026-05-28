@@ -59,7 +59,7 @@
 			<column name="c_key" type="varchar(36)">
 				<constraints nullable="false" />
 			</column>
-			<column name="c_data" type="varchar(255)">
+			<column name="c_data" type="TEXT">
 				<constraints nullable="false" />
 			</column>
 			<column name="c_created_at" type="timestamp">
@@ -67,4 +67,11 @@
 			</column>
 		</createTable>
 	</changeSet>
+	<changeSet id="SP-23:1" author="kameni.nguematcha">
+		<addColumn tableName="t_user">
+			<column name="c_is_service_provider" type="boolean"
+				defaultValueBoolean="false" />
+		</addColumn>
+	</changeSet>
+
 </databaseChangeLog>
