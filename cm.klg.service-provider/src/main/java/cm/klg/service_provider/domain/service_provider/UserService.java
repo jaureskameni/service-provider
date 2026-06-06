@@ -7,11 +7,11 @@ import lombok.Getter;
 
 @Getter
 public class UserService {
-  private ServiceProviderId serviceProviderId;
-  private ServiceTypeId serviceTypeId;
-  private YearOfExperience yearOfExperience;
-  private UserDocument userDocument;
-  private CreatedAt createdAt;
+  private final ServiceProviderId serviceProviderId;
+  private final ServiceTypeId serviceTypeId;
+  private final YearOfExperience yearOfExperience;
+  private final UserDocument userDocument;
+  private final CreatedAt createdAt;
 
   public UserService(
       ServiceProviderId serviceProviderId,

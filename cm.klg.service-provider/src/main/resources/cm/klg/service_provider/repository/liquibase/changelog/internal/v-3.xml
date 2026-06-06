@@ -22,15 +22,14 @@
 			</column>
 		</createTable>
 
-		<addUniqueConstraint
-			tableName="t_provider_client" columnNames="c_user_id, c_provider_id"
+		<addUniqueConstraint tableName="t_provider_client"
+			columnNames="c_user_id, c_provider_id"
 			constraintName="uq_provider_client_user_provider" />
 
 		<addForeignKeyConstraint
 			baseTableName="t_provider_client" baseColumnNames="c_user_id"
-			constraintName="fk_provider_client_user"
-			referencedTableName="t_user" referencedColumnNames="c_id"
-			onDelete="CASCADE" onUpdate="CASCADE" />
+			constraintName="fk_provider_client_user" referencedTableName="t_user"
+			referencedColumnNames="c_id" onDelete="CASCADE" onUpdate="CASCADE" />
 
 		<addForeignKeyConstraint
 			baseTableName="t_provider_client" baseColumnNames="c_provider_id"

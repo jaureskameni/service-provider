@@ -1,8 +1,8 @@
 package cm.klg.service_provider.adapter.messaging.inbound;
 
 import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamUserCreatedEventDTO;
-import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
+import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;

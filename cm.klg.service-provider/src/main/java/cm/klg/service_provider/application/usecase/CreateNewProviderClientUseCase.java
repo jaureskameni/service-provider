@@ -16,8 +16,5 @@ public record CreateNewProviderClientUseCase(ProviderClientRepository providerCl
     providerClientRepository.insert(ProviderClient.of(userId, providerId));
   }
 
-  public record Command(
-      ServiceProviderId providerId,
-      UserId userId,
-      CreatedAt createdAt) {}
+  public record Command(ServiceProviderId providerId, UserId userId, CreatedAt createdAt) {}
 }

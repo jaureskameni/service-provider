@@ -2,11 +2,13 @@ package cm.klg.service_provider.application.usecase;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.domain.common.PageData;
+import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
-import cm.klg.service_provider.utils.PageData;
-import cm.klg.service_provider.utils.PaginationFetchRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
@@ -21,7 +23,7 @@ public class GetAllServiceProviderUseCase {
       return toResponse(serviceProviderRepository.loadAllAsView1(pagination));
     }
     return toResponse(
-        serviceProviderRepository.loadAllByStatusAsView1(command.status(), pagination));
+        serviceProviderRepository.loadAllByStatusAsView1(Objects.requireNonNull(command.status()), pagination));
   }
 
   private static Response toResponse(PageData<? extends ServiceProviderView1> pageData) {

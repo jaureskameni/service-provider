@@ -13,7 +13,8 @@ public class ProviderClientJpaRepository implements ProviderClientRepository {
 
   @Override
   public boolean existsByUserIdAndProviderId(UserId userId, ServiceProviderId providerId) {
-    return providerClientSpringRepository.existsByUserIdAndProviderId(userId.value(), providerId.value());
+    return providerClientSpringRepository.existsByUserIdAndProviderId(
+        userId.value(), providerId.value());
   }
 
   @Override

@@ -1,4 +1,4 @@
-package cm.klg.service_provider.utils;
+package cm.klg.service_provider.domain.common;
 
 import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderDataException;
 import lombok.Builder;
