@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.domain.common.PageData;
+import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
-import cm.klg.service_provider.utils.PageData;
-import cm.klg.service_provider.utils.PaginationFetchRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

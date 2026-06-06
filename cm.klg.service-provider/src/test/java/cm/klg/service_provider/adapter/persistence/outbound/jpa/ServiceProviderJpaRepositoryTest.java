@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
 import cm.klg.service_provider.domain.service_provider.ProviderContact;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
@@ -17,7 +18,6 @@ import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
-import cm.klg.service_provider.utils.PaginationFetchRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
