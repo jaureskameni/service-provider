@@ -3,6 +3,8 @@ package cm.klg.service_provider.application.outbound;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.common.PageData;
+import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -10,8 +12,6 @@ import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
-import cm.klg.service_provider.utils.PageData;
-import cm.klg.service_provider.utils.PaginationFetchRequest;
 import org.jspecify.annotations.Nullable;
 
 public interface ServiceProviderRepository {

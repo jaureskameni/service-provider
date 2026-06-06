@@ -4,12 +4,14 @@ import cm.klg.common.base.config.TransactionBeansProvider;
 import cm.klg.common.base.transaction.DomainToHttpExceptionTranslator;
 import cm.klg.service_provider.adapter.rest.inbound.DefaultDomainToHttpExceptionTranslator;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
+import cm.klg.service_provider.application.outbound.ProviderClientRepository;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
@@ -87,5 +89,11 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   public AddNewServiceUseCase addNewServiceUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new AddNewServiceUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public CreateNewProviderClientUseCase createNewProviderClientUseCase(
+      ProviderClientRepository providerClientRepository) {
+    return new CreateNewProviderClientUseCase(providerClientRepository);
   }
 }

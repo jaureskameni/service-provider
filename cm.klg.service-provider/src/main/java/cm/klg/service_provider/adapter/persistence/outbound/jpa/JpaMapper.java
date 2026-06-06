@@ -6,6 +6,7 @@ import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeVie
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.provider_client.ProviderClient;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
 import cm.klg.service_provider.domain.service_provider.ProviderContact;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
@@ -76,6 +77,13 @@ public interface JpaMapper {
   @Mapping(target = "yearOfExperience", source = "yearOfExperience.value")
   @Mapping(target = "createdAt", source = "createdAt.value")
   UserServiceJpa toUserServiceJpa(UserService userService);
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "id", source = "id.value")
+  @Mapping(target = "userId", source = "userId.value")
+  @Mapping(target = "providerId", source = "providerId.value")
+  @Mapping(target = "createdAt", source = "createdAt.value")
+  ProviderClientJpa toJpa(ProviderClient providerClient);
 
   @BeanMapping(ignoreByDefault = true)
   @Mapping(target = "id", source = "id.value")

@@ -8,12 +8,12 @@ import org.jspecify.annotations.Nullable;
 
 @Getter
 public class ServiceType {
-  ServiceTypeId serviceTypeId;
-  ServiceTypeName serviceTypeName;
-  ServiceCategory serviceCategory;
-  boolean isActive;
-  private CreatedAt createdAt;
-  @Nullable private CreatedAt updated;
+  private final ServiceTypeId serviceTypeId;
+  private final ServiceTypeName serviceTypeName;
+  private final ServiceCategory serviceCategory;
+  private final boolean isActive;
+  private final CreatedAt createdAt;
+  @Nullable private final CreatedAt updated;
 
   public ServiceType(
       ServiceTypeId serviceTypeId,

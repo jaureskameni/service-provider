@@ -37,6 +37,9 @@ spring:
         user-in-0:
           group: "${spring.application.name}"
           destination: "user"
+        service-request-in-0:
+          group: "${spring.application.name}"
+          destination: "serviceRequest"
       kafka:
         binder:
           brokers: "${KAFKA_URL}"
