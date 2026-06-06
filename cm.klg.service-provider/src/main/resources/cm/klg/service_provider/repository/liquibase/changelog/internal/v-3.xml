@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-24:1" author="kameni.nguematcha">
+		<createTable tableName="t_provider_client">
+			<column name="c_id" type="varchar(36)">
+				<constraints nullable="false" primaryKey="true"
+					primaryKeyName="pk_provider_client" />
+			</column>
+			<column name="c_user_id" type="varchar(36)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_provider_id" type="varchar(36)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_created_at" type="datetime">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+
+		<addUniqueConstraint
+			tableName="t_provider_client" columnNames="c_user_id, c_provider_id"
+			constraintName="uq_provider_client_user_provider" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_provider_client" baseColumnNames="c_user_id"
+			constraintName="fk_provider_client_user"
+			referencedTableName="t_user" referencedColumnNames="c_id"
+			onDelete="CASCADE" onUpdate="CASCADE" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_provider_client" baseColumnNames="c_provider_id"
+			constraintName="fk_provider_client_provider"
+			referencedTableName="t_service_provider" referencedColumnNames="c_id"
+			onDelete="CASCADE" onUpdate="CASCADE" />
+	</changeSet>
+
+</databaseChangeLog>

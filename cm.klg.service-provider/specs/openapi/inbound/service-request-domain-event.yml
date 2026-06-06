@@ -1,0 +1,122 @@
+---
+openapi: "3.0.3"
+info:
+  title: "SERVICE-PROVIDER-EVENT"
+  description: "Service Provider Request Events"
+  version: "2026-W23"
+servers:
+- url: "https"
+- url: "http"
+paths: {}
+components:
+  schemas:
+    DomainEventType:
+      type: "string"
+      enum:
+      - "SERVICE_REQUEST_CREATED"
+      - "SERVICE_REQUEST_ACCEPTED"
+      - "SERVICE_REQUEST_REJECTED"
+      - "SERVICE_REQUEST_CANCELLED"
+    ServiceRequestStatus:
+      type: "string"
+      enum:
+      - "PENDING"
+      - "ACCEPTED"
+      - "REJECTED"
+      - "CANCELLED"
+    ServiceRequestCreatedEventDTO:
+      type: "object"
+      required:
+      - "id"
+      - "userId"
+      - "providerId"
+      - "serviceTypeId"
+      - "status"
+      - "createdAt"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        providerId:
+          type: "string"
+          format: "uuid"
+        serviceTypeId:
+          type: "string"
+          format: "uuid"
+        title:
+          type: "string"
+        description:
+          type: "string"
+        location:
+          type: "string"
+        status:
+          $ref: "#/components/schemas/ServiceRequestStatus"
+        createdAt:
+          type: "string"
+          format: "date-time"
+    ServiceRequestAcceptedEventDTO:
+      type: "object"
+      required:
+      - "id"
+      - "userId"
+      - "providerId"
+      - "acceptedAt"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        providerId:
+          type: "string"
+          format: "uuid"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+    ServiceRequestRejectedEventDTO:
+      type: "object"
+      required:
+      - "id"
+      - "userId"
+      - "providerId"
+      - "reason"
+      - "rejectedAt"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        providerId:
+          type: "string"
+          format: "uuid"
+        reason:
+          type: "string"
+        rejectedAt:
+          type: "string"
+          format: "date-time"
+    ServiceRequestCancelledEventDTO:
+      type: "object"
+      required:
+      - "id"
+      - "userId"
+      - "providerId"
+      - "cancelledAt"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        providerId:
+          type: "string"
+          format: "uuid"
+        cancelledAt:
+          type: "string"
+          format: "date-time"

@@ -74,7 +74,6 @@ dependencies {
 // ── Configuration OpenAPI ────────────────────────────────────────────────────
 val applySpringBootOpenApi: ((Any) -> Unit) by extra
 val deleteBeforeGenerate: ((Task, String) -> Unit) by extra
-val onlyIfStale: ((Any, String) -> Unit) by extra
 
 val mainOpenApiGenerate by tasks.registering(GenerateTask::class) {
     applySpringBootOpenApi(this)
@@ -86,7 +85,6 @@ val mainOpenApiGenerate by tasks.registering(GenerateTask::class) {
 
     val genDir = "${outputDir.get()}/src/main/java/cm/klg/generated/service/provider/adapter/rest/inbound"
     deleteBeforeGenerate(this, genDir)
-    onlyIfStale(this, genDir)
 }
 
 val mainDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
@@ -97,7 +95,6 @@ val mainDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
 
     val genDir = "${outputDir.get()}/src/main/java/cm/klg/generated/service/provider/adapter/messaging/outbound"
     deleteBeforeGenerate(this, genDir)
-    onlyIfStale(this, genDir)
 }
 
 val uamDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
@@ -109,7 +106,16 @@ val uamDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
 
     val genDir = "${outputDir.get()}/src/main/java/cm/klg/generated/service/provider/adapter/messaging/inbound"
     deleteBeforeGenerate(this, genDir)
-    onlyIfStale(this, genDir)
+}
+
+val serviceRequestDomainEventsOpenApiGenerate by tasks.registering(GenerateTask::class) {
+    applySpringBootOpenApi(this)
+    inputSpec.set("$rootDir/specs/openapi/inbound/service-request-domain-event.yml")
+    templateDir.set("$rootDir/specs/openapi/templates/spring-boot")
+    modelNamePrefix.set("SR")
+
+    val genDir = "${outputDir.get()}/src/main/java/cm/klg/generated/service_request/adapter/messaging/inbound"
+    deleteBeforeGenerate(this, genDir)
 }
 
 tasks.compileJava {
@@ -117,5 +123,6 @@ tasks.compileJava {
         mainOpenApiGenerate,
         mainDomainEventsOpenApiGenerate,
         uamDomainEventsOpenApiGenerate,
+        serviceRequestDomainEventsOpenApiGenerate,
     )
 }

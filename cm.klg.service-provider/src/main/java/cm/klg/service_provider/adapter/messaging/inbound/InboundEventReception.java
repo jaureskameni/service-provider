@@ -16,4 +16,9 @@ public class InboundEventReception {
   public Consumer<Message<byte[]>> user() {
     return eventReception::receive;
   }
+
+  @Bean
+  public Consumer<Message<byte[]>> serviceRequest() {
+    return eventReception::receive;
+  }
 }

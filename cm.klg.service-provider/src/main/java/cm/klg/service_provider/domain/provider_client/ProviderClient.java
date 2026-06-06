@@ -1,0 +1,27 @@
+package cm.klg.service_provider.domain.provider_client;
+
+import cm.klg.common.base.domain.CreatedAt;
+import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+
+@Getter
+public class ProviderClient {
+    private final ProviderClientId id;
+    private final UserId userId;
+    private final ServiceProviderId providerId;
+    private final CreatedAt createdAt;
+
+    public ProviderClient(ProviderClientId id, UserId userId, ServiceProviderId providerId, CreatedAt createdAt) {
+        this.id = id;
+        this.userId = userId;
+        this.providerId = providerId;
+        this.createdAt = createdAt;
+    }
+
+    public static ProviderClient of(UserId userId, ServiceProviderId providerId) {
+        return new ProviderClient(ProviderClientId.generate(), userId, providerId, new CreatedAt(LocalDateTime.now()));
+    }
+}
