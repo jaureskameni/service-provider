@@ -12,7 +12,9 @@ import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExistsException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderWithPhoneNumberAlreadyExistsException;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserDocument;
@@ -21,6 +23,7 @@ import cm.klg.service_provider.domain.service_provider.YearOfExperience;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.ArrayList;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -71,5 +74,48 @@ class BecomeServiceProviderUseCaseTest {
       verify(mockServiceProvider).addUserService(serviceTypeId, yearOfExperience, document);
       verify(serviceProviderRepository).insert(mockServiceProvider);
     }
+  }
+
+  @Test
+  void execute_shouldThrowException_whenServiceProviderAlreadyExistsForUser() {
+    // Given
+    UserId userId = new UserId(UUID.randomUUID());
+    BecomeServiceProviderCommand command =
+        new BecomeServiceProviderCommand(
+            userId,
+            mock(ProviderLocation.class),
+            new PhoneNumber("+237", "678901234"),
+            new ServiceTypeId(UUID.randomUUID()),
+            new YearOfExperience(5),
+            new UserDocument(UUID.randomUUID()));
+
+    when(serviceProviderRepository.existsByUserId(userId)).thenReturn(true);
+
+    // When & Then
+    Assertions.assertThrows(
+        ServiceProviderAlreadyExistsException.class, () -> objectUnderTest.execute(command));
+  }
+
+  @Test
+  void execute_shouldThrowException_whenPhoneNumberAlreadyExists() {
+    // Given
+    UserId userId = new UserId(UUID.randomUUID());
+    PhoneNumber phoneNumber = new PhoneNumber("+237", "678901234");
+    BecomeServiceProviderCommand command =
+        new BecomeServiceProviderCommand(
+            userId,
+            mock(ProviderLocation.class),
+            phoneNumber,
+            new ServiceTypeId(UUID.randomUUID()),
+            new YearOfExperience(5),
+            new UserDocument(UUID.randomUUID()));
+
+    when(serviceProviderRepository.existsByUserId(userId)).thenReturn(false);
+    when(serviceProviderRepository.existsByPhoneNumber(phoneNumber)).thenReturn(true);
+
+    // When & Then
+    Assertions.assertThrows(
+        ServiceProviderWithPhoneNumberAlreadyExistsException.class,
+        () -> objectUnderTest.execute(command));
   }
 }

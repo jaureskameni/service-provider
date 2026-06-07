@@ -5,7 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -23,8 +23,8 @@ class GetServiceProviderByIdUseCaseTest {
   void execute_shouldReturnServiceProviderView_whenFound() {
     // Given
     var serviceProviderId = new ServiceProviderId(UUID.randomUUID());
-    var serviceProviderView = mock(ServiceProviderView1.class);
-    when(serviceProviderRepository.loadAsView1(serviceProviderId)).thenReturn(serviceProviderView);
+    var serviceProviderView = mock(ServiceProviderView.class);
+    when(serviceProviderRepository.loadAsView(serviceProviderId)).thenReturn(serviceProviderView);
 
     // When
     var result = objectUnderTest.execute(serviceProviderId);

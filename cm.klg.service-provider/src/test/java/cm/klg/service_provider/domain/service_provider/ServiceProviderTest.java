@@ -82,7 +82,8 @@ class ServiceProviderTest {
   }
 
   @Test
-  void addUserService_shouldThrow_whenServiceIsAlreadyProvided() {
+  void getUserServices_shouldReturnUnmodifiableList() {
+    // Given
     ServiceProvider serviceProvider =
         ServiceProvider.of(
             new UserId(UUID.randomUUID()),
@@ -92,17 +93,17 @@ class ServiceProviderTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             new ArrayList<>());
-    var serviceTypeId =
-        new cm.klg.service_provider.domain.service_type.ServiceTypeId(UUID.randomUUID());
 
-    serviceProvider.addUserService(
-        serviceTypeId, new YearOfExperience(3), new UserDocument(UUID.randomUUID()));
+    var userServices = serviceProvider.getUserServices();
+    var dummyService =
+        UserService.of(
+            serviceProvider.getId(),
+            new cm.klg.service_provider.domain.service_type.ServiceTypeId(UUID.randomUUID()),
+            new YearOfExperience(2),
+            new UserDocument(UUID.randomUUID()));
 
-    var yearOfExperience = new YearOfExperience(4);
-    var userDocument = new UserDocument(UUID.randomUUID());
-
-    assertThatThrownBy(
-            () -> serviceProvider.addUserService(serviceTypeId, yearOfExperience, userDocument))
-        .isInstanceOf(ServiceProviderAlreadyProvidesServiceException.class);
+    // When & Then
+    assertThatThrownBy(() -> userServices.add(dummyService))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 }

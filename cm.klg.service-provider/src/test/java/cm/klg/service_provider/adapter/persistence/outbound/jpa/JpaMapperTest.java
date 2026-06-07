@@ -94,14 +94,14 @@ class JpaMapperTest {
 
     // Then
     assertThat(view).isNotNull();
-    assertThat(view.getId()).isEqualTo(jpa.getId());
-    assertThat(view.getName()).isEqualTo(jpa.getName());
-    assertThat(view.getCategory()).isEqualTo(jpa.getCategory());
+    assertThat(view.id()).isEqualTo(jpa.getId());
+    assertThat(view.name()).isEqualTo(jpa.getName());
+    assertThat(view.category()).isEqualTo(jpa.getCategory());
     assertThat(view.isActive()).isTrue();
   }
 
   @Test
-  void toServiceProviderView1_shouldMapAllFieldsCorrectly() {
+  void toServiceProviderView_shouldMapAllFieldsCorrectly() {
     // Given
     UUID spId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
@@ -139,18 +139,18 @@ class JpaMapperTest {
     stJpa.setCategory("MAINTENANCE");
 
     // When
-    var view = objectUnderTest.toServiceProviderView1(spJpa, userJpa, List.of(stJpa));
+    var view = objectUnderTest.toServiceProviderView(spJpa, userJpa, List.of(stJpa));
 
     // Then
-    assertThat(view.getId()).isEqualTo(spId);
-    assertThat(view.getUserId()).isEqualTo(userId);
-    assertThat(view.getFirstname()).isEqualTo("John");
-    assertThat(view.getLastname()).isEqualTo("Doe");
-    assertThat(view.getPhoneNumber().number()).isEqualTo("678901234");
-    assertThat(view.getServices()).hasSize(1);
-    var serviceView = view.getServices().get(0);
-    assertThat(serviceView.getServiceType().getName()).isEqualTo("Plumber");
-    assertThat(serviceView.getYearOfExperience()).isEqualTo(5);
-    assertThat(serviceView.getDocument()).isEqualTo(docId);
+    assertThat(view.id()).isEqualTo(spId);
+    assertThat(view.userId()).isEqualTo(userId);
+    assertThat(view.firstname()).isEqualTo("John");
+    assertThat(view.lastname()).isEqualTo("Doe");
+    assertThat(view.phoneNumber().number()).isEqualTo("678901234");
+    assertThat(view.services()).hasSize(1);
+    var serviceView = view.services().get(0);
+    assertThat(serviceView.serviceType().name()).isEqualTo("Plumber");
+    assertThat(serviceView.yearOfExperience()).isEqualTo(5);
+    assertThat(serviceView.document()).isEqualTo(docId);
   }
 }

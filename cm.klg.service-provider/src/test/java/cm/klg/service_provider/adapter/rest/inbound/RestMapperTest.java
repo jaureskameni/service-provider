@@ -9,7 +9,7 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProvide
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
-import cm.klg.service_provider.application.usecase.GetPublicServiceProviderProfileUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import cm.klg.service_provider.application.views.UserServiceView;
@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -96,20 +95,10 @@ class RestMapperTest {
   @Test
   void toGroupedServiceCatalogDTOs_shouldGroupByCategory() {
     // Given
-    ServiceTypeView view1 = Mockito.mock(ServiceTypeView.class);
-    Mockito.when(view1.getId()).thenReturn(UUID.randomUUID());
-    Mockito.when(view1.getName()).thenReturn("Plumber");
-    Mockito.when(view1.getCategory()).thenReturn("MAINTENANCE");
-
-    ServiceTypeView view2 = Mockito.mock(ServiceTypeView.class);
-    Mockito.when(view2.getId()).thenReturn(UUID.randomUUID());
-    Mockito.when(view2.getName()).thenReturn("Electrician");
-    Mockito.when(view2.getCategory()).thenReturn("MAINTENANCE");
-
-    ServiceTypeView view3 = Mockito.mock(ServiceTypeView.class);
-    Mockito.when(view3.getId()).thenReturn(UUID.randomUUID());
-    Mockito.when(view3.getName()).thenReturn("Nanny");
-    Mockito.when(view3.getCategory()).thenReturn("HOME_SERVICES");
+    ServiceTypeView view1 = new ServiceTypeView(UUID.randomUUID(), "Plumber", "MAINTENANCE", true);
+    ServiceTypeView view2 =
+        new ServiceTypeView(UUID.randomUUID(), "Electrician", "MAINTENANCE", true);
+    ServiceTypeView view3 = new ServiceTypeView(UUID.randomUUID(), "Nanny", "HOME_SERVICES", true);
 
     // When
     Map<String, List<ServiceCatalogItemDTO>> result =
@@ -133,30 +122,28 @@ class RestMapperTest {
     LocalDateTime createdAt = LocalDateTime.now();
     LocalDateTime updatedAt = createdAt.plusDays(1);
 
-    ServiceTypeView serviceTypeView = Mockito.mock(ServiceTypeView.class);
-    Mockito.when(serviceTypeView.getName()).thenReturn("Plumber");
-    Mockito.when(serviceTypeView.getCategory()).thenReturn("MAINTENANCE");
+    ServiceTypeView serviceTypeView =
+        new ServiceTypeView(UUID.randomUUID(), "Plumber", "MAINTENANCE", true);
 
-    UserServiceView userServiceView = Mockito.mock(UserServiceView.class);
-    Mockito.when(userServiceView.getServiceType()).thenReturn(serviceTypeView);
-    Mockito.when(userServiceView.getYearOfExperience()).thenReturn(5);
-    Mockito.when(userServiceView.getDocument()).thenReturn(documentId);
-    Mockito.when(userServiceView.getCreatedAt()).thenReturn(createdAt);
+    UserServiceView userServiceView =
+        new UserServiceView(serviceTypeView, 5, documentId, createdAt);
 
-    ServiceProviderView serviceProviderView = Mockito.mock(ServiceProviderView.class);
-    Mockito.when(serviceProviderView.getId()).thenReturn(serviceProviderId);
-    Mockito.when(serviceProviderView.getUserId()).thenReturn(userId);
-    Mockito.when(serviceProviderView.getFirstname()).thenReturn("John");
-    Mockito.when(serviceProviderView.getLastname()).thenReturn("Doe");
-    Mockito.when(serviceProviderView.getCityId()).thenReturn(cityId);
-    Mockito.when(serviceProviderView.getDistrictId()).thenReturn(districtId);
-    Mockito.when(serviceProviderView.getQuarterId()).thenReturn(quarterId);
-    Mockito.when(serviceProviderView.getPhoneNumber())
-        .thenReturn(PhoneNumber.from("+237", "678901234"));
-    Mockito.when(serviceProviderView.getStatus()).thenReturn("APPROVED");
-    Mockito.when(serviceProviderView.getCreatedAt()).thenReturn(createdAt);
-    Mockito.when(serviceProviderView.getUpdatedAt()).thenReturn(updatedAt);
-    Mockito.when(serviceProviderView.getServices()).thenReturn(List.of(userServiceView));
+    ServiceProviderView serviceProviderView =
+        new ServiceProviderView(
+            serviceProviderId,
+            userId,
+            "John",
+            "Doe",
+            cityId,
+            districtId,
+            quarterId,
+            null,
+            null,
+            PhoneNumber.from("+237", "678901234"),
+            "APPROVED",
+            createdAt,
+            updatedAt,
+            List.of(userServiceView));
 
     // When
     var result = objectUnderTest.toServiceProviderDTO(serviceProviderView);
@@ -185,15 +172,27 @@ class RestMapperTest {
   @Test
   void toPublicServiceProviderProfileDTO_shouldIncludePhoneNumber_whenUserIsClient() {
     // Given
-    var profile = Mockito.mock(ServiceProviderView.class);
-    Mockito.when(profile.getPhoneNumber()).thenReturn(PhoneNumber.from("+237", "678901234"));
-    Mockito.when(profile.getStatus()).thenReturn("APPROVED");
-    Mockito.when(profile.getServices()).thenReturn(List.of());
+    var profile =
+        new ServiceProviderView(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "John",
+            "Doe",
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            null,
+            null,
+            null,
+            PhoneNumber.from("+237", "678901234"),
+            "APPROVED",
+            LocalDateTime.now(),
+            null,
+            List.of());
 
-    var response = new GetPublicServiceProviderProfileUseCase.Response(profile, true);
+    var response = new GetServiceProviderProfileUseCase.Response(profile, true);
 
     // When
-    var result = objectUnderTest.toPublicServiceProviderProfileDTO(response);
+    var result = objectUnderTest.toServiceProviderProfileDTO(response);
 
     // Then
     assertThat(result.getPhoneNumber()).isNotNull();
@@ -203,15 +202,27 @@ class RestMapperTest {
   @Test
   void toPublicServiceProviderProfileDTO_shouldHidePhoneNumber_whenUserIsNotClient() {
     // Given
-    var profile = Mockito.mock(ServiceProviderView.class);
-    Mockito.when(profile.getPhoneNumber()).thenReturn(PhoneNumber.from("+237", "678901234"));
-    Mockito.when(profile.getStatus()).thenReturn("APPROVED");
-    Mockito.when(profile.getServices()).thenReturn(List.of());
+    var profile =
+        new ServiceProviderView(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "John",
+            "Doe",
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            null,
+            null,
+            null,
+            PhoneNumber.from("+237", "678901234"),
+            "APPROVED",
+            LocalDateTime.now(),
+            null,
+            List.of());
 
-    var response = new GetPublicServiceProviderProfileUseCase.Response(profile, false);
+    var response = new GetServiceProviderProfileUseCase.Response(profile, false);
 
     // When
-    var result = objectUnderTest.toPublicServiceProviderProfileDTO(response);
+    var result = objectUnderTest.toServiceProviderProfileDTO(response);
 
     // Then
     assertThat(result.getPhoneNumber()).isNull();

@@ -5,7 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.common.PageData;
 import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class GetAllServiceProviderUseCaseTest {
 
   @Mock private ServiceProviderRepository serviceProviderRepository;
-  @Mock private ServiceProviderView1 serviceProviderView;
+  @Mock private ServiceProviderView serviceProviderView;
   @InjectMocks private GetAllServiceProviderUseCase objectUnderTest;
 
   @Test
@@ -27,14 +27,14 @@ class GetAllServiceProviderUseCaseTest {
     // Given
     var pagination = new PaginationFetchRequest(10, 0);
     var pageData = new PageData<>(1, java.util.List.of(serviceProviderView));
-    when(serviceProviderRepository.loadAllAsView1(pagination)).thenReturn(pageData);
+    when(serviceProviderRepository.loadAllAsView(pagination)).thenReturn(pageData);
 
     // When
     var result = objectUnderTest.execute(new GetAllServiceProviderUseCase.Command(null, 10, 0));
 
     // Then
-    assertThat(result.serviceProviderView1s()).isEqualTo(pageData.elements());
-    verify(serviceProviderRepository).loadAllAsView1(pagination);
+    assertThat(result.serviceProviderViews()).isEqualTo(pageData.elements());
+    verify(serviceProviderRepository).loadAllAsView(pagination);
   }
 
   @Test
@@ -42,7 +42,7 @@ class GetAllServiceProviderUseCaseTest {
     // Given
     var pagination = new PaginationFetchRequest(10, 0);
     var pageData = new PageData<>(1, java.util.List.of(serviceProviderView));
-    when(serviceProviderRepository.loadAllByStatusAsView1(
+    when(serviceProviderRepository.loadAllByStatusAsView(
             ServiceProviderStatus.APPROVED, pagination))
         .thenReturn(pageData);
 
@@ -52,8 +52,8 @@ class GetAllServiceProviderUseCaseTest {
             new GetAllServiceProviderUseCase.Command(ServiceProviderStatus.APPROVED, 10, 0));
 
     // Then
-    assertThat(result.serviceProviderView1s()).isEqualTo(pageData.elements());
+    assertThat(result.serviceProviderViews()).isEqualTo(pageData.elements());
     verify(serviceProviderRepository)
-        .loadAllByStatusAsView1(ServiceProviderStatus.APPROVED, pagination);
+        .loadAllByStatusAsView(ServiceProviderStatus.APPROVED, pagination);
   }
 }

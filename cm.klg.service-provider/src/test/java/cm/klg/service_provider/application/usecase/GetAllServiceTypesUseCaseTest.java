@@ -5,7 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
-import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView1;
+import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,20 +17,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class GetAllServiceTypesUseCaseTest {
 
   @Mock private ServiceTypeRepository serviceTypeRepository;
-  @Mock private ServiceTypeView1 serviceTypeView;
+  @Mock private ServiceTypeView serviceTypeView;
   @InjectMocks private GetAllServiceTypesUseCase objectUnderTest;
 
   @Test
   void execute_shouldReturnAllServiceTypeViews() {
     // Given
-    List<ServiceTypeView1> views = List.of(serviceTypeView);
-    when(serviceTypeRepository.loadAllAsView1()).thenReturn(views);
+    List<ServiceTypeView> views = List.of(serviceTypeView);
+    when(serviceTypeRepository.loadAllAsView()).thenReturn(views);
 
     // When
     var result = objectUnderTest.execute();
 
     // Then
     assertThat(result).isEqualTo(views);
-    verify(serviceTypeRepository).loadAllAsView1();
+    verify(serviceTypeRepository).loadAllAsView();
   }
 }

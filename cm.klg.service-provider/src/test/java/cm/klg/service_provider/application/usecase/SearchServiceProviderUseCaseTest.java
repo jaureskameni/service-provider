@@ -5,7 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.common.PageData;
 import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -25,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SearchServiceProviderUseCaseTest {
 
   @Mock private ServiceProviderRepository serviceProviderRepository;
-  @Mock private ServiceProviderView1 serviceProviderView;
+  @Mock private ServiceProviderView serviceProviderView;
   @InjectMocks private SearchServiceProviderUseCase objectUnderTest;
 
   @Test
@@ -56,7 +56,7 @@ class SearchServiceProviderUseCaseTest {
     var result = objectUnderTest.execute(command);
 
     // Then
-    assertThat(result.serviceProviderView1s()).isEqualTo(pageData.elements());
+    assertThat(result.serviceProviderViews()).isEqualTo(pageData.elements());
     assertThat(result.count()).isEqualTo(pageData.total());
 
     verify(serviceProviderRepository)
@@ -89,7 +89,7 @@ class SearchServiceProviderUseCaseTest {
     var result = objectUnderTest.execute(command);
 
     // Then
-    assertThat(result.serviceProviderView1s()).isEqualTo(pageData.elements());
+    assertThat(result.serviceProviderViews()).isEqualTo(pageData.elements());
 
     verify(serviceProviderRepository)
         .searchByLocationAndStatus(serviceTypeId, cityId, null, null, null, pagination);

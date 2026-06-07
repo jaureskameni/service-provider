@@ -1,11 +1,10 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView1;
+import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,20 +20,21 @@ class ServiceProviderServiceTypeJpaRepositoryTest {
   @InjectMocks private ServiceProviderServiceTypeJpaRepository objectUnderTest;
 
   @Test
-  void loadAllAsView1_shouldReturnMappedViews() {
+  void loadAllAsView_shouldReturnMappedViews() {
     // Given
     ServiceTypeJpa jpa = new ServiceTypeJpa();
-    ServiceTypeView1 view = mock(ServiceTypeView1.class);
+    ServiceTypeView view =
+        new ServiceTypeView(java.util.UUID.randomUUID(), "name", "category", true);
 
     when(serviceTypeSpringRepository.findAll()).thenReturn(List.of(jpa));
-    when(jpaMapper.toServiceTypeView1(jpa)).thenReturn(view);
+    when(jpaMapper.toServiceTypeView(jpa)).thenReturn(view);
 
     // When
-    List<ServiceTypeView1> result = objectUnderTest.loadAllAsView1();
+    List<ServiceTypeView> result = objectUnderTest.loadAllAsView();
 
     // Then
     assertThat(result).hasSize(1).contains(view);
     verify(serviceTypeSpringRepository).findAll();
-    verify(jpaMapper).toServiceTypeView1(jpa);
+    verify(jpaMapper).toServiceTypeView(jpa);
   }
 }
