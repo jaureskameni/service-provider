@@ -25,8 +25,15 @@ public class JpaSpringBeans {
 
   @Bean
   public ServiceProviderRepository serviceProviderRepository(
-      ServiceProviderSpringRepository serviceProviderSpringRepository, JpaMapper jpaMapper) {
-    return new ServiceProviderJpaRepository(serviceProviderSpringRepository, jpaMapper);
+      ServiceProviderSpringRepository serviceProviderSpringRepository,
+      UserSpringRepository userSpringRepository,
+      ServiceTypeSpringRepository serviceTypeSpringRepository,
+      JpaMapper jpaMapper) {
+    return new ServiceProviderJpaRepository(
+        serviceProviderSpringRepository,
+        userSpringRepository,
+        serviceTypeSpringRepository,
+        jpaMapper);
   }
 
   @Bean

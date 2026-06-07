@@ -3,13 +3,13 @@ package cm.klg.service_provider.application.views;
 import java.util.UUID;
 
 public interface ServiceTypeViews {
-  interface ServiceTypeView1 {
+  interface ServiceTypeView {
     UUID getId();
 
     String getName();
 
     String getCategory();
 
-    boolean getIsActive();
+    boolean isActive();
   }
 }

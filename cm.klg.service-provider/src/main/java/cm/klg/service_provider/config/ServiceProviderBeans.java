@@ -1,8 +1,5 @@
 package cm.klg.service_provider.config;
 
-import cm.klg.common.base.config.TransactionBeansProvider;
-import cm.klg.common.base.transaction.DomainToHttpExceptionTranslator;
-import cm.klg.service_provider.adapter.rest.inbound.DefaultDomainToHttpExceptionTranslator;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ProviderClientRepository;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
@@ -15,30 +12,15 @@ import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCas
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
+import cm.klg.service_provider.application.usecase.GetPublicServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 @Configuration
-public class ServiceProviderBeans implements TransactionBeansProvider {
-
-  @Bean
-  public JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter() {
-    return new JwtGrantedAuthoritiesConverter();
-  }
-
-  @Bean
-  public DomainToHttpExceptionTranslator domainToHttpExceptionTranslator() {
-    return new DefaultDomainToHttpExceptionTranslator();
-  }
-
-  @Bean
-  public CreateNewUserUseCase createNewUserUseCase(UserRepository userRepository) {
-    return new CreateNewUserUseCase(userRepository);
-  }
+public class ServiceProviderBeans {
 
   @Bean
   public BecomeServiceProviderUseCase becomeServiceProviderUseCase(
@@ -50,6 +32,18 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   public GetAllServiceProviderUseCase getAllServiceProviderUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new GetAllServiceProviderUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public SearchServiceProviderUseCase searchServiceProviderUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new SearchServiceProviderUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public GetServiceProviderByIdUseCase getServiceProviderByIdUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new GetServiceProviderByIdUseCase(serviceProviderRepository);
   }
 
   @Bean
@@ -68,32 +62,33 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   }
 
   @Bean
-  public GetAllServiceTypesUseCase getAllServiceTypesUseCase(
-      ServiceTypeRepository serviceTypeRepository) {
-    return new GetAllServiceTypesUseCase(serviceTypeRepository);
-  }
-
-  @Bean
-  public SearchServiceProviderUseCase searchServiceProviderUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new SearchServiceProviderUseCase(serviceProviderRepository);
-  }
-
-  @Bean
-  public GetServiceProviderByIdUseCase getServiceProviderByIdUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new GetServiceProviderByIdUseCase(serviceProviderRepository);
-  }
-
-  @Bean
   public AddNewServiceUseCase addNewServiceUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new AddNewServiceUseCase(serviceProviderRepository);
   }
 
   @Bean
+  public CreateNewUserUseCase createNewUserUseCase(UserRepository userRepository) {
+    return new CreateNewUserUseCase(userRepository);
+  }
+
+  @Bean
+  public GetAllServiceTypesUseCase getAllServiceTypesUseCase(
+      ServiceTypeRepository serviceTypeRepository) {
+    return new GetAllServiceTypesUseCase(serviceTypeRepository);
+  }
+
+  @Bean
   public CreateNewProviderClientUseCase createNewProviderClientUseCase(
       ProviderClientRepository providerClientRepository) {
     return new CreateNewProviderClientUseCase(providerClientRepository);
+  }
+
+  @Bean
+  public GetPublicServiceProviderProfileUseCase getPublicServiceProviderProfileUseCase(
+      ServiceProviderRepository serviceProviderRepository,
+      ProviderClientRepository providerClientRepository) {
+    return new GetPublicServiceProviderProfileUseCase(
+        serviceProviderRepository, providerClientRepository);
   }
 }

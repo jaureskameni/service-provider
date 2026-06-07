@@ -20,6 +20,11 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
   Optional<ServiceProviderJpa> findAggregateById(UUID serviceProviderId);
 
   @Query(
+      "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices WHERE s.id ="
+          + " :serviceProviderId AND s.status = :status")
+  Optional<ServiceProviderJpa> findAggregateByIdAndStatus(UUID serviceProviderId, String status);
+
+  @Query(
       "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices WHERE s.userId ="
           + " :userId")
   Optional<ServiceProviderJpa> findAggregateByUserId(UUID userId);

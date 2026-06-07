@@ -2,7 +2,7 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.common.base.entity.PhoneNumberJpa;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.common.PageData;
@@ -28,7 +28,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 public record ServiceProviderJpaRepository(
-    ServiceProviderSpringRepository serviceProviderSpringRepository, JpaMapper jpaMapper)
+    ServiceProviderSpringRepository serviceProviderSpringRepository,
+    UserSpringRepository userSpringRepository,
+    ServiceTypeSpringRepository serviceTypeSpringRepository,
+    JpaMapper jpaMapper)
     implements ServiceProviderRepository {
   @Override
   public void insert(@NonNull ServiceProvider serviceProvider) {
@@ -47,7 +50,8 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
-  public ServiceProvider load(@NonNull ServiceProviderId serviceProviderId) {
+  public ServiceProvider load(@NonNull ServiceProviderId serviceProviderId)
+      throws ServiceProviderNotFoundException {
     return serviceProviderSpringRepository
         .findAggregateById(serviceProviderId.value())
         .map(jpaMapper::toServiceProviderDomain)
@@ -55,7 +59,8 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
-  public ServiceProvider loadByUserId(@NonNull UserId userId) {
+  public ServiceProvider loadByUserId(@NonNull UserId userId)
+      throws ServiceProviderNotFoundException {
     return serviceProviderSpringRepository
         .findAggregateByUserId(userId.value())
         .map(jpaMapper::toServiceProviderDomain)
@@ -74,13 +79,13 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
-  public PageData<ServiceProviderView1> loadAllAsView1(@NonNull PaginationFetchRequest pagination) {
+  public PageData<ServiceProviderView> loadAllAsView1(@NonNull PaginationFetchRequest pagination) {
     Pageable pageable = PageRequest.of(pagination.pageIndex(), pagination.limit());
     return toPageData(serviceProviderSpringRepository.findAllIds(pageable));
   }
 
   @Override
-  public PageData<ServiceProviderView1> loadAllByStatusAsView1(
+  public PageData<ServiceProviderView> loadAllByStatusAsView1(
       @NonNull ServiceProviderStatus serviceProviderStatus,
       @NonNull PaginationFetchRequest pagination) {
     Pageable pageable = PageRequest.of(pagination.pageIndex(), pagination.limit());
@@ -89,7 +94,7 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
-  public PageData<ServiceProviderView1> searchByLocationAndStatus(
+  public PageData<ServiceProviderView> searchByLocationAndStatus(
       @NonNull ServiceTypeId serviceTypeId,
       @NonNull UserCityId cityId,
       @Nullable UserDistrictId districtId,
@@ -108,26 +113,67 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
-  public ServiceProviderView1 loadAsView1(@NonNull ServiceProviderId serviceProviderId) {
+  public ServiceProviderView loadAsView1(@NonNull ServiceProviderId serviceProviderId) {
     return serviceProviderSpringRepository
         .findAggregateById(serviceProviderId.value())
-        .map(jpaMapper::toServiceProviderView1)
+        .map(this::toView1)
         .orElseThrow(ServiceProviderNotFoundException::new);
   }
 
-  private PageData<ServiceProviderView1> toPageData(Page<UUID> serviceProviderIds) {
+  @Override
+  @Nullable
+  public ServiceProviderView loadProfile(@NonNull ServiceProviderId serviceProviderId)
+      throws ServiceProviderNotFoundException {
+    return serviceProviderSpringRepository
+        .findAggregateByIdAndStatus(
+            serviceProviderId.value(), ServiceProviderStatus.APPROVED.name())
+        .map(this::toView1)
+        .orElseThrow(ServiceProviderNotFoundException::new);
+  }
+
+  private PageData<ServiceProviderView> toPageData(Page<UUID> serviceProviderIds) {
     if (serviceProviderIds.isEmpty()) {
       return new PageData<>(serviceProviderIds.getTotalElements(), Collections.emptyList());
     }
     List<UUID> ids = serviceProviderIds.getContent();
+    List<ServiceProviderJpa> serviceProviders =
+        serviceProviderSpringRepository.findAllAggregatesByIdIn(ids);
+
+    List<UUID> userIds = serviceProviders.stream().map(ServiceProviderJpa::getUserId).toList();
+    Map<UUID, UserJpa> usersById =
+        userSpringRepository.findAllById(userIds).stream()
+            .collect(Collectors.toMap(UserJpa::getId, Function.identity()));
+
+    List<UUID> serviceTypeIds =
+        serviceProviders.stream()
+            .flatMap(sp -> sp.getUserServices().stream())
+            .map(us -> us.getId().getServiceTypeId())
+            .distinct()
+            .toList();
+    List<ServiceTypeJpa> serviceTypes = serviceTypeSpringRepository.findAllById(serviceTypeIds);
+
     Map<UUID, ServiceProviderJpa> serviceProvidersById =
-        serviceProviderSpringRepository.findAllAggregatesByIdIn(ids).stream()
+        serviceProviders.stream()
             .collect(Collectors.toMap(ServiceProviderJpa::getId, Function.identity()));
+
     return new PageData<>(
         serviceProviderIds.getTotalElements(),
         ids.stream()
             .map(serviceProvidersById::get)
-            .map(jpaMapper::toServiceProviderView1)
+            .map(
+                sp ->
+                    jpaMapper.toServiceProviderView1(
+                        sp, usersById.get(sp.getUserId()), serviceTypes))
             .toList());
+  }
+
+  private ServiceProviderView toView1(ServiceProviderJpa serviceProviderJpa) {
+    UserJpa userJpa = userSpringRepository.findById(serviceProviderJpa.getUserId()).orElseThrow();
+    List<ServiceTypeJpa> serviceTypeJpas =
+        serviceTypeSpringRepository.findAllById(
+            serviceProviderJpa.getUserServices().stream()
+                .map(us -> us.getId().getServiceTypeId())
+                .toList());
+    return jpaMapper.toServiceProviderView1(serviceProviderJpa, userJpa, serviceTypeJpas);
   }
 }

@@ -7,20 +7,24 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 public interface ServiceProviderViews {
-  interface ServiceProviderView1 {
+  interface ServiceProviderView {
     UUID getId();
 
     UUID getUserId();
+
+    String getFirstname();
+
+    String getLastname();
 
     UUID getCityId();
 
     UUID getDistrictId();
 
-    UUID getQuarterId();
+    @Nullable UUID getQuarterId();
 
-    @Nullable UUID getApproveBy();
+    @Nullable UUID getApprovedBy();
 
-    @Nullable UUID getRejectBy();
+    @Nullable UUID getRejectedBy();
 
     PhoneNumber getPhoneNumber();
 
@@ -30,6 +34,6 @@ public interface ServiceProviderViews {
 
     LocalDateTime getUpdatedAt();
 
-    List<UserServiceView> getUserService();
+    List<UserServiceView> getServices();
   }
 }

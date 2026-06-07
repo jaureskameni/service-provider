@@ -4,13 +4,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public interface UserServiceView {
-  UUID getServiceProviderId();
-
-  UUID getServiceTypeId();
+  ServiceTypeViews.ServiceTypeView getServiceType();
 
   int getYearOfExperience();
 
-  UUID getUserDocument();
+  UUID getDocument();
 
   LocalDateTime getCreatedAt();
 }

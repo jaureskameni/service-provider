@@ -1,7 +1,7 @@
 package cm.klg.service_provider.application.usecase;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.common.PageData;
 import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -9,7 +9,6 @@ import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -19,20 +18,19 @@ public class SearchServiceProviderUseCase {
   private final ServiceProviderRepository serviceProviderRepository;
 
   public Response execute(Command command) {
-    var pagination = new PaginationFetchRequest(command.limit(), command.page());
+    PaginationFetchRequest pagination =
+        new PaginationFetchRequest(command.pageIndex(), command.limit());
 
-    return toResponse(
+    PageData<ServiceProviderView> result =
         serviceProviderRepository.searchByLocationAndStatus(
             command.serviceTypeId(),
             command.cityId(),
             command.districtId(),
             command.quarterId(),
             command.status(),
-            pagination));
-  }
+            pagination);
 
-  private static Response toResponse(PageData<? extends ServiceProviderView1> pageData) {
-    return new Response(new ArrayList<>(pageData.elements()), pageData.total());
+    return new Response(result.total(), result.elements());
   }
 
   public record Command(
@@ -41,8 +39,8 @@ public class SearchServiceProviderUseCase {
       @Nullable UserDistrictId districtId,
       @Nullable UserQuarterId quarterId,
       ServiceProviderStatus status,
-      Integer limit,
-      Integer page) {}
+      int limit,
+      int pageIndex) {}
 
-  public record Response(List<ServiceProviderView1> serviceProviderView1s, long count) {}
+  public record Response(long count, List<ServiceProviderView> serviceProviderView1s) {}
 }
