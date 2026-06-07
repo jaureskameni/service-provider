@@ -12,8 +12,8 @@ import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCas
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
-import cm.klg.service_provider.application.usecase.GetPublicServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import org.springframework.context.annotation.Bean;
@@ -85,10 +85,10 @@ public class ServiceProviderBeans {
   }
 
   @Bean
-  public GetPublicServiceProviderProfileUseCase getPublicServiceProviderProfileUseCase(
+  public GetServiceProviderProfileUseCase getPublicServiceProviderProfileUseCase(
       ServiceProviderRepository serviceProviderRepository,
       ProviderClientRepository providerClientRepository) {
-    return new GetPublicServiceProviderProfileUseCase(
+    return new GetServiceProviderProfileUseCase(
         serviceProviderRepository, providerClientRepository);
   }
 }

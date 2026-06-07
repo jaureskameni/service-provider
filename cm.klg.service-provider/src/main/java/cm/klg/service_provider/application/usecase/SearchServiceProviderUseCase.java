@@ -19,7 +19,7 @@ public class SearchServiceProviderUseCase {
 
   public Response execute(Command command) {
     PaginationFetchRequest pagination =
-        new PaginationFetchRequest(command.pageIndex(), command.limit());
+        new PaginationFetchRequest(command.limit(), command.pageIndex());
 
     PageData<ServiceProviderView> result =
         serviceProviderRepository.searchByLocationAndStatus(
@@ -42,5 +42,5 @@ public class SearchServiceProviderUseCase {
       int limit,
       int pageIndex) {}
 
-  public record Response(long count, List<ServiceProviderView> serviceProviderView1s) {}
+  public record Response(long count, List<ServiceProviderView> serviceProviderViews) {}
 }

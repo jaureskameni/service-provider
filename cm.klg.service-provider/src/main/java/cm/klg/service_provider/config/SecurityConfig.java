@@ -60,7 +60,8 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(
                         HttpMethod.GET,
-                            "/service-provider/{serviceProviderId:%s}/profile".formatted(REGEX_UUID_WITH_DELIMITER))
+                        "/service-provider/{serviceProviderId:%s}/profile"
+                            .formatted(REGEX_UUID_WITH_DELIMITER))
                     .authenticated()
                     .anyRequest()
                     .denyAll())

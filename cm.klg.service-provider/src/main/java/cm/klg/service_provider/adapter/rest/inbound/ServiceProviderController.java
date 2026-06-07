@@ -16,8 +16,8 @@ import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
-import cm.klg.service_provider.application.usecase.GetPublicServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
@@ -36,7 +36,7 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final BecomeServiceProviderUseCase becomeServiceProviderUseCase;
   private final GetAllServiceProviderUseCase getAllServiceProviderUseCase;
   private final GetServiceProviderByIdUseCase getServiceProviderByIdUseCase;
-  private final GetPublicServiceProviderProfileUseCase getPublicServiceProviderProfileUseCase;
+  private final GetServiceProviderProfileUseCase getServiceProviderProfileUseCase;
   private final ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase;
   private final RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
   private final AddNewServiceUseCase addNewServiceUseCase;
@@ -113,7 +113,7 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
     var result =
         useCaseExecutor.executeQuery(
             () ->
-                getPublicServiceProviderProfileUseCase.execute(
+                getServiceProviderProfileUseCase.execute(
                     new ServiceProviderId(serviceProviderId), currentUserId));
     return ResponseEntity.status(OK).body(restMapper.toServiceProviderProfileDTO(result));
   }

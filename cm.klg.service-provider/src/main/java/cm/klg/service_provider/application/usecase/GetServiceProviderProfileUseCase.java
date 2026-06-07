@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
 @RequiredArgsConstructor
-public class GetPublicServiceProviderProfileUseCase {
+public class GetServiceProviderProfileUseCase {
   private final ServiceProviderRepository serviceProviderRepository;
   private final ProviderClientRepository providerClientRepository;
 

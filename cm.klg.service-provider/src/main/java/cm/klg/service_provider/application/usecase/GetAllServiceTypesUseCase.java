@@ -10,6 +10,6 @@ public class GetAllServiceTypesUseCase {
   private final ServiceTypeRepository serviceTypeRepository;
 
   public List<ServiceTypeView> execute() {
-    return serviceTypeRepository.loadAllAsView1();
+    return serviceTypeRepository.loadAllAsView();
   }
 }

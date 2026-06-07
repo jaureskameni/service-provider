@@ -11,7 +11,7 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
-import cm.klg.service_provider.application.usecase.GetPublicServiceProviderProfileUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import cm.klg.service_provider.application.views.ServiceProviderViews;
 import cm.klg.service_provider.application.views.ServiceTypeViews;
@@ -105,7 +105,7 @@ public interface RestMapper {
     return new ServiceProviderPaginateDTO()
         .count(pageData.count())
         .serviceProvider(
-            pageData.serviceProviderView1s().stream().map(this::toServiceProviderDTO).toList());
+            pageData.serviceProviderViews().stream().map(this::toServiceProviderDTO).toList());
   }
 
   default ServiceProviderPaginateDTO toServiceProviderPaginateDTO(
@@ -114,11 +114,11 @@ public interface RestMapper {
     return new ServiceProviderPaginateDTO()
         .count(pageData.count())
         .serviceProvider(
-            pageData.serviceProviderView1s().stream().map(this::toServiceProviderDTO).toList());
+            pageData.serviceProviderViews().stream().map(this::toServiceProviderDTO).toList());
   }
 
   default ServiceProviderDTO toServiceProviderProfileDTO(
-      GetPublicServiceProviderProfileUseCase.Response response) {
+      GetServiceProviderProfileUseCase.Response response) {
     var dto = toServiceProviderDTO(response.profile());
     if (!response.isClient()) {
       dto.setPhoneNumber(null);
@@ -130,19 +130,18 @@ public interface RestMapper {
       ServiceProviderViews.ServiceProviderView serviceProviderView) {
 
     return new ServiceProviderDTO()
-        .id(serviceProviderView.getId())
-        .userId(serviceProviderView.getUserId())
-        .firstname(serviceProviderView.getFirstname())
-        .lastname(serviceProviderView.getLastname())
-        .city(serviceProviderView.getCityId())
-        .district(serviceProviderView.getDistrictId())
-        .quarter(serviceProviderView.getQuarterId())
-        .createdAt(serviceProviderView.getCreatedAt())
-        .updatedAt(serviceProviderView.getUpdatedAt())
-        .phoneNumber(toPhoneNumberDTO(serviceProviderView.getPhoneNumber()))
-        .serviceProviderStatus(ServiceProviderStatusDTO.fromValue(serviceProviderView.getStatus()))
-        .userServices(
-            serviceProviderView.getServices().stream().map(this::toUserServiceDTO).toList());
+        .id(serviceProviderView.id())
+        .userId(serviceProviderView.userId())
+        .firstname(serviceProviderView.firstname())
+        .lastname(serviceProviderView.lastname())
+        .city(serviceProviderView.cityId())
+        .district(serviceProviderView.districtId())
+        .quarter(serviceProviderView.quarterId())
+        .createdAt(serviceProviderView.createdAt())
+        .updatedAt(serviceProviderView.updatedAt())
+        .phoneNumber(toPhoneNumberDTO(serviceProviderView.phoneNumber()))
+        .serviceProviderStatus(ServiceProviderStatusDTO.fromValue(serviceProviderView.status()))
+        .userServices(serviceProviderView.services().stream().map(this::toUserServiceDTO).toList());
   }
 
   default PhoneNumberDTO toPhoneNumberDTO(PhoneNumber phoneNumber) {
@@ -151,10 +150,10 @@ public interface RestMapper {
 
   default UserServiceDTO toUserServiceDTO(UserServiceView userServiceView) {
     return new UserServiceDTO()
-        .serviceName(userServiceView.getServiceType().getName())
-        .serviceCategory(userServiceView.getServiceType().getCategory())
-        .yearOfExperience(userServiceView.getYearOfExperience())
-        .document(userServiceView.getDocument())
-        .createdAt(userServiceView.getCreatedAt());
+        .serviceName(userServiceView.serviceType().name())
+        .serviceCategory(userServiceView.serviceType().category())
+        .yearOfExperience(userServiceView.yearOfExperience())
+        .document(userServiceView.document())
+        .createdAt(userServiceView.createdAt());
   }
 }

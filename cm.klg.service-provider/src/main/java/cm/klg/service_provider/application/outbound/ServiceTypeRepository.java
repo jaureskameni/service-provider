@@ -4,5 +4,5 @@ import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeVie
 import java.util.List;
 
 public interface ServiceTypeRepository {
-  List<ServiceTypeView> loadAllAsView1();
+  List<ServiceTypeView> loadAllAsView();
 }

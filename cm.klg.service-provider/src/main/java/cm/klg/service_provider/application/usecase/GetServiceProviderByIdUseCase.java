@@ -10,6 +10,6 @@ public class GetServiceProviderByIdUseCase {
   private final ServiceProviderRepository serviceProviderRepository;
 
   public ServiceProviderView execute(ServiceProviderId serviceProviderId) {
-    return serviceProviderRepository.loadAsView1(serviceProviderId);
+    return serviceProviderRepository.loadAsView(serviceProviderId);
   }
 }

@@ -28,9 +28,9 @@ public interface ServiceProviderRepository {
 
   void update(ServiceProvider serviceProvider);
 
-  PageData<ServiceProviderView> loadAllAsView1(PaginationFetchRequest pagination);
+  PageData<ServiceProviderView> loadAllAsView(PaginationFetchRequest pagination);
 
-  PageData<ServiceProviderView> loadAllByStatusAsView1(
+  PageData<ServiceProviderView> loadAllByStatusAsView(
       ServiceProviderStatus serviceProviderStatus, PaginationFetchRequest pagination);
 
   PageData<ServiceProviderView> searchByLocationAndStatus(
@@ -41,7 +41,7 @@ public interface ServiceProviderRepository {
       ServiceProviderStatus status,
       PaginationFetchRequest pagination);
 
-  ServiceProviderView loadAsView1(ServiceProviderId serviceProviderId)
+  ServiceProviderView loadAsView(ServiceProviderId serviceProviderId)
       throws ServiceProviderNotFoundException;
 
   ServiceProviderView loadProfile(ServiceProviderId serviceProviderId)

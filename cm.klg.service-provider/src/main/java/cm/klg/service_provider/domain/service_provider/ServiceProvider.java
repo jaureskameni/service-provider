@@ -26,7 +26,7 @@ public class ServiceProvider {
   @Nullable private UserId rejectedBy;
   private CreatedAt createdAt;
   @Nullable private CreatedAt updatedAt;
-  private List<UserService> userServices = new ArrayList<>();
+  private final List<UserService> userServices = new ArrayList<>();
 
   public ServiceProvider(
       ServiceProviderId id,
@@ -44,7 +44,11 @@ public class ServiceProvider {
     this.rejectedBy = review.rejectedBy();
     this.updatedAt = audit.updatedAt();
     this.createdAt = audit.createdAt();
-    this.userServices = userServices;
+    this.userServices.addAll(userServices);
+  }
+
+  public List<UserService> getUserServices() {
+    return java.util.Collections.unmodifiableList(userServices);
   }
 
   public static ServiceProvider of(

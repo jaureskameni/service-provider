@@ -11,7 +11,7 @@ public class ServiceProviderServiceTypeJpaRepository implements ServiceTypeRepos
   private final JpaMapper jpaMapper;
 
   @Override
-  public List<ServiceTypeView> loadAllAsView1() {
+  public List<ServiceTypeView> loadAllAsView() {
     return serviceTypeSpringRepository.findAll().stream()
         .map(jpaMapper::toServiceTypeView)
         .toList();
