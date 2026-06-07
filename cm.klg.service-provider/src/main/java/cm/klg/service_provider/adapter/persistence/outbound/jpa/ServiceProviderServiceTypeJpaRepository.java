@@ -1,17 +1,19 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
-import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView1;
+import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
-public record ServiceProviderServiceTypeJpaRepository(
-    ServiceTypeSpringRepository serviceTypeSpringRepository, JpaMapper jpaMapper)
-    implements ServiceTypeRepository {
+@RequiredArgsConstructor
+public class ServiceProviderServiceTypeJpaRepository implements ServiceTypeRepository {
+  private final ServiceTypeSpringRepository serviceTypeSpringRepository;
+  private final JpaMapper jpaMapper;
 
   @Override
-  public List<ServiceTypeView1> loadAllAsView1() {
+  public List<ServiceTypeView> loadAllAsView() {
     return serviceTypeSpringRepository.findAll().stream()
-        .map(jpaMapper::toServiceTypeView1)
+        .map(jpaMapper::toServiceTypeView)
         .toList();
   }
 }

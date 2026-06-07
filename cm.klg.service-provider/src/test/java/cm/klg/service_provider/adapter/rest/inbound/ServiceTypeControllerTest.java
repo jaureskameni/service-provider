@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceCatalogItemDTO;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
-import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView1;
+import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,7 +33,7 @@ class ServiceTypeControllerTest {
   @Test
   void getServiceCatalog_shouldReturnOkWithGroupedServices() {
     // Given
-    List<ServiceTypeView1> views = List.of();
+    List<ServiceTypeView> views = List.of();
     var catalogItem =
         new ServiceCatalogItemDTO().id(UUID.randomUUID()).name("Plumber").category("MAINTENANCE");
     Map<String, List<ServiceCatalogItemDTO>> groupedCatalog =

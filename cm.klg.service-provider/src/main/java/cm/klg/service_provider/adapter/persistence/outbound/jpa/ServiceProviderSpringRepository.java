@@ -20,6 +20,11 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
   Optional<ServiceProviderJpa> findAggregateById(UUID serviceProviderId);
 
   @Query(
+      "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices WHERE s.id ="
+          + " :serviceProviderId AND s.status = :status")
+  Optional<ServiceProviderJpa> findAggregateByIdAndStatus(UUID serviceProviderId, String status);
+
+  @Query(
       "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices WHERE s.userId ="
           + " :userId")
   Optional<ServiceProviderJpa> findAggregateByUserId(UUID userId);
@@ -38,10 +43,10 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
 
   @Query(
       value =
-          "SELECT DISTINCT s.id FROM ServiceProviderJpa s JOIN s.userServices us "
+          "SELECT s.id FROM ServiceProviderJpa s JOIN s.userServices us "
               + "WHERE s.city = :cityId "
               + "AND us.id.serviceTypeId = :serviceTypeId "
-              + "AND (s.status = :status) "
+              + "AND s.status = :status "
               + "ORDER BY "
               + "CASE "
               + "  WHEN s.quarter = :quarterId THEN 1 "
@@ -49,9 +54,9 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
               + "  ELSE 3 "
               + "END ASC, s.createdAt DESC",
       countQuery =
-          "SELECT COUNT(DISTINCT s) FROM ServiceProviderJpa s JOIN s.userServices us WHERE"
-              + " s.city = :cityId AND us.id.serviceTypeId = :serviceTypeId AND (:status IS NULL"
-              + " OR s.status = :status)")
+          "SELECT COUNT(s) FROM ServiceProviderJpa s JOIN s.userServices us WHERE"
+              + " s.city = :cityId AND us.id.serviceTypeId = :serviceTypeId AND"
+              + " s.status = :status")
   Page<UUID> searchIdsByLocationAndStatus(
       UUID serviceTypeId,
       UUID cityId,

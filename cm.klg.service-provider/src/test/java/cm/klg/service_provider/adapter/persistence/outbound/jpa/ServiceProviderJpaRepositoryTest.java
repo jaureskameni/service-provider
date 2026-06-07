@@ -1,9 +1,9 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.common.PaginationFetchRequest;
@@ -21,6 +21,7 @@ import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,8 @@ import org.springframework.data.domain.PageRequest;
 class ServiceProviderJpaRepositoryTest {
 
   @Mock private ServiceProviderSpringRepository serviceProviderSpringRepository;
+  @Mock private UserSpringRepository userSpringRepository;
+  @Mock private ServiceTypeSpringRepository serviceTypeSpringRepository;
   @Mock private JpaMapper jpaMapper;
   @InjectMocks private ServiceProviderJpaRepository objectUnderTest;
 
@@ -113,6 +116,46 @@ class ServiceProviderJpaRepositoryTest {
 
     // Then
     assertThat(result).isEqualTo(serviceProvider);
+  }
+
+  @Test
+  void loadPublicProfile_shouldFetchUserAndServiceTypesAndMapToView() {
+    // Given
+    UUID spId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    UUID stId = UUID.randomUUID();
+
+    ServiceProviderJpa spJpa = new ServiceProviderJpa();
+    spJpa.setId(spId);
+    spJpa.setUserId(userId);
+    UserServiceJpa usJpa = new UserServiceJpa();
+    UserServiceJpaId usId = new UserServiceJpaId();
+    usId.setServiceTypeId(stId);
+    usJpa.setId(usId);
+    spJpa.setUserServices(List.of(usJpa));
+
+    UserJpa userJpa = new UserJpa();
+    userJpa.setId(userId);
+
+    ServiceTypeJpa stJpa = new ServiceTypeJpa();
+    stJpa.setId(stId);
+
+    ServiceProviderView view = mock(ServiceProviderView.class);
+
+    when(serviceProviderSpringRepository.findAggregateByIdAndStatus(
+            spId, ServiceProviderStatus.APPROVED.name()))
+        .thenReturn(Optional.of(spJpa));
+    when(userSpringRepository.findById(userId)).thenReturn(Optional.of(userJpa));
+    when(serviceTypeSpringRepository.findAllById(anyList())).thenReturn(List.of(stJpa));
+    when(jpaMapper.toServiceProviderView(spJpa, userJpa, List.of(stJpa))).thenReturn(view);
+
+    // When
+    var result = objectUnderTest.loadProfile(new ServiceProviderId(spId));
+
+    // Then
+    assertThat(result).isEqualTo(view);
+    verify(userSpringRepository).findById(userId);
+    verify(serviceTypeSpringRepository).findAllById(List.of(stId));
   }
 
   private ServiceProvider createServiceProvider() {

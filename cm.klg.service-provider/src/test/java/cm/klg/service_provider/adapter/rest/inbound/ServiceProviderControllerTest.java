@@ -97,7 +97,7 @@ class ServiceProviderControllerTest {
     UUID quarterId = UUID.randomUUID();
 
     ServiceProviderDTO serviceProviderDTO = new ServiceProviderDTO().id(UUID.randomUUID());
-    var useCaseResponse = new SearchServiceProviderUseCase.Response(List.of(), 1L);
+    var useCaseResponse = new SearchServiceProviderUseCase.Response(1L, List.of());
     var paginateDTO =
         new ServiceProviderPaginateDTO().count(1L).serviceProvider(List.of(serviceProviderDTO));
 

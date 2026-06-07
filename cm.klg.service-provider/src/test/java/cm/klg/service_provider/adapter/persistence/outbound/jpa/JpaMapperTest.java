@@ -81,7 +81,7 @@ class JpaMapperTest {
   }
 
   @Test
-  void toServiceTypeView1_shouldMapCorrectly() {
+  void toServiceTypeView_shouldMapCorrectly() {
     // Given
     ServiceTypeJpa jpa = new ServiceTypeJpa();
     jpa.setId(UUID.randomUUID());
@@ -90,13 +90,67 @@ class JpaMapperTest {
     jpa.setActive(true);
 
     // When
-    var view = objectUnderTest.toServiceTypeView1(jpa);
+    var view = objectUnderTest.toServiceTypeView(jpa);
 
     // Then
     assertThat(view).isNotNull();
-    assertThat(view.getId()).isEqualTo(jpa.getId());
-    assertThat(view.getName()).isEqualTo(jpa.getName());
-    assertThat(view.getCategory()).isEqualTo(jpa.getCategory());
-    assertThat(view.getIsActive()).isTrue();
+    assertThat(view.id()).isEqualTo(jpa.getId());
+    assertThat(view.name()).isEqualTo(jpa.getName());
+    assertThat(view.category()).isEqualTo(jpa.getCategory());
+    assertThat(view.isActive()).isTrue();
+  }
+
+  @Test
+  void toServiceProviderView_shouldMapAllFieldsCorrectly() {
+    // Given
+    UUID spId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    UUID cityId = UUID.randomUUID();
+    UUID stId = UUID.randomUUID();
+    UUID docId = UUID.randomUUID();
+    LocalDateTime now = LocalDateTime.now();
+
+    ServiceProviderJpa spJpa = new ServiceProviderJpa();
+    spJpa.setId(spId);
+    spJpa.setUserId(userId);
+    spJpa.setCity(cityId);
+    spJpa.setPhoneNumber(new PhoneNumberJpa("+237", "678901234"));
+    spJpa.setStatus("APPROVED");
+    spJpa.setCreatedAt(now);
+
+    UserServiceJpa usJpa = new UserServiceJpa();
+    UserServiceJpaId usId = new UserServiceJpaId();
+    usId.setServiceProviderId(spId);
+    usId.setServiceTypeId(stId);
+    usJpa.setId(usId);
+    usJpa.setYearOfExperience(5);
+    usJpa.setUserDocument(docId);
+    usJpa.setCreatedAt(now);
+    spJpa.setUserServices(List.of(usJpa));
+
+    UserJpa userJpa = new UserJpa();
+    userJpa.setId(userId);
+    userJpa.setFirstname("John");
+    userJpa.setLastname("Doe");
+
+    ServiceTypeJpa stJpa = new ServiceTypeJpa();
+    stJpa.setId(stId);
+    stJpa.setName("Plumber");
+    stJpa.setCategory("MAINTENANCE");
+
+    // When
+    var view = objectUnderTest.toServiceProviderView(spJpa, userJpa, List.of(stJpa));
+
+    // Then
+    assertThat(view.id()).isEqualTo(spId);
+    assertThat(view.userId()).isEqualTo(userId);
+    assertThat(view.firstname()).isEqualTo("John");
+    assertThat(view.lastname()).isEqualTo("Doe");
+    assertThat(view.phoneNumber().number()).isEqualTo("678901234");
+    assertThat(view.services()).hasSize(1);
+    var serviceView = view.services().get(0);
+    assertThat(serviceView.serviceType().name()).isEqualTo("Plumber");
+    assertThat(serviceView.yearOfExperience()).isEqualTo(5);
+    assertThat(serviceView.document()).isEqualTo(docId);
   }
 }

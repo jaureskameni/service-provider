@@ -39,4 +39,42 @@ module cm.klg.service_provider.main {
   requires org.aspectj.weaver;
   requires io.swagger.v3.oas.models;
   requires spring.security.oauth2.core;
+
+  opens cm.klg.service_provider.adapter.rest.inbound to
+      spring.core,
+      spring.beans,
+      spring.context,
+      spring.web;
+  opens cm.klg.service_provider.adapter.persistence.outbound.jpa to
+      spring.core,
+      spring.beans,
+      spring.context,
+      org.hibernate.orm.core;
+  opens cm.klg.service_provider.adapter.messaging.inbound to
+      spring.core,
+      spring.beans,
+      spring.context;
+  opens cm.klg.service_provider.adapter.messaging.outbound to
+      spring.core,
+      spring.beans,
+      spring.context;
+  opens cm.klg.service_provider.config to
+      spring.core,
+      spring.beans,
+      spring.context;
+  opens cm.klg.service_provider to
+      spring.core,
+      spring.beans,
+      spring.context,
+      spring.boot;
+
+  exports cm.klg.service_provider;
+  exports cm.klg.service_provider.application.usecase;
+  exports cm.klg.service_provider.application.views;
+  exports cm.klg.service_provider.application.outbound;
+  exports cm.klg.service_provider.domain;
+  exports cm.klg.service_provider.domain.service_provider;
+  exports cm.klg.service_provider.domain.service_type;
+  exports cm.klg.service_provider.adapter.rest.inbound;
+  exports cm.klg.service_provider.adapter.persistence.outbound.jpa;
 }

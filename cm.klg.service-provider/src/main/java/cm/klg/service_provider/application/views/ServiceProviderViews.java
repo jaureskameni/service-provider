@@ -7,29 +7,19 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 public interface ServiceProviderViews {
-  interface ServiceProviderView1 {
-    UUID getId();
-
-    UUID getUserId();
-
-    UUID getCityId();
-
-    UUID getDistrictId();
-
-    UUID getQuarterId();
-
-    @Nullable UUID getApproveBy();
-
-    @Nullable UUID getRejectBy();
-
-    PhoneNumber getPhoneNumber();
-
-    String getStatus();
-
-    LocalDateTime getCreatedAt();
-
-    LocalDateTime getUpdatedAt();
-
-    List<UserServiceView> getUserService();
-  }
+  record ServiceProviderView(
+      UUID id,
+      UUID userId,
+      String firstname,
+      String lastname,
+      UUID cityId,
+      UUID districtId,
+      @Nullable UUID quarterId,
+      @Nullable UUID approvedBy,
+      @Nullable UUID rejectedBy,
+      PhoneNumber phoneNumber,
+      String status,
+      LocalDateTime createdAt,
+      LocalDateTime updatedAt,
+      List<UserServiceView> services) {}
 }
