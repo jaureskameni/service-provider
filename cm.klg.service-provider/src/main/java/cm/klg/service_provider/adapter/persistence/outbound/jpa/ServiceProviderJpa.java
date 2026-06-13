@@ -59,6 +59,12 @@ public class ServiceProviderJpa extends AggregateRootEntity<UUID> {
   @Column(name = "c_rejected_by")
   private UUID rejectedBy;
 
+  @Column(name = "c_rejection_reason")
+  private String rejectionReason;
+
+  @Column(name = "c_about")
+  private String about;
+
   @Column(name = "c_created_at")
   private LocalDateTime createdAt;
 

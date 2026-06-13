@@ -89,6 +89,8 @@ class GetServiceProviderProfileUseCaseTest {
         null,
         null,
         null,
+        null,
+        null,
         new PhoneNumber("+237", "678901234"),
         ServiceProviderStatus.APPROVED.name(),
         LocalDateTime.now(),

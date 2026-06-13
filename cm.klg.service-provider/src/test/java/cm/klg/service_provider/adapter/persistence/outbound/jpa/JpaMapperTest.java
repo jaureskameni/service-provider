@@ -37,6 +37,7 @@ class JpaMapperTest {
                 new UserDistrictId(districtId),
                 new UserQuarterId(quarterId)),
             new PhoneNumber("+237", "678901234"),
+            null,
             List.of());
 
     // When
@@ -64,6 +65,8 @@ class JpaMapperTest {
     jpa.setQuarter(quarterId);
     jpa.setStatus("PENDING");
     jpa.setCreatedAt(LocalDateTime.now());
+    jpa.setAbout("About me");
+    jpa.setRejectionReason("Reason");
     jpa.setPhoneNumber(new PhoneNumberJpa("+237", "678901234"));
 
     // When
@@ -71,6 +74,8 @@ class JpaMapperTest {
 
     // Then
     assertThat(domain).isNotNull();
+    assertThat(domain.getAbout().value()).isEqualTo("About me");
+    assertThat(domain.getRejectionReason().value()).isEqualTo("Reason");
     assertThat(domain.getLocation())
         .satisfies(
             location -> {

@@ -1,6 +1,7 @@
 package cm.klg.service_provider.adapter.rest.inbound;
 
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceCatalogItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
@@ -17,6 +18,7 @@ import cm.klg.service_provider.application.views.ServiceProviderViews;
 import cm.klg.service_provider.application.views.ServiceTypeViews;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
+import cm.klg.service_provider.domain.service_provider.RejectionReason;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
@@ -43,6 +45,7 @@ public interface RestMapper {
   @Mapping(target = "location.cityId.value", source = "serviceProviderRegisterDTO.city")
   @Mapping(target = "location.districtId.value", source = "serviceProviderRegisterDTO.district")
   @Mapping(target = "location.quarterId.value", source = "serviceProviderRegisterDTO.quarter")
+  @Mapping(target = "about.value", source = "serviceProviderRegisterDTO.about")
   @Mapping(target = "document.value", source = "serviceProviderRegisterDTO.serviceType.document")
   @Mapping(target = "serviceTypeId.value", source = "serviceProviderRegisterDTO.serviceType.id")
   @Mapping(
@@ -73,6 +76,10 @@ public interface RestMapper {
   }
 
   ServiceProviderStatus toServiceProviderStatus(ServiceProviderStatusDTO status);
+
+  default RejectionReason toRejectionReason(RejectionReasonDTO rejectionReasonDTO) {
+    return new RejectionReason(rejectionReasonDTO.getReason());
+  }
 
   default GetAllServiceProviderUseCase.Command toGetAllServiceProviderCommand(
       Integer limit, ServiceProviderStatusDTO status, Integer page) {
@@ -137,6 +144,8 @@ public interface RestMapper {
         .city(serviceProviderView.cityId())
         .district(serviceProviderView.districtId())
         .quarter(serviceProviderView.quarterId())
+        .about(serviceProviderView.about())
+        .rejectionReason(serviceProviderView.rejectionReason())
         .createdAt(serviceProviderView.createdAt())
         .updatedAt(serviceProviderView.updatedAt())
         .phoneNumber(toPhoneNumberDTO(serviceProviderView.phoneNumber()))

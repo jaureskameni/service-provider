@@ -7,6 +7,7 @@ import cm.klg.common.base.adapter.inbound.rest.WithAuthenticationSupport;
 import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.api.ServiceProviderApi;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
@@ -61,11 +62,14 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   }
 
   @Override
-  public ResponseEntity<Void> rejectServiceProvider(UUID serviceProviderId) {
+  public ResponseEntity<Void> rejectServiceProvider(
+      UUID serviceProviderId, RejectionReasonDTO rejectionReasonDTO) {
     useCaseExecutor.runCommand(
         () ->
             rejectServiceProviderRequestUseCase.execute(
-                new UserId(getCurrentUserId()), new ServiceProviderId(serviceProviderId)));
+                new UserId(getCurrentUserId()),
+                new ServiceProviderId(serviceProviderId),
+                restMapper.toRejectionReason(rejectionReasonDTO)));
     return ResponseEntity.noContent().build();
   }
 

@@ -17,6 +17,8 @@ public interface ServiceProviderViews {
       @Nullable UUID quarterId,
       @Nullable UUID approvedBy,
       @Nullable UUID rejectedBy,
+      @Nullable String rejectionReason,
+      @Nullable String about,
       PhoneNumber phoneNumber,
       String status,
       LocalDateTime createdAt,

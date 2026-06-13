@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-28:1" author="Gemini CLI">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="t_service_provider"
+					columnName="c_rejection_reason" />
+			</not>
+			<not>
+				<columnExists tableName="t_service_provider"
+					columnName="c_about" />
+			</not>
+		</preConditions>
+		<addColumn tableName="t_service_provider">
+			<column name="c_rejection_reason" type="VARCHAR(255)" />
+			<column name="c_about" type="TEXT" />
+		</addColumn>
+	</changeSet>
+
+</databaseChangeLog>

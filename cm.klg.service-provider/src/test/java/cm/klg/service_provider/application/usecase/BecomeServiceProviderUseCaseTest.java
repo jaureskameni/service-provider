@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
 import cm.klg.service_provider.domain.PhoneNumber;
@@ -20,6 +21,7 @@ import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserDocument;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_provider.YearOfExperience;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderCreatedEvent;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -35,6 +37,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class BecomeServiceProviderUseCaseTest {
 
   @Mock private ServiceProviderRepository serviceProviderRepository;
+  @Mock private DomainEventPublisher domainEventPublisher;
   @InjectMocks private BecomeServiceProviderUseCase objectUnderTest;
 
   @Test
@@ -53,16 +56,18 @@ class BecomeServiceProviderUseCaseTest {
 
     BecomeServiceProviderCommand command =
         new BecomeServiceProviderCommand(
-            userId, location, phoneNumber, serviceTypeId, yearOfExperience, document);
+            userId, location, phoneNumber, null, serviceTypeId, yearOfExperience, document);
 
     ServiceProviderId expectedServiceProviderId = new ServiceProviderId(UUID.randomUUID());
     ServiceProvider mockServiceProvider = mock(ServiceProvider.class);
+    ServiceProviderCreatedEvent event = mock(ServiceProviderCreatedEvent.class);
 
     try (MockedStatic<ServiceProvider> mockedStatic = mockStatic(ServiceProvider.class)) {
       mockedStatic
-          .when(() -> ServiceProvider.of(userId, location, phoneNumber, new ArrayList<>()))
+          .when(() -> ServiceProvider.of(userId, location, phoneNumber, null, new ArrayList<>()))
           .thenReturn(mockServiceProvider);
       when(mockServiceProvider.getId()).thenReturn(expectedServiceProviderId);
+      when(mockServiceProvider.toCreatedEvent()).thenReturn(event);
 
       // When
       ServiceProviderId result = objectUnderTest.execute(command);
@@ -70,9 +75,10 @@ class BecomeServiceProviderUseCaseTest {
       // Then
       assertThat(result).isEqualTo(expectedServiceProviderId);
       mockedStatic.verify(
-          () -> ServiceProvider.of(userId, location, phoneNumber, new ArrayList<>()));
+          () -> ServiceProvider.of(userId, location, phoneNumber, null, new ArrayList<>()));
       verify(mockServiceProvider).addUserService(serviceTypeId, yearOfExperience, document);
       verify(serviceProviderRepository).insert(mockServiceProvider);
+      verify(domainEventPublisher).serviceProviderCreatedEvent(event);
     }
   }
 
@@ -85,6 +91,7 @@ class BecomeServiceProviderUseCaseTest {
             userId,
             mock(ProviderLocation.class),
             new PhoneNumber("+237", "678901234"),
+            null,
             new ServiceTypeId(UUID.randomUUID()),
             new YearOfExperience(5),
             new UserDocument(UUID.randomUUID()));
@@ -106,6 +113,7 @@ class BecomeServiceProviderUseCaseTest {
             userId,
             mock(ProviderLocation.class),
             phoneNumber,
+            null,
             new ServiceTypeId(UUID.randomUUID()),
             new YearOfExperience(5),
             new UserDocument(UUID.randomUUID()));

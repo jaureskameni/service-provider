@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
@@ -145,5 +146,26 @@ class ServiceProviderControllerTest {
     verify(restMapper)
         .toSearchServiceProviderCommand(serviceTypeId, cityId, districtId, quarterId, 0, 10);
     verify(searchServiceProviderUseCase).execute(command);
+  }
+
+  @Test
+  void rejectServiceProvider_shouldReturnNoContent_whenSuccessful() {
+    // Given
+    UUID spId = UUID.randomUUID();
+    RejectionReasonDTO reasonDTO = new RejectionReasonDTO().reason("Invalid data");
+
+    // When & Then
+    // spotless:off
+    given()
+            .standaloneSetup(objectUnderTest)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(reasonDTO)
+    .when()
+            .put("/service-provider/{serviceProviderId}/reject", spId)
+    .then()
+            .statusCode(HttpStatus.NO_CONTENT.value());
+    // spotless:on
+
+    verify(useCaseExecutor).runCommand(any());
   }
 }
