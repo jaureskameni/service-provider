@@ -14,6 +14,37 @@ components:
       type: "string"
       enum:
       - "SERVICE_PROVIDER_APPROVED"
+      - "SERVICE_PROVIDER_CREATED"
+      - "SERVICE_PROVIDER_REJECTED"
+    ServiceProviderCreatedEventDTO:
+      type: "object"
+      properties:
+        serviceProviderId:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        createdAt:
+          type: "string"
+          format: "date-time"
+    ServiceProviderRejectedEventDTO:
+      type: "object"
+      properties:
+        serviceProviderId:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        rejectedBy:
+          type: "string"
+          format: "uuid"
+        reason:
+          type: "string"
+        rejectedAt:
+          type: "string"
+          format: "date-time"
     ServiceProviderApprovedEventDTO:
       type: "object"
       properties:

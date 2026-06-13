@@ -1,0 +1,63 @@
+// gradle/openapi.conventions.gradle.kts
+
+// ── Enregistrement du source set (Accès dynamique) ──────────────────────────
+val openApiGeneratedSrc = layout.buildDirectory.dir("generated/sources/openapi/src/main/java")
+
+(project.extensions.findByName("sourceSets") as? SourceSetContainer)?.let { container ->
+    container.named("main").configure {
+        java.srcDir(openApiGeneratedSrc)
+    }
+}
+
+// ── Helpers OpenAPI ──────────────────────────────────────────────────────────
+extra["applySpringBootOpenApi"] = { task: Any ->
+    task.withGroovyBuilder {
+        "setProperty"("generatorName", "spring")
+        "setProperty"("outputDir", layout.buildDirectory.dir("generated/sources/openapi").get().asFile.path)
+        "setProperty"(
+            "configOptions",
+            mapOf(
+                "dateLibrary" to "java8-localdatetime",
+                "library" to "spring-boot",
+                "interfaceOnly" to "true",
+                "useTags" to "true",
+                "skipDefaultInterface" to "true",
+                "useSpringBoot3" to "true",
+            ),
+        )
+        "setProperty"("typeMappings", mapOf("time" to "java.time.LocalTime"))
+    }
+}
+
+extra["applySpringHttpInterfaceOpenApi"] = { task: Any ->
+    task.withGroovyBuilder {
+        "setProperty"("generatorName", "spring")
+        "setProperty"("outputDir", layout.buildDirectory.dir("generated/sources/openapi").get().asFile.path)
+        "setProperty"(
+            "configOptions",
+            mapOf(
+                "dateLibrary" to "java8-localdatetime",
+                "library" to "spring-http-interface",
+                "interfaceOnly" to "true",
+                "useTags" to "true",
+            ),
+        )
+        "setProperty"("typeMappings", mapOf("time" to "java.time.LocalTime"))
+    }
+}
+
+extra["deleteBeforeGenerate"] = { task: Task, dirPath: String ->
+    task.outputs.upToDateWhen { false }
+    task.doFirst {
+        file(dirPath).deleteRecursively()
+    }
+}
+
+extra["onlyIfStale"] = { task: Any, dirPath: String ->
+    (task as Task).onlyIf {
+        val genDir = file(dirPath)
+        val inputSpec = task.withGroovyBuilder { "getProperty"("inputSpec") } as org.gradle.api.provider.Property<*>
+        val specFile = file(inputSpec.get().toString())
+        !genDir.exists() || specFile.lastModified() > genDir.lastModified()
+    }
+}

@@ -5,6 +5,8 @@ import static cm.klg.service_provider.adapter.messaging.outbound.EventTopics.DES
 import cm.klg.generated.service.provider.adapter.messaging.outbound.dto.DomainEventType;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderApprovedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderCreatedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderRejectedEvent;
 import com.emb.application.outbound.OutboxWriter;
 import com.emb.domain.outboxevent.OutboxEventCommand;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +25,25 @@ public class OutboxWriterDomainEventPublisher implements DomainEventPublisher {
             DomainEventType.SERVICE_PROVIDER_APPROVED.name(),
             event.serviceProviderId().value().toString(),
             outboxWriterMapper.toServiceProviderApprovedEventDTO(event)));
+  }
+
+  @Override
+  public void serviceProviderCreatedEvent(@NonNull ServiceProviderCreatedEvent event) {
+    outboxWriter.publish(
+        new OutboxEventCommand(
+            DESTINATION_SERVICE_PROVIDER_OUT,
+            DomainEventType.SERVICE_PROVIDER_CREATED.name(),
+            event.serviceProviderId().value().toString(),
+            outboxWriterMapper.toServiceProviderCreatedEventDTO(event)));
+  }
+
+  @Override
+  public void serviceProviderRejectedEvent(@NonNull ServiceProviderRejectedEvent event) {
+    outboxWriter.publish(
+        new OutboxEventCommand(
+            DESTINATION_SERVICE_PROVIDER_OUT,
+            DomainEventType.SERVICE_PROVIDER_REJECTED.name(),
+            event.serviceProviderId().value().toString(),
+            outboxWriterMapper.toServiceProviderRejectedEventDTO(event)));
   }
 }

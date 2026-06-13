@@ -1,7 +1,11 @@
 package cm.klg.service_provider.adapter.messaging.outbound;
 
 import cm.klg.generated.service.provider.adapter.messaging.outbound.dto.ServiceProviderApprovedEventDTO;
+import cm.klg.generated.service.provider.adapter.messaging.outbound.dto.ServiceProviderCreatedEventDTO;
+import cm.klg.generated.service.provider.adapter.messaging.outbound.dto.ServiceProviderRejectedEventDTO;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderApprovedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderCreatedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderRejectedEvent;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -25,4 +29,20 @@ public interface OutboxWriterMapper {
   @Mapping(target = "approvedAt", source = "approvedAt")
   ServiceProviderApprovedEventDTO toServiceProviderApprovedEventDTO(
       ServiceProviderApprovedEvent event);
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "serviceProviderId", source = "serviceProviderId.value")
+  @Mapping(target = "userId", source = "userId.value")
+  @Mapping(target = "createdAt", source = "createdAt")
+  ServiceProviderCreatedEventDTO toServiceProviderCreatedEventDTO(
+      ServiceProviderCreatedEvent event);
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "serviceProviderId", source = "serviceProviderId.value")
+  @Mapping(target = "userId", source = "userId.value")
+  @Mapping(target = "rejectedBy", source = "rejectedBy.value")
+  @Mapping(target = "reason", source = "rejectionReason.value")
+  @Mapping(target = "rejectedAt", source = "rejectedAt")
+  ServiceProviderRejectedEventDTO toServiceProviderRejectedEventDTO(
+      ServiceProviderRejectedEvent event);
 }

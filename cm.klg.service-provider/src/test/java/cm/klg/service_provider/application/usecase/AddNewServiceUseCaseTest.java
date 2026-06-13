@@ -50,6 +50,7 @@ class AddNewServiceUseCaseTest {
                 new UserDistrictId(UUID.randomUUID()),
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
+            null,
             new ArrayList<>());
 
     when(serviceProviderRepository.loadByUserId(userId)).thenReturn(serviceProvider);

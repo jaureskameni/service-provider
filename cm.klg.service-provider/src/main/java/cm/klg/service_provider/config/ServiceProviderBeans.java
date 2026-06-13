@@ -24,8 +24,9 @@ public class ServiceProviderBeans {
 
   @Bean
   public BecomeServiceProviderUseCase becomeServiceProviderUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new BecomeServiceProviderUseCase(serviceProviderRepository);
+      ServiceProviderRepository serviceProviderRepository,
+      DomainEventPublisher domainEventPublisher) {
+    return new BecomeServiceProviderUseCase(serviceProviderRepository, domainEventPublisher);
   }
 
   @Bean
@@ -57,8 +58,9 @@ public class ServiceProviderBeans {
 
   @Bean
   public RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new RejectServiceProviderRequestUseCase(serviceProviderRepository);
+      ServiceProviderRepository serviceProviderRepository,
+      DomainEventPublisher domainEventPublisher) {
+    return new RejectServiceProviderRequestUseCase(serviceProviderRepository, domainEventPublisher);
   }
 
   @Bean

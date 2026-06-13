@@ -7,10 +7,12 @@ import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.provider_client.ProviderClient;
+import cm.klg.service_provider.domain.service_provider.AboutProvider;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
 import cm.klg.service_provider.domain.service_provider.ProviderContact;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ProviderReview;
+import cm.klg.service_provider.domain.service_provider.RejectionReason;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -65,6 +67,8 @@ public interface JpaMapper {
   @Mapping(target = "quarter", source = "location.quarterId.value")
   @Mapping(target = "approvedBy", source = "approvedBy.value")
   @Mapping(target = "rejectedBy", source = "rejectedBy.value")
+  @Mapping(target = "rejectionReason", source = "rejectionReason.value")
+  @Mapping(target = "about", source = "about.value")
   @Mapping(target = "phoneNumber.number", source = "phoneNumber.number")
   @Mapping(target = "phoneNumber.countryCode", source = "phoneNumber.countryCode")
   @Mapping(target = "createdAt", source = "createdAt.value")
@@ -140,12 +144,18 @@ public interface JpaMapper {
                     : null,
                 serviceProviderJpa.getRejectedBy() != null
                     ? new UserId(serviceProviderJpa.getRejectedBy())
+                    : null,
+                serviceProviderJpa.getRejectionReason() != null
+                    ? new RejectionReason(serviceProviderJpa.getRejectionReason())
                     : null),
             new ProviderAudit(
                 new CreatedAt(serviceProviderJpa.getCreatedAt()),
                 serviceProviderJpa.getUpdatedAt() != null
                     ? new CreatedAt(serviceProviderJpa.getUpdatedAt())
                     : null),
+            serviceProviderJpa.getAbout() != null
+                ? new AboutProvider(serviceProviderJpa.getAbout())
+                : null,
             new ArrayList<>());
     serviceProvider.addAllUserService(
         this.toUserServiceDomain(serviceProviderJpa.getUserServices()));
@@ -174,6 +184,8 @@ public interface JpaMapper {
   @Mapping(target = "quarter", source = "location.quarterId.value")
   @Mapping(target = "approvedBy", source = "approvedBy.value")
   @Mapping(target = "rejectedBy", source = "rejectedBy.value")
+  @Mapping(target = "rejectionReason", source = "rejectionReason.value")
+  @Mapping(target = "about", source = "about.value")
   @Mapping(target = "phoneNumber.number", source = "phoneNumber.number")
   @Mapping(target = "phoneNumber.countryCode", source = "phoneNumber.countryCode")
   @Mapping(target = "createdAt", source = "createdAt.value")
@@ -207,6 +219,8 @@ public interface JpaMapper {
         serviceProviderJpa.getQuarter(),
         serviceProviderJpa.getApprovedBy(),
         serviceProviderJpa.getRejectedBy(),
+        serviceProviderJpa.getRejectionReason(),
+        serviceProviderJpa.getAbout(),
         PhoneNumber.from(
             serviceProviderJpa.getPhoneNumber().getCountryCode(),
             serviceProviderJpa.getPhoneNumber().getNumber()),

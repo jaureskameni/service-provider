@@ -172,8 +172,9 @@ class ServiceProviderJpaRepositoryTest {
                 new UserDistrictId(UUID.randomUUID()),
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234")),
-        new ProviderReview(ServiceProviderStatus.PENDING, null, null),
+        new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
         new ProviderAudit(cm.klg.common.base.domain.CreatedAt.from(LocalDateTime.now()), null),
+        null,
         new ArrayList<>());
   }
 }

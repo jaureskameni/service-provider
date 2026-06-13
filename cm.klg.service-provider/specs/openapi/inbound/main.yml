@@ -201,6 +201,11 @@ paths:
         schema:
           type: "string"
           format: "uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectionReason"
       responses:
         "204":
           description: "Successful operation"
@@ -251,6 +256,11 @@ paths:
                     $ref: "#/components/schemas/ServiceCatalogItem"
 components:
   schemas:
+    RejectionReason:
+      type: "object"
+      properties:
+        reason:
+          type: "string"
     ServiceProviderRegister:
       required:
       - "phoneNumber"
@@ -269,6 +279,8 @@ components:
         quarter:
           type: "string"
           format: "uuid"
+        about:
+          type: "string"
         phoneNumber:
           $ref: "#/components/schemas/PhoneNumber"
         serviceType:
@@ -318,6 +330,10 @@ components:
         quarter:
           type: "string"
           format: "uuid"
+        about:
+          type: "string"
+        rejectionReason:
+          type: "string"
         createdAt:
           type: "string"
           format: "date-time"

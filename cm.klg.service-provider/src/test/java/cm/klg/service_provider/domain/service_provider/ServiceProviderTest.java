@@ -25,6 +25,7 @@ class ServiceProviderTest {
                 new UserDistrictId(UUID.randomUUID()),
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
+            null,
             new ArrayList<>());
 
     // When
@@ -40,6 +41,7 @@ class ServiceProviderTest {
   void reject_shouldSetStatusToRejected_whenStatusIsPending() {
     // Given
     UserId adminId = new UserId(UUID.randomUUID());
+    RejectionReason reason = new RejectionReason("Invalid documents");
     ServiceProvider serviceProvider =
         ServiceProvider.of(
             new UserId(UUID.randomUUID()),
@@ -48,14 +50,16 @@ class ServiceProviderTest {
                 new UserDistrictId(UUID.randomUUID()),
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
+            null,
             new ArrayList<>());
 
     // When
-    serviceProvider.reject(adminId);
+    serviceProvider.reject(adminId, reason);
 
     // Then
     assertThat(serviceProvider.getStatus()).isEqualTo(ServiceProviderStatus.REJECTED);
     assertThat(serviceProvider.getRejectedBy()).isEqualTo(adminId);
+    assertThat(serviceProvider.getRejectionReason()).isEqualTo(reason);
     assertThat(serviceProvider.getUpdatedAt()).isNotNull();
   }
 
@@ -73,8 +77,10 @@ class ServiceProviderTest {
                     new UserDistrictId(UUID.randomUUID()),
                     new UserQuarterId(UUID.randomUUID())),
                 new PhoneNumber("+237", "678901234")),
-            new ProviderReview(ServiceProviderStatus.REJECTED, null, new UserId(UUID.randomUUID())),
+            new ProviderReview(
+                ServiceProviderStatus.REJECTED, null, new UserId(UUID.randomUUID()), null),
             new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+            null,
             new ArrayList<>());
 
     assertThatThrownBy(() -> serviceProvider.approve(adminId))
@@ -92,6 +98,7 @@ class ServiceProviderTest {
                 new UserDistrictId(UUID.randomUUID()),
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
+            null,
             new ArrayList<>());
 
     var userServices = serviceProvider.getUserServices();

@@ -4,4 +4,7 @@ import cm.klg.service_provider.domain.UserId;
 import org.jspecify.annotations.Nullable;
 
 public record ProviderReview(
-    ServiceProviderStatus status, @Nullable UserId approvedBy, @Nullable UserId rejectedBy) {}
+    ServiceProviderStatus status,
+    @Nullable UserId approvedBy,
+    @Nullable UserId rejectedBy,
+    @Nullable RejectionReason rejectionReason) {}

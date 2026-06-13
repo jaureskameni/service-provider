@@ -1,8 +1,10 @@
 package cm.klg.service_provider.application.usecase;
 
+import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.AboutProvider;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExistsException;
@@ -13,7 +15,9 @@ import cm.klg.service_provider.domain.service_provider.YearOfExperience;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.ArrayList;
 
-public record BecomeServiceProviderUseCase(ServiceProviderRepository serviceProviderRepository) {
+public record BecomeServiceProviderUseCase(
+    ServiceProviderRepository serviceProviderRepository,
+    DomainEventPublisher domainEventPublisher) {
   public ServiceProviderId execute(BecomeServiceProviderCommand command) {
     if (serviceProviderRepository.existsByUserId(command.userId())) {
       throw new ServiceProviderAlreadyExistsException();
@@ -24,12 +28,18 @@ public record BecomeServiceProviderUseCase(ServiceProviderRepository serviceProv
 
     ServiceProvider serviceProvider =
         ServiceProvider.of(
-            command.userId, command.location, command.phoneNumber, new ArrayList<>());
+            command.userId,
+            command.location,
+            command.phoneNumber,
+            command.about,
+            new ArrayList<>());
 
     serviceProvider.addUserService(
         command.serviceTypeId, command.yearOfExperience, command.document);
 
     serviceProviderRepository.insert(serviceProvider);
+
+    domainEventPublisher.serviceProviderCreatedEvent(serviceProvider.toCreatedEvent());
 
     return serviceProvider.getId();
   }
@@ -38,6 +48,7 @@ public record BecomeServiceProviderUseCase(ServiceProviderRepository serviceProv
       UserId userId,
       ProviderLocation location,
       PhoneNumber phoneNumber,
+      AboutProvider about,
       ServiceTypeId serviceTypeId,
       YearOfExperience yearOfExperience,
       UserDocument document) {}
