@@ -21,6 +21,7 @@ import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestU
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 @Configuration
 public class ServiceProviderBeans implements TransactionBeansProvider {
@@ -29,6 +30,11 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   @Override
   public DomainToHttpExceptionTranslator domainToHttpExceptionTranslator() {
     return new DefaultDomainToHttpExceptionTranslator();
+  }
+
+  @Bean
+  public JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter() {
+    return new JwtGrantedAuthoritiesConverter();
   }
 
   @Bean
