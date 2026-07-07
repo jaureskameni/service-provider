@@ -1,5 +1,8 @@
 package cm.klg.service_provider.config;
 
+import cm.klg.common.base.config.TransactionBeansProvider;
+import cm.klg.common.base.transaction.DomainToHttpExceptionTranslator;
+import cm.klg.service_provider.adapter.rest.inbound.DefaultDomainToHttpExceptionTranslator;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ProviderClientRepository;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
@@ -20,7 +23,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ServiceProviderBeans {
+public class ServiceProviderBeans implements TransactionBeansProvider {
+
+  @Bean
+  @Override
+  public DomainToHttpExceptionTranslator domainToHttpExceptionTranslator() {
+    return new DefaultDomainToHttpExceptionTranslator();
+  }
 
   @Bean
   public BecomeServiceProviderUseCase becomeServiceProviderUseCase(
