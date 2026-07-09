@@ -3,6 +3,10 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -22,6 +26,16 @@ import lombok.experimental.FieldNameConstants;
 public class UserServiceJpa {
 
   @EmbeddedId private UserServiceJpaId id;
+
+  @MapsId("serviceProviderId")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "c_service_provider_id")
+  private ServiceProviderJpa serviceProvider;
+
+  @MapsId("serviceTypeId")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "c_service_type_id")
+  private ServiceTypeJpa serviceType;
 
   @Column(name = "c_year_of_experience")
   private int yearOfExperience;

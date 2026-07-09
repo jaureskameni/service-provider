@@ -6,6 +6,7 @@ import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.generated.service.provider.adapter.messaging.outbound.dto.ServiceProviderApprovedEventDTO;
 import cm.klg.generated.service.provider.adapter.messaging.outbound.dto.ServiceProviderCreatedEventDTO;
 import cm.klg.generated.service.provider.adapter.messaging.outbound.dto.ServiceProviderRejectedEventDTO;
+import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.RejectionReason;
@@ -31,6 +32,7 @@ class OutboxWriterMapperTest {
     // Given
     UUID serviceProviderId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
+    UUID identityId = UUID.randomUUID();
     String lastname = "Nguematcha";
     String firstname = "Kameni";
     String email = "kameni@example.com";
@@ -41,6 +43,7 @@ class OutboxWriterMapperTest {
     User user =
         User.reconstitute(
             new UserId(userId),
+            new IdentityId(identityId),
             new UserProfile(
                 Firstname.from(firstname),
                 Lastname.from(lastname),

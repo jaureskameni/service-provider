@@ -119,7 +119,7 @@ class ServiceProviderJpaRepositoryTest {
   }
 
   @Test
-  void loadPublicProfile_shouldFetchUserAndServiceTypesAndMapToView() {
+  void loadPublicProfile_shouldFetchUserAndServiceTypesAndMapToViewTest() {
     // Given
     UUID spId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
@@ -145,7 +145,7 @@ class ServiceProviderJpaRepositoryTest {
     when(serviceProviderSpringRepository.findAggregateByIdAndStatus(
             spId, ServiceProviderStatus.APPROVED.name()))
         .thenReturn(Optional.of(spJpa));
-    when(userSpringRepository.findById(userId)).thenReturn(Optional.of(userJpa));
+    when(userSpringRepository.findByIdentityId(userId)).thenReturn(Optional.of(userJpa));
     when(serviceTypeSpringRepository.findAllById(anyList())).thenReturn(List.of(stJpa));
     when(jpaMapper.toServiceProviderView(spJpa, userJpa, List.of(stJpa))).thenReturn(view);
 
@@ -154,7 +154,7 @@ class ServiceProviderJpaRepositoryTest {
 
     // Then
     assertThat(result).isEqualTo(view);
-    verify(userSpringRepository).findById(userId);
+    verify(userSpringRepository).findByIdentityId(userId);
     verify(serviceTypeSpringRepository).findAllById(List.of(stId));
   }
 

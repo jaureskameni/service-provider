@@ -28,7 +28,7 @@ spring:
     enabled: true
   cloud:
     function:
-      definition: "user"
+      definition: "user; serviceRequest"
     stream:
       bindings:
         service-provider-out-0:

@@ -143,10 +143,10 @@ public record ServiceProviderJpaRepository(
 
     Map<UUID, UserJpa> usersById =
         userSpringRepository
-            .findAllById(
+            .findAllByIdentityId(
                 serviceProvidersById.values().stream().map(ServiceProviderJpa::getUserId).toList())
             .stream()
-            .collect(Collectors.toMap(UserJpa::getId, Function.identity()));
+            .collect(Collectors.toMap(UserJpa::getId, userJpa -> userJpa));
 
     List<ServiceTypeJpa> serviceTypes =
         serviceTypeSpringRepository.findAllById(
@@ -168,7 +168,8 @@ public record ServiceProviderJpaRepository(
   }
 
   private ServiceProviderView toView(ServiceProviderJpa serviceProviderJpa) {
-    UserJpa userJpa = userSpringRepository.findById(serviceProviderJpa.getUserId()).orElseThrow();
+    UserJpa userJpa =
+        userSpringRepository.findByIdentityId(serviceProviderJpa.getUserId()).orElseThrow();
     List<ServiceTypeJpa> serviceTypeJpas =
         serviceTypeSpringRepository.findAllById(
             serviceProviderJpa.getUserServices().stream()

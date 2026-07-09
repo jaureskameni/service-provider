@@ -47,7 +47,14 @@ class CreateUserInboundEventHandlerTest {
     InboxEventCommand inboxEventCommand = mock(InboxEventCommand.class);
     CreateNewUserUseCase.CreateNewUserCommand command =
         new CreateNewUserUseCase.CreateNewUserCommand(
-            UUID.randomUUID(), "Doe", "John", "john@doe.com", "237", "699", LocalDateTime.now());
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "Doe",
+            "John",
+            "john@doe.com",
+            "237",
+            "699",
+            LocalDateTime.now());
 
     when(messagingInboundMapper.toCreateUserCommand(userCreatedEventDTO)).thenReturn(command);
 

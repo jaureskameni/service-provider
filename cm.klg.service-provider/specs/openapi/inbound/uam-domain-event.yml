@@ -20,6 +20,9 @@ components:
         id:
           type: "string"
           format: "uuid"
+        identityId:
+          type: "string"
+          format: "uuid"
         lastname:
           type: "string"
         firstname:

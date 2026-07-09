@@ -19,11 +19,14 @@ public class UserJpaRepository implements UserRepository {
 
   @Override
   public User load(@NonNull UserId userId) {
-    return userSpringRepository.findById(userId.value()).map(jpaMapper::toUserDomain).orElseThrow();
+    return userSpringRepository
+        .findByIdentityId(userId.value())
+        .map(jpaMapper::toUserDomain)
+        .orElseThrow();
   }
 
   @Override
-  public void update(User user) {
+  public void update(@NonNull User user) {
     userSpringRepository
         .findById(user.getId().value())
         .ifPresent(
@@ -31,5 +34,10 @@ public class UserJpaRepository implements UserRepository {
               jpaMapper.toUserJpa(user, userJpa);
               userSpringRepository.save(userJpa);
             });
+  }
+
+  @Override
+  public boolean existsByUserId(@NonNull UserId userId) {
+    return userSpringRepository.existsByIdentityId(userId.value());
   }
 }
