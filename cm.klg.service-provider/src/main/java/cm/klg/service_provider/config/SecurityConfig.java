@@ -23,7 +23,10 @@ public class SecurityConfig {
   @Bean
   @Order(0)
   public SecurityFilterChain publicEndpoints(HttpSecurity http) throws Exception {
-    return http.securityMatcher("/service-catalog")
+    return http.securityMatcher(
+            "/service-catalog",
+            "/service-provider/search",
+            "/service-provider/{serviceProviderId:%s}".formatted(REGEX_UUID_WITH_DELIMITER))
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .build();
@@ -36,8 +39,6 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(HttpMethod.POST, "/service-provider")
-                    .authenticated()
-                    .requestMatchers(HttpMethod.GET, "/service-provider/search")
                     .authenticated()
                     .requestMatchers(HttpMethod.PUT, "/service-provider/add-service")
                     .authenticated()
@@ -53,11 +54,6 @@ public class SecurityConfig {
                         "/service-provider/{serviceProviderId:%s}/reject"
                             .formatted(REGEX_UUID_WITH_DELIMITER))
                     .hasAnyAuthority(Scopes.SERVICE_PROVIDER_REJECT)
-                    .requestMatchers(
-                        HttpMethod.GET,
-                        "/service-provider/{serviceProviderId:%s}"
-                            .formatted(REGEX_UUID_WITH_DELIMITER))
-                    .authenticated()
                     .requestMatchers(
                         HttpMethod.GET,
                         "/service-provider/{serviceProviderId:%s}/profile"

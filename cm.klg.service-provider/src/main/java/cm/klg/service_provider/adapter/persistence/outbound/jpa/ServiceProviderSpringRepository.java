@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ServiceProviderSpringRepository extends JpaRepository<ServiceProviderJpa, UUID> {
   boolean existsByUserId(UUID userId);
@@ -43,26 +44,44 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
 
   @Query(
       value =
-          "SELECT s.id FROM ServiceProviderJpa s JOIN s.userServices us "
-              + "WHERE s.city = :cityId "
-              + "AND us.id.serviceTypeId = :serviceTypeId "
-              + "AND s.status = :status "
-              + "ORDER BY "
-              + "CASE "
-              + "  WHEN s.quarter = :quarterId THEN 1 "
-              + "  WHEN s.district = :districtId THEN 2 "
-              + "  ELSE 3 "
-              + "END ASC, s.createdAt DESC",
+          """
+          SELECT s.id
+          FROM ServiceProviderJpa s
+          WHERE s.city = :cityId
+            AND s.status = :status
+            AND EXISTS (
+                SELECT 1
+                FROM UserServiceJpa us
+                WHERE us.serviceProvider = s
+                  AND us.id.serviceTypeId = :serviceTypeId
+            )
+          ORDER BY
+            CASE
+              WHEN :quarterId IS NOT NULL AND s.quarter = :quarterId THEN 1
+              WHEN :districtId IS NOT NULL AND s.district = :districtId THEN 2
+              ELSE 3
+            END,
+            s.createdAt DESC
+          """,
       countQuery =
-          "SELECT COUNT(s) FROM ServiceProviderJpa s JOIN s.userServices us WHERE"
-              + " s.city = :cityId AND us.id.serviceTypeId = :serviceTypeId AND"
-              + " s.status = :status")
+          """
+          SELECT COUNT(s)
+          FROM ServiceProviderJpa s
+          WHERE s.city = :cityId
+            AND s.status = :status
+            AND EXISTS (
+                SELECT 1
+                FROM UserServiceJpa us
+                WHERE us.serviceProvider = s
+                  AND us.id.serviceTypeId = :serviceTypeId
+            )
+          """)
   Page<UUID> searchIdsByLocationAndStatus(
-      UUID serviceTypeId,
-      UUID cityId,
-      UUID districtId,
-      UUID quarterId,
-      String status,
+      @Param("serviceTypeId") UUID serviceTypeId,
+      @Param("cityId") UUID cityId,
+      @Param("districtId") UUID districtId,
+      @Param("quarterId") UUID quarterId,
+      @Param("status") String status,
       Pageable pageable);
 
   @Query(

@@ -24,7 +24,6 @@ public class ApproveServiceProviderRequestUseCase {
 
     User providerUser = userRepository.load(serviceProvider.getUserId());
 
-    // Set the boolean flag as requested
     providerUser.promoteToProvider();
     userRepository.update(providerUser);
 

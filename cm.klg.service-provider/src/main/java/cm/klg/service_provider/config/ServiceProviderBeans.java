@@ -40,8 +40,10 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   @Bean
   public BecomeServiceProviderUseCase becomeServiceProviderUseCase(
       ServiceProviderRepository serviceProviderRepository,
-      DomainEventPublisher domainEventPublisher) {
-    return new BecomeServiceProviderUseCase(serviceProviderRepository, domainEventPublisher);
+      DomainEventPublisher domainEventPublisher,
+      UserRepository userRepository) {
+    return new BecomeServiceProviderUseCase(
+        serviceProviderRepository, userRepository, domainEventPublisher);
   }
 
   @Bean

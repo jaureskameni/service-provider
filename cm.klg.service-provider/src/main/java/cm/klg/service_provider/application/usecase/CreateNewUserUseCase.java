@@ -2,6 +2,7 @@ package cm.klg.service_provider.application.usecase;
 
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.application.outbound.UserRepository;
+import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.user.EmailAddress;
@@ -25,13 +26,18 @@ public record CreateNewUserUseCase(UserRepository userRepository) {
     UserProfile userProfile = new UserProfile(firstname, lastname, emailAddress, phoneNumber);
     User newUser =
         User.reconstitute(
-            UserId.from(command.id()), userProfile, false, CreatedAt.from(command.createdAt));
+            UserId.from(command.id()),
+            IdentityId.from(command.identityId),
+            userProfile,
+            false,
+            CreatedAt.from(command.createdAt));
 
     userRepository.insert(newUser);
   }
 
   public record CreateNewUserCommand(
       UUID id,
+      UUID identityId,
       String lastname,
       @Nullable String firstname,
       @Nullable String email,

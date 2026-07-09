@@ -18,6 +18,7 @@ public interface MessagingInboundMapper {
 
   @BeanMapping(ignoreByDefault = true)
   @Mapping(target = "id", source = "id")
+  @Mapping(target = "identityId", source = "identityId")
   @Mapping(target = "firstname", source = "firstname")
   @Mapping(target = "lastname", source = "lastname")
   @Mapping(target = "countryCode", source = "phoneNumber.countryCode")

@@ -9,4 +9,6 @@ public interface UserRepository {
   User load(UserId userId);
 
   void update(User user);
+
+  boolean existsByUserId(UserId userId);
 }

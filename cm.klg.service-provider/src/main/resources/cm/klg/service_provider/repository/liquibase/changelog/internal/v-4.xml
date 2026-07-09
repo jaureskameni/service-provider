@@ -22,4 +22,9 @@
 		</addColumn>
 	</changeSet>
 
+	<changeSet id="SP-32" author="kameni.nguematcha">
+		<addColumn tableName="t_user">
+			<column name="c_identity_id" type="varchar(36)" />
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>

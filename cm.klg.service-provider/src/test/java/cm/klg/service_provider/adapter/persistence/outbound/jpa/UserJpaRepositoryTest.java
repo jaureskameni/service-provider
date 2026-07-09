@@ -4,6 +4,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cm.klg.common.base.domain.CreatedAt;
+import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.user.EmailAddress;
@@ -33,6 +34,7 @@ class UserJpaRepositoryTest {
     User user =
         User.reconstitute(
             UserId.from(UUID.randomUUID()),
+            IdentityId.from(UUID.randomUUID()),
             new UserProfile(
                 Firstname.from("John"),
                 Lastname.from("Doe"),
