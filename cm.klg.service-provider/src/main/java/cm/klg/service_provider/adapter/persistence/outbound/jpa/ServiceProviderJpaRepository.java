@@ -143,7 +143,7 @@ public record ServiceProviderJpaRepository(
 
     Map<UUID, UserJpa> usersById =
         userSpringRepository
-            .findAllByIdentityId(
+            .findAllByIdentityIdIn(
                 serviceProvidersById.values().stream().map(ServiceProviderJpa::getUserId).toList())
             .stream()
             .collect(Collectors.toMap(UserJpa::getId, userJpa -> userJpa));
