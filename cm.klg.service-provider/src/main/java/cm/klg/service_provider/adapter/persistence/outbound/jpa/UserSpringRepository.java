@@ -10,5 +10,5 @@ public interface UserSpringRepository extends JpaRepository<UserJpa, UUID> {
 
   boolean existsByIdentityId(UUID identityId);
 
-  List<UserJpa> findAllByIdentityId(List<UUID> uuids);
+  List<UserJpa> findAllByIdentityIdIn(List<UUID> uuids);
 }
