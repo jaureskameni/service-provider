@@ -125,7 +125,14 @@ public interface JpaMapper {
   default void mapUserServicesJpa(
       ServiceProvider serviceProvider, @MappingTarget ServiceProviderJpa target) {
     target.setUserServices(
-        serviceProvider.getUserServices().stream().map(this::toUserServiceJpa).toList());
+        serviceProvider.getUserServices().stream()
+            .map(
+                us -> {
+                  UserServiceJpa userServiceJpa = toUserServiceJpa(us);
+                  userServiceJpa.setServiceProvider(target);
+                  return userServiceJpa;
+                })
+            .toList());
   }
 
   default ServiceProvider toServiceProviderDomain(ServiceProviderJpa serviceProviderJpa) {
