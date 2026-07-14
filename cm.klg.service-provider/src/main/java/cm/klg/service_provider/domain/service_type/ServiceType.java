@@ -8,23 +8,23 @@ import org.jspecify.annotations.Nullable;
 
 @Getter
 public class ServiceType {
-  private final ServiceTypeId serviceTypeId;
-  private final ServiceTypeName serviceTypeName;
-  private final ServiceCategory serviceCategory;
+  private final ServiceTypeId id;
+  private final ServiceTypeName name;
+  private final ServiceCategory category;
   private final boolean isActive;
   private final CreatedAt createdAt;
   @Nullable private final CreatedAt updated;
 
   public ServiceType(
-      ServiceTypeId serviceTypeId,
-      ServiceTypeName serviceTypeName,
-      ServiceCategory serviceCategory,
+      ServiceTypeId id,
+      ServiceTypeName name,
+      ServiceCategory category,
       boolean isActive,
       CreatedAt createdAt,
       @Nullable CreatedAt updated) {
-    this.serviceTypeId = Objects.requireNonNull(serviceTypeId);
-    this.serviceTypeName = Objects.requireNonNull(serviceTypeName);
-    this.serviceCategory = Objects.requireNonNull(serviceCategory);
+    this.id = Objects.requireNonNull(id);
+    this.name = Objects.requireNonNull(name);
+    this.category = Objects.requireNonNull(category);
     this.isActive = isActive;
     this.createdAt = Objects.requireNonNull(createdAt);
     this.updated = updated;

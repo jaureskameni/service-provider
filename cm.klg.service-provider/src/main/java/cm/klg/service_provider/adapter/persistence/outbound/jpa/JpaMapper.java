@@ -23,6 +23,7 @@ import cm.klg.service_provider.domain.service_provider.UserDocument;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_provider.UserService;
 import cm.klg.service_provider.domain.service_provider.YearOfExperience;
+import cm.klg.service_provider.domain.service_type.ServiceType;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import cm.klg.service_provider.domain.user.EmailAddress;
 import cm.klg.service_provider.domain.user.Firstname;
@@ -84,6 +85,15 @@ public interface JpaMapper {
   @Mapping(target = "yearOfExperience", source = "yearOfExperience.value")
   @Mapping(target = "createdAt", source = "createdAt.value")
   UserServiceJpa toUserServiceJpa(UserService userService);
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "id", source = "id.value")
+  @Mapping(target = "name", source = "name.value")
+  @Mapping(target = "category", source = "category")
+  @Mapping(target = "active", source = "active")
+  @Mapping(target = "createdAt", source = "createdAt.value")
+  @Mapping(target = "updatedAt", source = "updated.value")
+  ServiceTypeJpa toServiceTypeJpa(ServiceType serviceType);
 
   @BeanMapping(ignoreByDefault = true)
   @Mapping(target = "id", source = "id.value")
