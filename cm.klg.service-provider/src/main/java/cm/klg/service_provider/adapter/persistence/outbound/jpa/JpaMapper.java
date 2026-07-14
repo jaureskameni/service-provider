@@ -142,7 +142,7 @@ public interface JpaMapper {
                   userServiceJpa.setServiceProvider(target);
                   return userServiceJpa;
                 })
-            .toList());
+            .collect(Collectors.toCollection(ArrayList::new)));
   }
 
   default ServiceProvider toServiceProviderDomain(ServiceProviderJpa serviceProviderJpa) {
