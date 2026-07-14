@@ -18,9 +18,9 @@ class ServiceTypeTest {
     ServiceType serviceType = ServiceType.of(name, category, true);
 
     // Then
-    assertThat(serviceType.getServiceTypeId()).isNotNull();
-    assertThat(serviceType.getServiceTypeName()).isEqualTo(name);
-    assertThat(serviceType.getServiceCategory()).isEqualTo(category);
+    assertThat(serviceType.getId()).isNotNull();
+    assertThat(serviceType.getName()).isEqualTo(name);
+    assertThat(serviceType.getCategory()).isEqualTo(category);
     assertThat(serviceType.isActive()).isTrue();
     assertThat(serviceType.getCreatedAt()).isNotNull();
     assertThat(serviceType.getUpdated()).isNull();
@@ -39,9 +39,9 @@ class ServiceTypeTest {
     ServiceType serviceType = new ServiceType(id, name, category, true, createdAt, updatedAt);
 
     // Then
-    assertThat(serviceType.getServiceTypeId()).isEqualTo(id);
-    assertThat(serviceType.getServiceTypeName()).isEqualTo(name);
-    assertThat(serviceType.getServiceCategory()).isEqualTo(category);
+    assertThat(serviceType.getId()).isEqualTo(id);
+    assertThat(serviceType.getName()).isEqualTo(name);
+    assertThat(serviceType.getCategory()).isEqualTo(category);
     assertThat(serviceType.isActive()).isTrue();
     assertThat(serviceType.getCreatedAt()).isEqualTo(createdAt);
     assertThat(serviceType.getUpdated()).isEqualTo(updatedAt);
