@@ -32,11 +32,6 @@ public class UserServiceJpa {
   @JoinColumn(name = "c_service_provider_id")
   private ServiceProviderJpa serviceProvider;
 
-  @MapsId("serviceTypeId")
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "c_service_type_id")
-  private ServiceTypeJpa serviceType;
-
   @Column(name = "c_year_of_experience")
   private int yearOfExperience;
 
