@@ -146,7 +146,7 @@ public record ServiceProviderJpaRepository(
             .findAllByIdentityIdIn(
                 serviceProvidersById.values().stream().map(ServiceProviderJpa::getUserId).toList())
             .stream()
-            .collect(Collectors.toMap(UserJpa::getId, userJpa -> userJpa));
+            .collect(Collectors.toMap(UserJpa::getIdentityId, Function.identity()));
 
     List<ServiceTypeJpa> serviceTypes =
         serviceTypeSpringRepository.findAllById(
