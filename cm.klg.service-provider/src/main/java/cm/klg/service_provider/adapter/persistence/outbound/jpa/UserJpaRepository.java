@@ -1,8 +1,10 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.service_provider.application.outbound.UserRepository;
+import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.user.User;
+import cm.klg.service_provider.domain.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 
@@ -18,11 +20,11 @@ public class UserJpaRepository implements UserRepository {
   }
 
   @Override
-  public User load(@NonNull UserId userId) {
+  public User load(@NonNull IdentityId identityId) {
     return userSpringRepository
-        .findByIdentityId(userId.value())
+        .findByIdentityId(identityId.value())
         .map(jpaMapper::toUserDomain)
-        .orElseThrow();
+        .orElseThrow(UserNotFoundException::new);
   }
 
   @Override
