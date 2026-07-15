@@ -41,9 +41,10 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   public BecomeServiceProviderUseCase becomeServiceProviderUseCase(
       ServiceProviderRepository serviceProviderRepository,
       DomainEventPublisher domainEventPublisher,
-      UserRepository userRepository) {
+      UserRepository userRepository,
+      ServiceTypeRepository serviceTypeRepository) {
     return new BecomeServiceProviderUseCase(
-        serviceProviderRepository, userRepository, domainEventPublisher);
+        serviceProviderRepository, userRepository, serviceTypeRepository, domainEventPublisher);
   }
 
   @Bean
@@ -82,8 +83,9 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public AddNewServiceUseCase addNewServiceUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new AddNewServiceUseCase(serviceProviderRepository);
+      ServiceProviderRepository serviceProviderRepository,
+      ServiceTypeRepository serviceTypeRepository) {
+    return new AddNewServiceUseCase(serviceProviderRepository, serviceTypeRepository);
   }
 
   @Bean

@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -76,7 +75,13 @@ public interface JpaMapper {
   @Mapping(target = "phoneNumber.countryCode", source = "phoneNumber.countryCode")
   @Mapping(target = "createdAt", source = "createdAt.value")
   @Mapping(target = "updatedAt", source = "updatedAt.value")
-  ServiceProviderJpa toServiceProviderJpa(ServiceProvider serviceProvider);
+  ServiceProviderJpa fromServiceProviderDomain(ServiceProvider serviceProvider);
+
+  default ServiceProviderJpa toServiceProviderJpa(ServiceProvider serviceProvider) {
+    ServiceProviderJpa target = fromServiceProviderDomain(serviceProvider);
+    mapUserServicesForInsert(serviceProvider, target);
+    return target;
+  }
 
   @BeanMapping(ignoreByDefault = true)
   @Mapping(target = "id.serviceProviderId", source = "serviceProviderId.value")
@@ -131,18 +136,30 @@ public interface JpaMapper {
         CreatedAt.from(userJpa.getCreatedAt()));
   }
 
-  @AfterMapping
-  default void mapUserServicesJpa(
+  default void mapUserServicesForInsert(
       ServiceProvider serviceProvider, @MappingTarget ServiceProviderJpa target) {
-    target.setUserServices(
-        serviceProvider.getUserServices().stream()
-            .map(
-                us -> {
-                  UserServiceJpa userServiceJpa = toUserServiceJpa(us);
-                  userServiceJpa.setServiceProvider(target);
-                  return userServiceJpa;
-                })
-            .collect(Collectors.toCollection(ArrayList::new)));
+    serviceProvider.getUserServices().forEach(userService -> addUserService(target, userService));
+  }
+
+  default void fromUserServicesDomain(
+      ServiceProvider serviceProvider, @MappingTarget ServiceProviderJpa target) {
+    serviceProvider.getUserServices().stream()
+        .filter(
+            userService ->
+                target.getUserServices().stream()
+                    .noneMatch(
+                        userServiceJpa ->
+                            userService
+                                .getServiceTypeId()
+                                .value()
+                                .equals(userServiceJpa.getId().getServiceTypeId())))
+        .forEach(userService -> addUserService(target, userService));
+  }
+
+  private void addUserService(ServiceProviderJpa target, UserService userService) {
+    UserServiceJpa userServiceJpa = toUserServiceJpa(userService);
+    userServiceJpa.setServiceProvider(target);
+    target.getUserServices().add(userServiceJpa);
   }
 
   default ServiceProvider toServiceProviderDomain(ServiceProviderJpa serviceProviderJpa) {
@@ -213,6 +230,12 @@ public interface JpaMapper {
   @Mapping(target = "updatedAt", source = "updatedAt.value")
   void toServiceProviderJpa(
       @MappingTarget ServiceProviderJpa serviceProviderJpa, ServiceProvider serviceProvider);
+
+  default void fromServiceProvider(
+      @MappingTarget ServiceProviderJpa serviceProviderJpa, ServiceProvider serviceProvider) {
+    toServiceProviderJpa(serviceProviderJpa, serviceProvider);
+    fromUserServicesDomain(serviceProvider, serviceProviderJpa);
+  }
 
   default ServiceProviderView toServiceProviderView(
       ServiceProviderJpa serviceProviderJpa, UserJpa userJpa, List<ServiceTypeJpa> serviceTypes) {

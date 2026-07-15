@@ -71,10 +71,13 @@ public record ServiceProviderJpaRepository(
   public void update(@NonNull ServiceProvider serviceProvider) {
     serviceProviderSpringRepository
         .findAggregateById(serviceProvider.getId().value())
-        .ifPresent(
+        .ifPresentOrElse(
             serviceProviderJpa -> {
-              jpaMapper.toServiceProviderJpa(serviceProviderJpa, serviceProvider);
+              jpaMapper.fromServiceProvider(serviceProviderJpa, serviceProvider);
               serviceProviderSpringRepository.save(serviceProviderJpa);
+            },
+            () -> {
+              throw new ServiceProviderNotFoundException();
             });
   }
 

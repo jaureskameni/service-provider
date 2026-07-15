@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-36:1" author="kameni.nguematcha">
+		<addUniqueConstraint tableName="t_user"
+			columnNames="c_identity_id" constraintName="uq_user_identity_id" />
+		<addForeignKeyConstraint
+			baseTableName="t_service_provider" baseColumnNames="c_user_id"
+			constraintName="fk_service_provider_user_identity"
+			referencedTableName="t_user" referencedColumnNames="c_identity_id"
+			onDelete="RESTRICT" onUpdate="CASCADE" />
+		<addForeignKeyConstraint
+			baseTableName="t_user_service"
+			baseColumnNames="c_service_provider_id"
+			constraintName="fk_user_service_provider"
+			referencedTableName="t_service_provider" referencedColumnNames="c_id"
+			onDelete="CASCADE" onUpdate="CASCADE" />
+		<addForeignKeyConstraint
+			baseTableName="t_user_service" baseColumnNames="c_service_type_id"
+			constraintName="fk_user_service_type"
+			referencedTableName="t_service_type" referencedColumnNames="c_id"
+			onDelete="RESTRICT" onUpdate="CASCADE" />
+	</changeSet>
+</databaseChangeLog>

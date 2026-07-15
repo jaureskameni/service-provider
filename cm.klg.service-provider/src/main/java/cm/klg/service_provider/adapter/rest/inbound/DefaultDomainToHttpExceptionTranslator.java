@@ -12,6 +12,7 @@ import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExi
 import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyProvidesServiceException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderNotFoundException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderWithPhoneNumberAlreadyExistsException;
+import cm.klg.service_provider.domain.service_type.ServiceTypeNotFoundException;
 import cm.klg.service_provider.domain.user.UserNotFoundException;
 import java.util.Optional;
 
@@ -20,7 +21,9 @@ public record DefaultDomainToHttpExceptionTranslator() implements DomainToHttpEx
   public HttpErrorException translate(RuntimeException ex) {
     var message = Optional.ofNullable(ex.getMessage()).orElse("missing error code");
     return switch (ex) {
-      case UserNotFoundException _, ServiceProviderNotFoundException _ ->
+      case UserNotFoundException _,
+          ServiceProviderNotFoundException _,
+          ServiceTypeNotFoundException _ ->
           new ResourceNotFoundException(message);
       case ServiceProviderAlreadyExistsException _,
           ServiceProviderWithPhoneNumberAlreadyExistsException _,
