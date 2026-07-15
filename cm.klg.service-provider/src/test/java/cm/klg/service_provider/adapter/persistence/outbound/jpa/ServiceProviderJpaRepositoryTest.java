@@ -16,7 +16,9 @@ import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import cm.klg.service_provider.domain.service_provider.UserDocument;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
+import cm.klg.service_provider.domain.service_provider.YearOfExperience;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -163,18 +165,24 @@ class ServiceProviderJpaRepositoryTest {
   }
 
   private ServiceProvider createServiceProvider(ServiceProviderId id) {
-    return ServiceProvider.reconstitute(
-        id,
-        new UserId(UUID.randomUUID()),
-        new ProviderContact(
-            new ProviderLocation(
-                new UserCityId(UUID.randomUUID()),
-                new UserDistrictId(UUID.randomUUID()),
-                new UserQuarterId(UUID.randomUUID())),
-            new PhoneNumber("+237", "678901234")),
-        new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
-        new ProviderAudit(cm.klg.common.base.domain.CreatedAt.from(LocalDateTime.now()), null),
-        null,
-        new ArrayList<>());
+    ServiceProvider serviceProvider =
+        ServiceProvider.reconstitute(
+            id,
+            new UserId(UUID.randomUUID()),
+            new ProviderContact(
+                new ProviderLocation(
+                    new UserCityId(UUID.randomUUID()),
+                    new UserDistrictId(UUID.randomUUID()),
+                    new UserQuarterId(UUID.randomUUID())),
+                new PhoneNumber("+237", "678901234")),
+            new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
+            new ProviderAudit(cm.klg.common.base.domain.CreatedAt.from(LocalDateTime.now()), null),
+            null,
+            new ArrayList<>());
+    serviceProvider.addUserService(
+        new ServiceTypeId(UUID.randomUUID()),
+        new YearOfExperience(1),
+        new UserDocument(UUID.randomUUID()));
+    return serviceProvider;
   }
 }

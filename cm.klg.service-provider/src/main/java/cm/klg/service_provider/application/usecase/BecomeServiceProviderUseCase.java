@@ -2,6 +2,7 @@ package cm.klg.service_provider.application.usecase;
 
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
+import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
@@ -14,16 +15,21 @@ import cm.klg.service_provider.domain.service_provider.ServiceProviderWithPhoneN
 import cm.klg.service_provider.domain.service_provider.UserDocument;
 import cm.klg.service_provider.domain.service_provider.YearOfExperience;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
+import cm.klg.service_provider.domain.service_type.ServiceTypeNotFoundException;
 import cm.klg.service_provider.domain.user.UserNotFoundException;
 import java.util.ArrayList;
 
 public record BecomeServiceProviderUseCase(
     ServiceProviderRepository serviceProviderRepository,
     UserRepository userRepository,
+    ServiceTypeRepository serviceTypeRepository,
     DomainEventPublisher domainEventPublisher) {
   public ServiceProviderId execute(BecomeServiceProviderCommand command) {
     if (!userRepository.existsByUserId(command.userId())) {
       throw new UserNotFoundException();
+    }
+    if (!serviceTypeRepository.existsById(command.serviceTypeId())) {
+      throw new ServiceTypeNotFoundException();
     }
     if (serviceProviderRepository.existsByUserId(command.userId())) {
       throw new ServiceProviderAlreadyExistsException();

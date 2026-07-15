@@ -2,14 +2,23 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.common.base.entity.PhoneNumberJpa;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ProviderAudit;
+import cm.klg.service_provider.domain.service_provider.ProviderContact;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
+import cm.klg.service_provider.domain.service_provider.ProviderReview;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import cm.klg.service_provider.domain.service_provider.UserDocument;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
+import cm.klg.service_provider.domain.service_provider.YearOfExperience;
+import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -86,6 +95,54 @@ class JpaMapperTest {
   }
 
   @Test
+  void updateServiceProviderJpa_shouldKeepManagedCollectionAndAddOnlyMissingChildren() {
+    // Given
+    UUID serviceProviderId = UUID.randomUUID();
+    UUID existingServiceTypeId = UUID.randomUUID();
+    UUID newServiceTypeId = UUID.randomUUID();
+    ServiceProvider source = reconstitutedServiceProvider(serviceProviderId);
+    source.addUserService(
+        new ServiceTypeId(existingServiceTypeId),
+        new YearOfExperience(8),
+        new UserDocument(UUID.randomUUID()));
+    source.addUserService(
+        new ServiceTypeId(newServiceTypeId),
+        new YearOfExperience(2),
+        new UserDocument(UUID.randomUUID()));
+
+    ServiceProviderJpa target = new ServiceProviderJpa();
+    target.setId(serviceProviderId);
+    UserServiceJpa existingChild = new UserServiceJpa();
+    UserServiceJpaId existingChildId = new UserServiceJpaId();
+    existingChildId.setServiceProviderId(serviceProviderId);
+    existingChildId.setServiceTypeId(existingServiceTypeId);
+    existingChild.setId(existingChildId);
+    existingChild.setYearOfExperience(1);
+    existingChild.setServiceProvider(target);
+    target.getUserServices().add(existingChild);
+    List<UserServiceJpa> managedCollection = target.getUserServices();
+
+    // When
+    objectUnderTest.fromServiceProvider(target, source);
+
+    // Then
+    assertThat(target.getUserServices()).isSameAs(managedCollection);
+    assertThat(target.getUserServices()).contains(existingChild);
+    assertThat(existingChild.getYearOfExperience()).isEqualTo(1);
+    assertThat(target.getUserServices())
+        .extracting(userService -> userService.getId().getServiceTypeId())
+        .containsExactlyInAnyOrder(existingServiceTypeId, newServiceTypeId);
+    assertThat(
+            target.getUserServices().stream()
+                .filter(
+                    userService -> newServiceTypeId.equals(userService.getId().getServiceTypeId()))
+                .findFirst()
+                .orElseThrow()
+                .getServiceProvider())
+        .isSameAs(target);
+  }
+
+  @Test
   void toServiceTypeView_shouldMapCorrectly() {
     // Given
     ServiceTypeJpa jpa = new ServiceTypeJpa();
@@ -157,5 +214,21 @@ class JpaMapperTest {
     assertThat(serviceView.serviceType().name()).isEqualTo("Plumber");
     assertThat(serviceView.yearOfExperience()).isEqualTo(5);
     assertThat(serviceView.document()).isEqualTo(docId);
+  }
+
+  private ServiceProvider reconstitutedServiceProvider(UUID serviceProviderId) {
+    return ServiceProvider.reconstitute(
+        new ServiceProviderId(serviceProviderId),
+        new UserId(UUID.randomUUID()),
+        new ProviderContact(
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
+            new PhoneNumber("+237", "678901234")),
+        new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
+        new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+        null,
+        List.of());
   }
 }

@@ -51,7 +51,7 @@ public class ServiceProvider {
     this.about = about;
     this.updatedAt = audit.updatedAt();
     this.createdAt = audit.createdAt();
-    this.userServices.addAll(userServices);
+    addAllUserService(userServices);
   }
 
   public List<UserService> getUserServices() {
@@ -87,18 +87,24 @@ public class ServiceProvider {
 
   public void addUserService(
       ServiceTypeId serviceTypeId, YearOfExperience yearOfExperience, UserDocument document) {
-    boolean alreadyProvided =
-        this.userServices.stream()
-            .anyMatch(userService -> Objects.equals(userService.getServiceTypeId(), serviceTypeId));
-    if (alreadyProvided) {
-      throw new ServiceProviderAlreadyProvidesServiceException();
-    }
-    UserService userService = UserService.of(this.id, serviceTypeId, yearOfExperience, document);
-    this.userServices.add(userService);
+    addUserService(UserService.of(this.id, serviceTypeId, yearOfExperience, document));
   }
 
   public void addAllUserService(List<UserService> userServices) {
-    this.userServices.addAll(userServices);
+    userServices.forEach(this::addUserService);
+  }
+
+  private void addUserService(UserService userService) {
+    boolean alreadyProvided =
+        this.userServices.stream()
+            .anyMatch(
+                existingUserService ->
+                    Objects.equals(
+                        existingUserService.getServiceTypeId(), userService.getServiceTypeId()));
+    if (alreadyProvided) {
+      throw new ServiceProviderAlreadyProvidesServiceException();
+    }
+    this.userServices.add(userService);
   }
 
   public void approve(UserId userId) {

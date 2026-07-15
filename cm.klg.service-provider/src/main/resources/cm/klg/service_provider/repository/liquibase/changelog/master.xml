@@ -13,5 +13,7 @@
 		file="cm/klg/service_provider/repository/liquibase/changelog/internal/v-3.xml" />
 	<include
 		file="cm/klg/service_provider/repository/liquibase/changelog/internal/v-4.xml" />
+	<include
+		file="cm/klg/service_provider/repository/liquibase/changelog/internal/v-5.xml" />
 
 </databaseChangeLog>
