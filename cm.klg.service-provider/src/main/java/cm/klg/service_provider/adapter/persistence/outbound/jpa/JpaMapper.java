@@ -55,7 +55,8 @@ public interface JpaMapper {
   @Mapping(target = "lastname", source = "lastname.value")
   @Mapping(target = "firstname", source = "firstname.value")
   @Mapping(target = "emailAddress", source = "email.value")
-  @Mapping(target = "phoneNumber", source = "phoneNumber")
+  @Mapping(target = "phoneNumber.countryCode", source = "phoneNumber.countryCode")
+  @Mapping(target = "phoneNumber.number", source = "phoneNumber.number")
   @Mapping(target = "serviceProvider", source = "serviceProvider")
   @Mapping(target = "createdAt", source = "createdAt.value")
   UserJpa toUserJpa(User user);
@@ -113,7 +114,8 @@ public interface JpaMapper {
   @Mapping(target = "lastname", source = "lastname.value")
   @Mapping(target = "firstname", source = "firstname.value")
   @Mapping(target = "emailAddress", source = "email.value")
-  @Mapping(target = "phoneNumber", source = "phoneNumber")
+  @Mapping(target = "phoneNumber.countryCode", source = "phoneNumber.countryCode")
+  @Mapping(target = "phoneNumber.number", source = "phoneNumber.number")
   @Mapping(target = "serviceProvider", source = "serviceProvider")
   @Mapping(target = "createdAt", source = "createdAt.value")
   void toUserJpa(User user, @MappingTarget UserJpa userJpa);
