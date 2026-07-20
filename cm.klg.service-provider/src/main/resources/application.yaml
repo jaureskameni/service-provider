@@ -31,13 +31,13 @@ spring:
       definition: "user; serviceRequest"
     stream:
       bindings:
-        service-provider-out-0:
+        serviceProvider-out-0:
           group: "${spring.application.name}"
           destination: "serviceProvider"
         user-in-0:
           group: "${spring.application.name}"
           destination: "user"
-        service-request-in-0:
+        serviceRequest-in-0:
           group: "${spring.application.name}"
           destination: "serviceRequest"
       kafka:
