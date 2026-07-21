@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-38:1" author="kameni.nguematcha">
+		<preConditions onFail="MARK_RAN">
+			<foreignKeyConstraintExists
+				foreignKeyName="fk_provider_client_user" />
+			<columnExists tableName="t_user"
+				columnName="c_identity_id" />
+		</preConditions>
+
+		<dropForeignKeyConstraint
+			baseTableName="t_provider_client"
+			constraintName="fk_provider_client_user" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_provider_client" baseColumnNames="c_user_id"
+			constraintName="fk_provider_client_user" referencedTableName="t_user"
+			referencedColumnNames="c_identity_id" onDelete="CASCADE"
+			onUpdate="CASCADE" />
+	</changeSet>
+
+</databaseChangeLog>
