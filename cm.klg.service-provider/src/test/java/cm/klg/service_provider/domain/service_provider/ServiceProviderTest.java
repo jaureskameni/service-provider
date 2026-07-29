@@ -81,7 +81,7 @@ class ServiceProviderTest {
                 ServiceProviderStatus.REJECTED, null, new UserId(UUID.randomUUID()), null),
             new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
             null,
-            new ArrayList<>());
+            new ServiceCollections(new ArrayList<>(), new ArrayList<>()));
 
     assertThatThrownBy(() -> serviceProvider.approve(adminId))
         .isInstanceOf(InvalidServiceProviderStatusTransitionException.class);
