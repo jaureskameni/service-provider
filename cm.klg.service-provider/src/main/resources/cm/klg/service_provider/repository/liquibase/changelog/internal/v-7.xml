@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-40:1" author="kameni.nguematcha">
+
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="t_portfolio_item" />
+			</not>
+		</preConditions>
+
+		<createTable tableName="t_portfolio_item">
+			<column name="c_id" type="uuid">
+				<constraints nullable="false" primaryKey="true"
+					primaryKeyName="pk_portfolio_item" />
+			</column>
+			<column name="c_service_provider_id" type="uuid">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_title" type="varchar(255)">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_description" type="text" />
+			<column name="c_media_id" type="uuid">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_created_at" type="datetime">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+
+		<addForeignKeyConstraint
+			baseTableName="t_portfolio_item"
+			baseColumnNames="c_service_provider_id"
+			constraintName="fk_portfolio_item_service_provider"
+			referencedTableName="t_service_provider" referencedColumnNames="c_id"
+			onDelete="CASCADE" onUpdate="CASCADE" />
+
+	</changeSet>
+
+</databaseChangeLog>

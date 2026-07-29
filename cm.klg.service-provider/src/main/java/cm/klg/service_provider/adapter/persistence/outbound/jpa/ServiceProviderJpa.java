@@ -78,6 +78,13 @@ public class ServiceProviderJpa extends AggregateRootEntity<UUID> {
       orphanRemoval = true)
   private List<UserServiceJpa> userServices = new ArrayList<>();
 
+  @OneToMany(
+      mappedBy = "serviceProvider",
+      fetch = FetchType.LAZY,
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
+  private List<PortfolioItemJpa> portfolioItems = new ArrayList<>();
+
   @Override
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) return false;

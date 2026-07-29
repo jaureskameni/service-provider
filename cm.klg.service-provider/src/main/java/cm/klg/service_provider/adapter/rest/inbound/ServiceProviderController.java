@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.OK;
 import cm.klg.common.base.adapter.inbound.rest.WithAuthenticationSupport;
 import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.api.ServiceProviderApi;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
@@ -14,6 +15,7 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProvide
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
+import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
@@ -41,6 +43,7 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase;
   private final RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
   private final AddNewServiceUseCase addNewServiceUseCase;
+  private final AddPortfolioItemUseCase addPortfolioItemUseCase;
   private final SearchServiceProviderUseCase searchServiceProviderUseCase;
 
   @Override
@@ -49,6 +52,17 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
         () ->
             addNewServiceUseCase.execute(
                 restMapper.toAddNewServiceCommand(serviceTypeDTO, getCurrentUserId())));
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> addPortfolioItem(
+      CreatePortfolioItemRequestDTO createPortfolioItemRequestDTO) {
+    useCaseExecutor.runCommand(
+        () ->
+            addPortfolioItemUseCase.execute(
+                restMapper.toAddPortfolioItemCommand(
+                    createPortfolioItemRequestDTO, getCurrentUserId())));
     return ResponseEntity.noContent().build();
   }
 

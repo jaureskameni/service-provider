@@ -233,6 +233,25 @@ paths:
                 $ref: "#/components/schemas/ServiceProvider"
         "404":
           description: "SERVICE_PROVIDER_404_002"
+  /service-provider/portfolio:
+    post:
+      tags:
+      - "ServiceProvider"
+      summary: "Add Provider's Portfolio"
+      description: "Add Provider's Portfolio"
+      operationId: "addPortfolioItem"
+      security:
+      - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePortfolioItemRequest"
+      responses:
+        "201":
+          description: "Successful operation"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
   /service-catalog:
     get:
       tags:
@@ -409,6 +428,24 @@ components:
           type: "string"
         category:
           type: "string"
+    CreatePortfolioItemRequest:
+      type: "object"
+      required:
+      - "title"
+      - "description"
+      - "mediaId"
+      properties:
+        title:
+          type: "string"
+        description:
+          type: "string"
+          minLength: 3
+          maxLength: 100
+        mediaId:
+          type: "string"
+          format: "uuid"
+          minLength: 3
+          maxLength: 500
     CreationResponse:
       type: "object"
       required:

@@ -31,6 +31,7 @@ public class ServiceProvider {
   private CreatedAt createdAt;
   @Nullable private CreatedAt updatedAt;
   private final List<UserService> userServices = new ArrayList<>();
+  private final List<PortfolioItem> portfolioItems = new ArrayList<>();
 
   public ServiceProvider(
       ServiceProviderId id,
@@ -39,7 +40,7 @@ public class ServiceProvider {
       ProviderReview review,
       ProviderAudit audit,
       @Nullable AboutProvider about,
-      List<UserService> userServices) {
+      ServiceCollections collections) {
     this.id = id;
     this.userId = userId;
     this.location = contact.location();
@@ -51,11 +52,16 @@ public class ServiceProvider {
     this.about = about;
     this.updatedAt = audit.updatedAt();
     this.createdAt = audit.createdAt();
-    addAllUserService(userServices);
+    addAllUserService(collections.userServices());
+    addAllPortfolioItems(collections.portfolioItems());
   }
 
   public List<UserService> getUserServices() {
     return java.util.Collections.unmodifiableList(userServices);
+  }
+
+  public List<PortfolioItem> getPortfolioItems() {
+    return java.util.Collections.unmodifiableList(portfolioItems);
   }
 
   public static ServiceProvider of(
@@ -71,7 +77,7 @@ public class ServiceProvider {
         new ProviderReview(PENDING, null, null, null),
         new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
         about,
-        userServices);
+        new ServiceCollections(userServices, new ArrayList<>()));
   }
 
   public static ServiceProvider reconstitute(
@@ -81,8 +87,8 @@ public class ServiceProvider {
       ProviderReview review,
       ProviderAudit audit,
       @Nullable AboutProvider about,
-      List<UserService> userServices) {
-    return new ServiceProvider(id, userId, contact, review, audit, about, userServices);
+      ServiceCollections collections) {
+    return new ServiceProvider(id, userId, contact, review, audit, about, collections);
   }
 
   public void addUserService(
@@ -90,8 +96,19 @@ public class ServiceProvider {
     addUserService(UserService.of(this.id, serviceTypeId, yearOfExperience, document));
   }
 
+  public void addPortfolioItem(
+      PortfolioItemTitle title,
+      PortfolioItemDescription description,
+      PortfolioItemMediaId mediaId) {
+    portfolioItems.add(PortfolioItem.of(title, description, mediaId));
+  }
+
   public void addAllUserService(List<UserService> userServices) {
     userServices.forEach(this::addUserService);
+  }
+
+  private void addAllPortfolioItems(List<PortfolioItem> portfolioItems) {
+    this.portfolioItems.addAll(portfolioItems);
   }
 
   private void addUserService(UserService userService) {

@@ -16,18 +16,19 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
   boolean existsByPhoneNumber(PhoneNumberJpa phoneNumberJpa);
 
   @Query(
-      "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices WHERE s.id ="
-          + " :serviceProviderId")
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
+          + " LEFT JOIN FETCH s.portfolioItems WHERE s.id = :serviceProviderId")
   Optional<ServiceProviderJpa> findAggregateById(UUID serviceProviderId);
 
   @Query(
-      "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices WHERE s.id ="
-          + " :serviceProviderId AND s.status = :status")
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
+          + " LEFT JOIN FETCH s.portfolioItems WHERE s.id = :serviceProviderId"
+          + " AND s.status = :status")
   Optional<ServiceProviderJpa> findAggregateByIdAndStatus(UUID serviceProviderId, String status);
 
   @Query(
-      "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices WHERE s.userId ="
-          + " :userId")
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
+          + " LEFT JOIN FETCH s.portfolioItems WHERE s.userId = :userId")
   Optional<ServiceProviderJpa> findAggregateByUserId(UUID userId);
 
   @Query(
@@ -85,7 +86,7 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
       Pageable pageable);
 
   @Query(
-      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices WHERE s.id IN"
-          + " :ids")
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
+          + " LEFT JOIN FETCH s.portfolioItems WHERE s.id IN :ids")
   List<ServiceProviderJpa> findAllAggregatesByIdIn(List<UUID> ids);
 }

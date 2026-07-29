@@ -1,5 +1,6 @@
 package cm.klg.service_provider.adapter.rest.inbound;
 
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceCatalogItemDTO;
@@ -10,6 +11,7 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProvide
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
+import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
@@ -18,6 +20,10 @@ import cm.klg.service_provider.application.views.ServiceProviderViews;
 import cm.klg.service_provider.application.views.ServiceTypeViews;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
+import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
 import cm.klg.service_provider.domain.service_provider.RejectionReason;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
@@ -164,5 +170,14 @@ public interface RestMapper {
         .yearOfExperience(userServiceView.yearOfExperience())
         .document(userServiceView.document())
         .createdAt(userServiceView.createdAt());
+  }
+
+  default AddPortfolioItemUseCase.Command toAddPortfolioItemCommand(
+      CreatePortfolioItemRequestDTO dto, UUID userId) {
+    return new AddPortfolioItemUseCase.Command(
+        UserId.from(userId),
+        PortfolioItemTitle.from(dto.getTitle()),
+        PortfolioItemDescription.from(dto.getDescription()),
+        PortfolioItemMediaId.from(dto.getMediaId()));
   }
 }
