@@ -59,6 +59,10 @@ public class SecurityConfig {
                         "/service-provider/{serviceProviderId:%s}/profile"
                             .formatted(REGEX_UUID_WITH_DELIMITER))
                     .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/service-provider/portfolio")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/service-provider/portfolio")
+                    .authenticated()
                     .anyRequest()
                     .denyAll())
         .oauth2ResourceServer(

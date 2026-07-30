@@ -2,6 +2,7 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.common.base.entity.PhoneNumberJpa;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
+import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
@@ -131,6 +132,13 @@ public record ServiceProviderJpaRepository(
             serviceProviderId.value(), ServiceProviderStatus.APPROVED.name())
         .map(this::toView)
         .orElseThrow(ServiceProviderNotFoundException::new);
+  }
+
+  @Override
+  public List<PortfolioView> loadAllPortfolio(@NonNull UserId userId) {
+    return serviceProviderSpringRepository.findPortfolioItemsByUserId(userId.value()).stream()
+        .map(jpaMapper::toPortfolioView)
+        .toList();
   }
 
   private PageData<ServiceProviderView> toPageData(Page<UUID> serviceProviderIds) {

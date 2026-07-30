@@ -1,5 +1,6 @@
 package cm.klg.service_provider.application.outbound;
 
+import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
@@ -13,6 +14,7 @@ import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 public interface ServiceProviderRepository {
@@ -46,4 +48,6 @@ public interface ServiceProviderRepository {
 
   ServiceProviderView loadProfile(ServiceProviderId serviceProviderId)
       throws ServiceProviderNotFoundException;
+
+  List<PortfolioView> loadAllPortfolio(UserId userId);
 }

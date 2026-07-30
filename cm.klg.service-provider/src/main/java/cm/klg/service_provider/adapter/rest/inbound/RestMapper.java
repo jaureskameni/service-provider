@@ -2,6 +2,7 @@ package cm.klg.service_provider.adapter.rest.inbound;
 
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceCatalogItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
@@ -16,6 +17,7 @@ import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceProviderViews;
 import cm.klg.service_provider.application.views.ServiceTypeViews;
 import cm.klg.service_provider.application.views.UserServiceView;
@@ -179,5 +181,18 @@ public interface RestMapper {
         PortfolioItemTitle.from(dto.getTitle()),
         PortfolioItemDescription.from(dto.getDescription()),
         PortfolioItemMediaId.from(dto.getMediaId()));
+  }
+
+  default PortfolioItemDTO toPortfolioItemDTO(PortfolioView portfolioView) {
+    return new PortfolioItemDTO()
+        .id(portfolioView.id())
+        .title(portfolioView.title())
+        .description(portfolioView.description())
+        .mediaId(portfolioView.mediaId())
+        .createdAt(portfolioView.createdAt());
+  }
+
+  default List<PortfolioItemDTO> toPortfolioItemDTOs(List<PortfolioView> portfolioViews) {
+    return portfolioViews.stream().map(this::toPortfolioItemDTO).toList();
   }
 }
