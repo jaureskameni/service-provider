@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.views.PortfolioView;
-import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -17,36 +17,36 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class GetAllMyPortfolioUseCaseTest {
+class GetProviderPortfolioUseCaseTest {
 
   @Mock private ServiceProviderRepository serviceProviderRepository;
-  @InjectMocks private GetAllMyPortfolioUseCase objectUnderTest;
+  @InjectMocks private GetProviderPortfolioUseCase objectUnderTest;
 
   @Test
   void execute_shouldReturnPortfolioList_whenItemsExist() {
-    var userId = UserId.from(UUID.randomUUID());
+    var providerId = ServiceProviderId.from(UUID.randomUUID());
     var views =
         List.of(
             new PortfolioView(
                 UUID.randomUUID(), "Title", "Desc", UUID.randomUUID(), LocalDateTime.now()));
 
-    when(serviceProviderRepository.loadAllMyPortfolio(userId)).thenReturn(views);
+    when(serviceProviderRepository.loadAllProviderPortfolio(providerId)).thenReturn(views);
 
-    var result = objectUnderTest.execute(userId);
+    var result = objectUnderTest.execute(providerId);
 
     assertThat(result).isEqualTo(views);
-    verify(serviceProviderRepository).loadAllMyPortfolio(userId);
+    verify(serviceProviderRepository).loadAllProviderPortfolio(providerId);
   }
 
   @Test
   void execute_shouldReturnEmptyList_whenNoPortfolioItems() {
-    var userId = UserId.from(UUID.randomUUID());
+    var providerId = ServiceProviderId.from(UUID.randomUUID());
 
-    when(serviceProviderRepository.loadAllMyPortfolio(userId)).thenReturn(List.of());
+    when(serviceProviderRepository.loadAllProviderPortfolio(providerId)).thenReturn(List.of());
 
-    var result = objectUnderTest.execute(userId);
+    var result = objectUnderTest.execute(providerId);
 
     assertThat(result).isEmpty();
-    verify(serviceProviderRepository).loadAllMyPortfolio(userId);
+    verify(serviceProviderRepository).loadAllProviderPortfolio(providerId);
   }
 }

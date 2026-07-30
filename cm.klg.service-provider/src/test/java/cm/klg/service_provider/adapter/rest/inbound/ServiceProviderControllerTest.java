@@ -24,6 +24,7 @@ import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequest
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
@@ -68,6 +69,7 @@ class ServiceProviderControllerTest {
   @Mock private AddPortfolioItemUseCase addPortfolioItemUseCase;
   @Mock private GetServiceProviderProfileUseCase getServiceProviderProfileUseCase;
   @Mock private GetAllMyPortfolioUseCase getAllMyPortfolioUseCase;
+  @Mock private GetProviderPortfolioUseCase getProviderPortfolioUseCase;
   @Mock private SearchServiceProviderUseCase searchServiceProviderUseCase;
 
   @InjectMocks private ServiceProviderController objectUnderTest;
@@ -490,6 +492,70 @@ class ServiceProviderControllerTest {
     // Then
     assertThat(result).isEmpty();
     verify(getAllMyPortfolioUseCase).execute(new UserId(userId));
+    verify(restMapper).toPortfolioItemDTOs(List.of());
+  }
+
+  @Test
+  void getProviderPortfolio_shouldReturnOk_whenItemsExist() {
+    UUID providerId = UUID.randomUUID();
+    var views =
+        List.of(
+            new PortfolioView(
+                UUID.randomUUID(), "A", "Desc A", UUID.randomUUID(), LocalDateTime.now()),
+            new PortfolioView(
+                UUID.randomUUID(), "B", "Desc B", UUID.randomUUID(), LocalDateTime.now()));
+    var dtos = List.of(new PortfolioItemDTO().title("A"), new PortfolioItemDTO().title("B"));
+
+    when(useCaseExecutor.executeQuery(any()))
+        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
+    when(getProviderPortfolioUseCase.execute(ServiceProviderId.from(providerId))).thenReturn(views);
+    when(restMapper.toPortfolioItemDTOs(views)).thenReturn(dtos);
+
+    @SuppressWarnings("unchecked")
+    var result =
+        // spotless:off
+        given()
+                .standaloneSetup(objectUnderTest)
+        .when()
+                .get("/service-provider/{serviceProviderId}/portfolio", providerId)
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(PortfolioItemDTO[].class);
+        // spotless:on
+
+    assertThat(result).hasSize(2);
+    assertThat(result[0].getTitle()).isEqualTo("A");
+    assertThat(result[1].getTitle()).isEqualTo("B");
+    verify(getProviderPortfolioUseCase).execute(ServiceProviderId.from(providerId));
+    verify(restMapper).toPortfolioItemDTOs(views);
+  }
+
+  @Test
+  void getProviderPortfolio_shouldReturnOkEmptyList_whenNoItems() {
+    UUID providerId = UUID.randomUUID();
+
+    when(useCaseExecutor.executeQuery(any()))
+        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
+    when(getProviderPortfolioUseCase.execute(ServiceProviderId.from(providerId)))
+        .thenReturn(List.of());
+    when(restMapper.toPortfolioItemDTOs(List.of())).thenReturn(List.of());
+
+    @SuppressWarnings("unchecked")
+    var result =
+        // spotless:off
+        given()
+                .standaloneSetup(objectUnderTest)
+        .when()
+                .get("/service-provider/{serviceProviderId}/portfolio", providerId)
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(PortfolioItemDTO[].class);
+        // spotless:on
+
+    assertThat(result).isEmpty();
+    verify(getProviderPortfolioUseCase).execute(ServiceProviderId.from(providerId));
     verify(restMapper).toPortfolioItemDTOs(List.of());
   }
 }
