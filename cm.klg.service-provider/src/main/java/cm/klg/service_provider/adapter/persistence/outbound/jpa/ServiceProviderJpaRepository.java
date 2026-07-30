@@ -135,8 +135,17 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
-  public List<PortfolioView> loadAllPortfolio(@NonNull UserId userId) {
+  public List<PortfolioView> loadAllMyPortfolio(@NonNull UserId userId) {
     return serviceProviderSpringRepository.findPortfolioItemsByUserId(userId.value()).stream()
+        .map(jpaMapper::toPortfolioView)
+        .toList();
+  }
+
+  @Override
+  public List<PortfolioView> loadAllProviderPortfolio(@NonNull ServiceProviderId providerId) {
+    return serviceProviderSpringRepository
+        .findPortfolioItemsByProviderId(providerId.value())
+        .stream()
         .map(jpaMapper::toPortfolioView)
         .toList();
   }
