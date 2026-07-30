@@ -11,6 +11,7 @@ import cm.klg.service_provider.domain.service_provider.ProviderAudit;
 import cm.klg.service_provider.domain.service_provider.ProviderContact;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ProviderReview;
+import cm.klg.service_provider.domain.service_provider.ServiceCollections;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -178,7 +179,7 @@ class ServiceProviderJpaRepositoryTest {
             new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
             new ProviderAudit(cm.klg.common.base.domain.CreatedAt.from(LocalDateTime.now()), null),
             null,
-            new ArrayList<>());
+            new ServiceCollections(new ArrayList<>(), new ArrayList<>()));
     serviceProvider.addUserService(
         new ServiceTypeId(UUID.randomUUID()),
         new YearOfExperience(1),

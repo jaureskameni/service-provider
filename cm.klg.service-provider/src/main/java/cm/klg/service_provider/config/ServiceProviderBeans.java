@@ -9,6 +9,7 @@ import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
+import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
@@ -79,6 +80,12 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
       ServiceProviderRepository serviceProviderRepository,
       DomainEventPublisher domainEventPublisher) {
     return new RejectServiceProviderRequestUseCase(serviceProviderRepository, domainEventPublisher);
+  }
+
+  @Bean
+  public AddPortfolioItemUseCase addPortfolioItemUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new AddPortfolioItemUseCase(serviceProviderRepository);
   }
 
   @Bean

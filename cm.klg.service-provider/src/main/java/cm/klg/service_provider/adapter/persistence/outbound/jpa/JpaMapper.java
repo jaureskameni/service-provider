@@ -9,11 +9,17 @@ import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.provider_client.ProviderClient;
 import cm.klg.service_provider.domain.service_provider.AboutProvider;
+import cm.klg.service_provider.domain.service_provider.PortfolioItem;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
 import cm.klg.service_provider.domain.service_provider.ProviderContact;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ProviderReview;
 import cm.klg.service_provider.domain.service_provider.RejectionReason;
+import cm.klg.service_provider.domain.service_provider.ServiceCollections;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -30,7 +36,6 @@ import cm.klg.service_provider.domain.user.Firstname;
 import cm.klg.service_provider.domain.user.Lastname;
 import cm.klg.service_provider.domain.user.User;
 import cm.klg.service_provider.domain.user.UserProfile;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -81,6 +86,7 @@ public interface JpaMapper {
   default ServiceProviderJpa toServiceProviderJpa(ServiceProvider serviceProvider) {
     ServiceProviderJpa target = fromServiceProviderDomain(serviceProvider);
     mapUserServicesForInsert(serviceProvider, target);
+    mapPortfolioItemsForInsert(serviceProvider, target);
     return target;
   }
 
@@ -91,6 +97,14 @@ public interface JpaMapper {
   @Mapping(target = "yearOfExperience", source = "yearOfExperience.value")
   @Mapping(target = "createdAt", source = "createdAt.value")
   UserServiceJpa toUserServiceJpa(UserService userService);
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "id", source = "id.value")
+  @Mapping(target = "title", source = "title.value")
+  @Mapping(target = "description", source = "description.value")
+  @Mapping(target = "mediaId", source = "mediaId.value")
+  @Mapping(target = "createdAt", source = "createdAt.value")
+  PortfolioItemJpa toPortfolioItemJpa(PortfolioItem portfolioItem);
 
   @BeanMapping(ignoreByDefault = true)
   @Mapping(target = "id", source = "id.value")
@@ -158,10 +172,36 @@ public interface JpaMapper {
         .forEach(userService -> addUserService(target, userService));
   }
 
+  default void fromPortfolioItemDomain(
+      ServiceProvider serviceProvider, @MappingTarget ServiceProviderJpa target) {
+
+    serviceProvider.getPortfolioItems().stream()
+        .filter(
+            item ->
+                target.getPortfolioItems().stream()
+                    .noneMatch(jpa -> jpa.getId().equals(item.getId().value())))
+        .forEach(item -> addPortfolioItemJpa(target, item));
+  }
+
   private void addUserService(ServiceProviderJpa target, UserService userService) {
     UserServiceJpa userServiceJpa = toUserServiceJpa(userService);
     userServiceJpa.setServiceProvider(target);
     target.getUserServices().add(userServiceJpa);
+  }
+
+  default void addPortfolioItemJpa(
+      ServiceProviderJpa serviceProviderJpa, PortfolioItem portfolioItem) {
+
+    PortfolioItemJpa portfolioJpa = toPortfolioItemJpa(portfolioItem);
+
+    portfolioJpa.setServiceProvider(serviceProviderJpa);
+
+    serviceProviderJpa.getPortfolioItems().add(portfolioJpa);
+  }
+
+  default void mapPortfolioItemsForInsert(
+      ServiceProvider serviceProvider, @MappingTarget ServiceProviderJpa target) {
+    serviceProvider.getPortfolioItems().forEach(item -> addPortfolioItemJpa(target, item));
   }
 
   default ServiceProvider toServiceProviderDomain(ServiceProviderJpa serviceProviderJpa) {
@@ -196,9 +236,9 @@ public interface JpaMapper {
             serviceProviderJpa.getAbout() != null
                 ? new AboutProvider(serviceProviderJpa.getAbout())
                 : null,
-            new ArrayList<>());
-    serviceProvider.addAllUserService(
-        this.toUserServiceDomain(serviceProviderJpa.getUserServices()));
+            new ServiceCollections(
+                toUserServiceDomain(serviceProviderJpa.getUserServices()),
+                toPortfolioItemDomain(serviceProviderJpa.getPortfolioItems())));
     return serviceProvider;
   }
 
@@ -212,6 +252,19 @@ public interface JpaMapper {
                     new YearOfExperience(userServiceJpa.getYearOfExperience()),
                     new UserDocument(userServiceJpa.getUserDocument()),
                     new CreatedAt(userServiceJpa.getCreatedAt())))
+        .toList();
+  }
+
+  default List<PortfolioItem> toPortfolioItemDomain(List<PortfolioItemJpa> portfolioItems) {
+    return portfolioItems.stream()
+        .map(
+            item ->
+                PortfolioItem.reconstitute(
+                    new PortfolioItemId(item.getId()),
+                    new PortfolioItemTitle(item.getTitle()),
+                    new PortfolioItemDescription(item.getDescription()),
+                    new PortfolioItemMediaId(item.getMediaId()),
+                    new CreatedAt(item.getCreatedAt())))
         .toList();
   }
 
@@ -237,6 +290,7 @@ public interface JpaMapper {
       @MappingTarget ServiceProviderJpa serviceProviderJpa, ServiceProvider serviceProvider) {
     toServiceProviderJpa(serviceProviderJpa, serviceProvider);
     fromUserServicesDomain(serviceProvider, serviceProviderJpa);
+    fromPortfolioItemDomain(serviceProvider, serviceProviderJpa);
   }
 
   default ServiceProviderView toServiceProviderView(
