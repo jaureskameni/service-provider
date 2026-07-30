@@ -98,4 +98,13 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
     WHERE sp.userId = :userId
 """)
   List<PortfolioItemJpa> findPortfolioItemsByUserId(@Param("userId") UUID userId);
+
+  @Query(
+"""
+    SELECT pi
+    FROM PortfolioItemJpa pi
+    JOIN pi.serviceProvider sp
+    WHERE sp.id = :providerId
+""")
+  List<PortfolioItemJpa> findPortfolioItemsByProviderId(@Param("providerId") UUID providerId);
 }

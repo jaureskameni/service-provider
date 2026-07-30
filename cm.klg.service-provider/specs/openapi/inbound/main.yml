@@ -269,6 +269,29 @@ paths:
                 type: "array"
                 items:
                   $ref: "#/components/schemas/PortfolioItem"
+  /service-provider/{serviceProviderId}/portfolio:
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "Get provider portfolio"
+      description: "Retrieve all portfolio items of the specified service provider."
+      operationId: "getProviderPortfolio"
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/PortfolioItem"
   /service-catalog:
     get:
       tags:

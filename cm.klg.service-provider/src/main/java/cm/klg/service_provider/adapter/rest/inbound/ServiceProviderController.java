@@ -21,6 +21,7 @@ import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequest
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
@@ -48,6 +49,7 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final AddNewServiceUseCase addNewServiceUseCase;
   private final AddPortfolioItemUseCase addPortfolioItemUseCase;
   private final GetAllMyPortfolioUseCase getAllMyPortfolioUseCase;
+  private final GetProviderPortfolioUseCase getProviderPortfolioUseCase;
   private final SearchServiceProviderUseCase searchServiceProviderUseCase;
 
   @Override
@@ -125,6 +127,14 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
     var result =
         useCaseExecutor.executeQuery(
             () -> getAllMyPortfolioUseCase.execute(UserId.from(getCurrentUserId())));
+    return ResponseEntity.status(OK).body(restMapper.toPortfolioItemDTOs(result));
+  }
+
+  @Override
+  public ResponseEntity<List<PortfolioItemDTO>> getProviderPortfolio(UUID serviceProviderId) {
+    var result =
+        useCaseExecutor.executeQuery(
+            () -> getProviderPortfolioUseCase.execute(ServiceProviderId.from(serviceProviderId)));
     return ResponseEntity.status(OK).body(restMapper.toPortfolioItemDTOs(result));
   }
 

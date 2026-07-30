@@ -17,6 +17,7 @@ import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
+import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
@@ -125,5 +126,11 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   public GetAllMyPortfolioUseCase getAllMyPortfolioUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new GetAllMyPortfolioUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public GetProviderPortfolioUseCase getProviderPortfolioUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new GetProviderPortfolioUseCase(serviceProviderRepository);
   }
 }

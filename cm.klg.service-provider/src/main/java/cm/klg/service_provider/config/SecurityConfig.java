@@ -8,15 +8,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+  private static final String SERVICE_PROVIDER_ID_PATH =
+      "/service-provider/{serviceProviderId:%s}".formatted(REGEX_UUID_WITH_DELIMITER);
 
   private final KeycloakJwtConverter keycloakJwtConverter;
 
@@ -26,7 +27,8 @@ public class SecurityConfig {
     return http.securityMatcher(
             "/service-catalog",
             "/service-provider/search",
-            "/service-provider/{serviceProviderId:%s}".formatted(REGEX_UUID_WITH_DELIMITER))
+            SERVICE_PROVIDER_ID_PATH,
+            SERVICE_PROVIDER_ID_PATH + "/portfolio")
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .build();
@@ -34,7 +36,7 @@ public class SecurityConfig {
 
   @Bean
   @Order(1)
-  public SecurityFilterChain protectedEndpoints(HttpSecurity http) {
+  public SecurityFilterChain protectedEndpoints(HttpSecurity http) throws Exception {
     return http.csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
             auth ->
@@ -42,27 +44,18 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.PUT, "/service-provider/add-service")
                     .authenticated()
-                    .requestMatchers(HttpMethod.GET, "/service-provider")
-                    .hasAnyAuthority(Scopes.SERVICE_PROVIDER_READ_ALL)
-                    .requestMatchers(
-                        HttpMethod.PUT,
-                        "/service-provider/{serviceProviderId:%s}/approve"
-                            .formatted(REGEX_UUID_WITH_DELIMITER))
-                    .hasAnyAuthority(Scopes.SERVICE_PROVIDER_APPROVE)
-                    .requestMatchers(
-                        HttpMethod.PUT,
-                        "/service-provider/{serviceProviderId:%s}/reject"
-                            .formatted(REGEX_UUID_WITH_DELIMITER))
-                    .hasAnyAuthority(Scopes.SERVICE_PROVIDER_REJECT)
-                    .requestMatchers(
-                        HttpMethod.GET,
-                        "/service-provider/{serviceProviderId:%s}/profile"
-                            .formatted(REGEX_UUID_WITH_DELIMITER))
-                    .authenticated()
                     .requestMatchers(HttpMethod.POST, "/service-provider/portfolio")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/service-provider/portfolio")
                     .authenticated()
+                    .requestMatchers(HttpMethod.GET, SERVICE_PROVIDER_ID_PATH + "/profile")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/service-provider")
+                    .hasAuthority(Scopes.SERVICE_PROVIDER_READ_ALL)
+                    .requestMatchers(HttpMethod.PUT, SERVICE_PROVIDER_ID_PATH + "/approve")
+                    .hasAuthority(Scopes.SERVICE_PROVIDER_APPROVE)
+                    .requestMatchers(HttpMethod.PUT, SERVICE_PROVIDER_ID_PATH + "/reject")
+                    .hasAuthority(Scopes.SERVICE_PROVIDER_REJECT)
                     .anyRequest()
                     .denyAll())
         .oauth2ResourceServer(

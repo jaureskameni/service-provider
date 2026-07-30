@@ -49,5 +49,7 @@ public interface ServiceProviderRepository {
   ServiceProviderView loadProfile(ServiceProviderId serviceProviderId)
       throws ServiceProviderNotFoundException;
 
-  List<PortfolioView> loadAllPortfolio(UserId userId);
+  List<PortfolioView> loadAllMyPortfolio(UserId userId);
+
+  List<PortfolioView> loadAllProviderPortfolio(ServiceProviderId providerId);
 }
