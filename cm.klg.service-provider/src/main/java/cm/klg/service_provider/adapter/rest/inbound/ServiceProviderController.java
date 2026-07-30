@@ -12,22 +12,30 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemD
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPublicProfileDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UpdateServiceProviderProfileRequestDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.DeletePortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
+import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
+import cm.klg.service_provider.application.usecase.GetProviderServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
+import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
+import cm.klg.service_provider.application.usecase.UpdateServiceProviderProfileUseCase;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import java.util.List;
 import java.util.UUID;
@@ -51,6 +59,11 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final GetAllMyPortfolioUseCase getAllMyPortfolioUseCase;
   private final GetProviderPortfolioUseCase getProviderPortfolioUseCase;
   private final SearchServiceProviderUseCase searchServiceProviderUseCase;
+  private final UpdatePortfolioItemUseCase updatePortfolioItemUseCase;
+  private final DeletePortfolioItemUseCase deletePortfolioItemUseCase;
+  private final GetAllMyServicesUseCase getAllMyServicesUseCase;
+  private final GetProviderServicesUseCase getProviderServicesUseCase;
+  private final UpdateServiceProviderProfileUseCase updateServiceProviderProfileUseCase;
 
   @Override
   public ResponseEntity<Void> addNewService(ServiceTypeDTO serviceTypeDTO) {
@@ -58,7 +71,7 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
         () ->
             addNewServiceUseCase.execute(
                 restMapper.toAddNewServiceCommand(serviceTypeDTO, getCurrentUserId())));
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.status(CREATED).build();
   }
 
   @Override
@@ -69,6 +82,26 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
             addPortfolioItemUseCase.execute(
                 restMapper.toAddPortfolioItemCommand(
                     createPortfolioItemRequestDTO, getCurrentUserId())));
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> updatePortfolioItem(
+      UUID portfolioId, CreatePortfolioItemRequestDTO createPortfolioItemRequestDTO) {
+    useCaseExecutor.runCommand(
+        () ->
+            updatePortfolioItemUseCase.execute(
+                restMapper.toUpdatePortfolioItemCommand(
+                    portfolioId, createPortfolioItemRequestDTO, getCurrentUserId())));
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> deletePortfolioItem(UUID portfolioId) {
+    useCaseExecutor.runCommand(
+        () ->
+            deletePortfolioItemUseCase.execute(
+                UserId.from(getCurrentUserId()), PortfolioItemId.from(portfolioId)));
     return ResponseEntity.noContent().build();
   }
 
@@ -139,23 +172,49 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   }
 
   @Override
-  public ResponseEntity<ServiceProviderDTO> getServiceProviderById(UUID serviceProviderId) {
-    ServiceProviderView result =
+  public ResponseEntity<List<UserServiceDTO>> getMyServices() {
+    var result =
         useCaseExecutor.executeQuery(
-            () -> getServiceProviderByIdUseCase.execute(new ServiceProviderId(serviceProviderId)));
-    return ResponseEntity.status(OK).body(restMapper.toServiceProviderDTO(result));
+            () -> getAllMyServicesUseCase.execute(UserId.from(getCurrentUserId())));
+    return ResponseEntity.status(OK).body(restMapper.toUserServiceDTOs(result));
   }
 
   @Override
-  public ResponseEntity<ServiceProviderDTO> getServiceProviderProfile(UUID serviceProviderId) {
-    var currentUserId =
-        getCurrentUser().getId().map(UUID::fromString).map(UserId::new).orElse(null);
+  public ResponseEntity<List<UserServiceDTO>> getProviderServices(UUID serviceProviderId) {
+    var result =
+        useCaseExecutor.executeQuery(
+            () -> getProviderServicesUseCase.execute(ServiceProviderId.from(serviceProviderId)));
+    return ResponseEntity.status(OK).body(restMapper.toUserServiceDTOs(result));
+  }
+
+  @Override
+  public ResponseEntity<ServiceProviderPublicProfileDTO> getServiceProviderById(
+      UUID serviceProviderId, UUID userId) {
     var result =
         useCaseExecutor.executeQuery(
             () ->
-                getServiceProviderProfileUseCase.execute(
-                    new ServiceProviderId(serviceProviderId), currentUserId));
+                getServiceProviderByIdUseCase.execute(
+                    restMapper.toGetServiceProviderByIdCommand(serviceProviderId, userId)));
+    return ResponseEntity.status(OK).body(restMapper.toServiceProviderPublicProfileDTO(result));
+  }
+
+  @Override
+  public ResponseEntity<ServiceProviderDTO> getServiceProviderProfile() {
+    var result =
+        useCaseExecutor.executeQuery(
+            () -> getServiceProviderProfileUseCase.execute(UserId.from(getCurrentUserId())));
     return ResponseEntity.status(OK).body(restMapper.toServiceProviderProfileDTO(result));
+  }
+
+  @Override
+  public ResponseEntity<Void> updateServiceProviderProfile(
+      UpdateServiceProviderProfileRequestDTO updateServiceProviderProfileRequestDTO) {
+    useCaseExecutor.runCommand(
+        () ->
+            updateServiceProviderProfileUseCase.execute(
+                restMapper.toUpdateServiceProviderProfileCommand(
+                    updateServiceProviderProfileRequestDTO, getCurrentUserId())));
+    return ResponseEntity.noContent().build();
   }
 
   @Override

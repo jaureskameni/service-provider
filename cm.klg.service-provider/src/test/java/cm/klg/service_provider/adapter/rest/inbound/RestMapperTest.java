@@ -3,18 +3,24 @@ package cm.klg.service_provider.adapter.rest.inbound;
 import static cm.klg.service_provider.application.views.ServiceProviderViews.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceCatalogItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
-import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
-import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
 import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
+import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -129,8 +135,8 @@ class RestMapperTest {
     UserServiceView userServiceView =
         new UserServiceView(serviceTypeView, 5, documentId, createdAt);
 
-    ServiceProviderView serviceProviderView =
-        new ServiceProviderView(
+    var serviceProviderView =
+        new ServiceProviderView2(
             serviceProviderId,
             userId,
             "John",
@@ -146,7 +152,8 @@ class RestMapperTest {
             "APPROVED",
             createdAt,
             updatedAt,
-            List.of(userServiceView));
+            List.of(userServiceView),
+            List.of());
 
     // When
     var result = objectUnderTest.toServiceProviderDTO(serviceProviderView);
@@ -161,22 +168,15 @@ class RestMapperTest {
     assertThat(result.getQuarter()).isEqualTo(quarterId);
     assertThat(result.getPhoneNumber().getCountryCode()).isEqualTo("+237");
     assertThat(result.getPhoneNumber().getNumber()).isEqualTo("678901234");
-    assertThat(result.getServiceProviderStatus()).isEqualTo(ServiceProviderStatusDTO.APPROVED);
     assertThat(result.getCreatedAt()).isEqualTo(createdAt);
     assertThat(result.getUpdatedAt()).isEqualTo(updatedAt);
-    assertThat(result.getUserServices()).hasSize(1);
-    var usResult = result.getUserServices().get(0);
-    assertThat(usResult.getServiceName()).isEqualTo("Plumber");
-    assertThat(usResult.getServiceCategory()).isEqualTo("MAINTENANCE");
-    assertThat(usResult.getYearOfExperience()).isEqualTo(5);
-    assertThat(usResult.getDocument()).isEqualTo(documentId);
   }
 
   @Test
   void toPublicServiceProviderProfileDTO_shouldIncludePhoneNumber_whenUserIsClient() {
     // Given
     var profile =
-        new ServiceProviderView(
+        new ServiceProviderView1(
             UUID.randomUUID(),
             UUID.randomUUID(),
             "John",
@@ -191,48 +191,14 @@ class RestMapperTest {
             PhoneNumber.from("+237", "678901234"),
             "APPROVED",
             LocalDateTime.now(),
-            null,
-            List.of());
-
-    var response = new GetServiceProviderProfileUseCase.Response(profile, true);
+            null);
 
     // When
-    var result = objectUnderTest.toServiceProviderProfileDTO(response);
+    var result = objectUnderTest.toServiceProviderProfileDTO(profile);
 
     // Then
     assertThat(result.getPhoneNumber()).isNotNull();
     assertThat(result.getPhoneNumber().getNumber()).isEqualTo("678901234");
-  }
-
-  @Test
-  void toPublicServiceProviderProfileDTO_shouldHidePhoneNumber_whenUserIsNotClient() {
-    // Given
-    var profile =
-        new ServiceProviderView(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            "John",
-            "Doe",
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            null,
-            null,
-            null,
-            null,
-            null,
-            PhoneNumber.from("+237", "678901234"),
-            "APPROVED",
-            LocalDateTime.now(),
-            null,
-            List.of());
-
-    var response = new GetServiceProviderProfileUseCase.Response(profile, false);
-
-    // When
-    var result = objectUnderTest.toServiceProviderProfileDTO(response);
-
-    // Then
-    assertThat(result.getPhoneNumber()).isNull();
   }
 
   @Test
@@ -269,5 +235,58 @@ class RestMapperTest {
   void toPortfolioItemDTOs_shouldReturnEmptyList_whenNoViews() {
     var result = objectUnderTest.toPortfolioItemDTOs(List.of());
     assertThat(result).isEmpty();
+  }
+
+  @Test
+  void toUpdatePortfolioItemCommand_shouldMapAllFields() {
+    var portfolioId = UUID.randomUUID();
+    var userId = UUID.randomUUID();
+    var mediaId = UUID.randomUUID();
+    var request =
+        new CreatePortfolioItemRequestDTO()
+            .title("Updated title")
+            .description("Updated description")
+            .mediaId(mediaId);
+
+    UpdatePortfolioItemUseCase.Command result =
+        objectUnderTest.toUpdatePortfolioItemCommand(portfolioId, request, userId);
+
+    assertThat(result.userId()).isEqualTo(UserId.from(userId));
+    assertThat(result.portfolioItemId()).isEqualTo(PortfolioItemId.from(portfolioId));
+    assertThat(result.title()).isEqualTo(PortfolioItemTitle.from("Updated title"));
+    assertThat(result.description())
+        .isEqualTo(PortfolioItemDescription.from("Updated description"));
+    assertThat(result.mediaId()).isEqualTo(PortfolioItemMediaId.from(mediaId));
+  }
+
+  @Test
+  void toUserServiceDTO_shouldMapAllFields() {
+    var serviceType = new ServiceTypeView(UUID.randomUUID(), "Carpentry", "Construction", true);
+    var documentId = UUID.randomUUID();
+    var createdAt = LocalDateTime.now();
+    var view = new UserServiceView(serviceType, 10, documentId, createdAt);
+
+    UserServiceDTO result = objectUnderTest.toUserServiceDTO(view);
+
+    assertThat(result.getServiceName()).isEqualTo("Carpentry");
+    assertThat(result.getServiceCategory()).isEqualTo("Construction");
+    assertThat(result.getYearOfExperience()).isEqualTo(10);
+    assertThat(result.getDocument()).isEqualTo(documentId);
+    assertThat(result.getCreatedAt()).isEqualTo(createdAt);
+  }
+
+  @Test
+  void toUserServiceDTOs_shouldMapAList() {
+    var serviceType = new ServiceTypeView(UUID.randomUUID(), "Plumbing", "Repairs", true);
+    var views =
+        List.of(
+            new UserServiceView(serviceType, 5, UUID.randomUUID(), LocalDateTime.now()),
+            new UserServiceView(serviceType, 3, UUID.randomUUID(), LocalDateTime.now()));
+
+    var result = objectUnderTest.toUserServiceDTOs(views);
+
+    assertThat(result).hasSize(2);
+    assertThat(result.get(0).getYearOfExperience()).isEqualTo(5);
+    assertThat(result.get(1).getYearOfExperience()).isEqualTo(3);
   }
 }

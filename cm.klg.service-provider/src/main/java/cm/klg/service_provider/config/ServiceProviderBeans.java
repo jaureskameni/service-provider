@@ -14,14 +14,19 @@ import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequest
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
+import cm.klg.service_provider.application.usecase.DeletePortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
+import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
+import cm.klg.service_provider.application.usecase.GetProviderServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
+import cm.klg.service_provider.application.usecase.UpdateServiceProviderProfileUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -64,8 +69,9 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public GetServiceProviderByIdUseCase getServiceProviderByIdUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new GetServiceProviderByIdUseCase(serviceProviderRepository);
+      ServiceProviderRepository serviceProviderRepository,
+      ProviderClientRepository providerClientRepository) {
+    return new GetServiceProviderByIdUseCase(serviceProviderRepository, providerClientRepository);
   }
 
   @Bean
@@ -116,10 +122,14 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public GetServiceProviderProfileUseCase getPublicServiceProviderProfileUseCase(
-      ServiceProviderRepository serviceProviderRepository,
-      ProviderClientRepository providerClientRepository) {
-    return new GetServiceProviderProfileUseCase(
-        serviceProviderRepository, providerClientRepository);
+      ServiceProviderRepository serviceProviderRepository) {
+    return new GetServiceProviderProfileUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public UpdateServiceProviderProfileUseCase updateServiceProviderProfileUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new UpdateServiceProviderProfileUseCase(serviceProviderRepository);
   }
 
   @Bean
@@ -132,5 +142,29 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   public GetProviderPortfolioUseCase getProviderPortfolioUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new GetProviderPortfolioUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public UpdatePortfolioItemUseCase updatePortfolioItemUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new UpdatePortfolioItemUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public DeletePortfolioItemUseCase deletePortfolioItemUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new DeletePortfolioItemUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public GetAllMyServicesUseCase getAllMyServicesUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new GetAllMyServicesUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public GetProviderServicesUseCase getProviderServicesUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new GetProviderServicesUseCase(serviceProviderRepository);
   }
 }

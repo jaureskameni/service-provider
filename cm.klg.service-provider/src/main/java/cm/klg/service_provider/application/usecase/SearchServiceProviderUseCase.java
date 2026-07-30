@@ -1,7 +1,7 @@
 package cm.klg.service_provider.application.usecase;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
 import cm.klg.service_provider.domain.common.PageData;
 import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -21,7 +21,7 @@ public class SearchServiceProviderUseCase {
     PaginationFetchRequest pagination =
         new PaginationFetchRequest(command.limit(), command.pageIndex());
 
-    PageData<ServiceProviderView> result =
+    PageData<ServiceProviderView1> result =
         serviceProviderRepository.searchByLocationAndStatus(
             command.serviceTypeId(),
             command.cityId(),
@@ -42,5 +42,5 @@ public class SearchServiceProviderUseCase {
       int limit,
       int pageIndex) {}
 
-  public record Response(long count, List<ServiceProviderView> serviceProviderViews) {}
+  public record Response(long count, List<ServiceProviderView1> serviceProviderViews) {}
 }

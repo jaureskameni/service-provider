@@ -18,35 +18,44 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
   @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
           + " LEFT JOIN FETCH s.portfolioItems WHERE s.id = :serviceProviderId")
-  Optional<ServiceProviderJpa> findAggregateById(UUID serviceProviderId);
+  Optional<ServiceProviderJpa> findAggregateById(
+      @Param("serviceProviderId") UUID serviceProviderId);
 
   @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
           + " LEFT JOIN FETCH s.portfolioItems WHERE s.id = :serviceProviderId"
           + " AND s.status = :status")
-  Optional<ServiceProviderJpa> findAggregateByIdAndStatus(UUID serviceProviderId, String status);
+  Optional<ServiceProviderJpa> findAggregateByIdAndStatus(
+      @Param("serviceProviderId") UUID serviceProviderId, @Param("status") String status);
+
+  @Query(
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
+          + " LEFT JOIN FETCH s.portfolioItems WHERE s.userId = :userId"
+          + " AND s.status = :status")
+  Optional<ServiceProviderJpa> findAggregateByUserId(
+      @Param("userId") UUID userId, @Param("status") String status);
 
   @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
           + " LEFT JOIN FETCH s.portfolioItems WHERE s.userId = :userId")
-  Optional<ServiceProviderJpa> findAggregateByUserId(UUID userId);
+  Optional<ServiceProviderJpa> findAggregateByUserId(@Param("userId") UUID userId);
 
   @Query(
-      value = "SELECT s.id FROM ServiceProviderJpa s ORDER BY" + " s.createdAt DESC",
-      countQuery = "SELECT COUNT(DISTINCT s) FROM ServiceProviderJpa s")
-  Page<UUID> findAllIds(Pageable pageable);
+      value = "SELECT s FROM ServiceProviderJpa s ORDER BY s.createdAt DESC",
+      countQuery = "SELECT COUNT(s) FROM ServiceProviderJpa s")
+  Page<ServiceProviderJpa> findAllAsView(Pageable pageable);
 
   @Query(
       value =
-          "SELECT s.id FROM ServiceProviderJpa s WHERE"
+          "SELECT s FROM ServiceProviderJpa s WHERE"
               + " s.status = :status ORDER BY s.createdAt DESC",
-      countQuery = "SELECT COUNT(DISTINCT s) FROM ServiceProviderJpa s WHERE s.status = :status")
-  Page<UUID> findAllIdsByStatus(String status, Pageable pageable);
+      countQuery = "SELECT COUNT(s) FROM ServiceProviderJpa s WHERE s.status = :status")
+  Page<ServiceProviderJpa> findAllByStatus(@Param("status") String status, Pageable pageable);
 
   @Query(
       value =
           """
-          SELECT s.id
+          SELECT s
           FROM ServiceProviderJpa s
           WHERE s.city = :cityId
             AND s.status = :status
@@ -77,7 +86,7 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
                   AND us.id.serviceTypeId = :serviceTypeId
             )
           """)
-  Page<UUID> searchIdsByLocationAndStatus(
+  Page<ServiceProviderJpa> searchIdsByLocationAndStatus(
       @Param("serviceTypeId") UUID serviceTypeId,
       @Param("cityId") UUID cityId,
       @Param("districtId") UUID districtId,
@@ -85,10 +94,8 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
       @Param("status") String status,
       Pageable pageable);
 
-  @Query(
-      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " LEFT JOIN FETCH s.portfolioItems WHERE s.id IN :ids")
-  List<ServiceProviderJpa> findAllAggregatesByIdIn(List<UUID> ids);
+  @Query("SELECT s FROM ServiceProviderJpa s WHERE s.id IN :ids")
+  List<ServiceProviderJpa> findAllAggregatesByIdIn(@Param("ids") List<UUID> ids);
 
   @Query(
 """
@@ -107,4 +114,25 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
     WHERE sp.id = :providerId
 """)
   List<PortfolioItemJpa> findPortfolioItemsByProviderId(@Param("providerId") UUID providerId);
+
+  @Query("SELECT s FROM ServiceProviderJpa s WHERE s.id = :serviceProviderId")
+  Optional<ServiceProviderJpa> findById(@Param("serviceProviderId") UUID serviceProviderId);
+
+  @Query(
+"""
+    SELECT us
+    FROM UserServiceJpa us
+    WHERE us.id.serviceProviderId = :serviceProviderId
+""")
+  List<UserServiceJpa> findUserServicesByServiceProviderId(
+      @Param("serviceProviderId") UUID serviceProviderId);
+
+  @Query(
+"""
+    SELECT pi
+    FROM PortfolioItemJpa pi
+    WHERE pi.serviceProvider.id = :serviceProviderId
+""")
+  List<PortfolioItemJpa> findPortfolioItemsByServiceProviderId(
+      @Param("serviceProviderId") UUID serviceProviderId);
 }

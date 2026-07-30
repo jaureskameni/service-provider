@@ -2,7 +2,8 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.application.views.PortfolioView;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
+import cm.klg.service_provider.application.views.ServiceProviderViews;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView2;
 import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.IdentityId;
@@ -175,14 +176,29 @@ public interface JpaMapper {
 
   default void fromPortfolioItemDomain(
       ServiceProvider serviceProvider, @MappingTarget ServiceProviderJpa target) {
-
-    serviceProvider.getPortfolioItems().stream()
-        .filter(
+    target
+        .getPortfolioItems()
+        .removeIf(
+            jpa ->
+                serviceProvider.getPortfolioItems().stream()
+                    .noneMatch(item -> item.getId().value().equals(jpa.getId())));
+    serviceProvider
+        .getPortfolioItems()
+        .forEach(
             item ->
                 target.getPortfolioItems().stream()
-                    .noneMatch(jpa -> jpa.getId().equals(item.getId().value())))
-        .forEach(item -> addPortfolioItemJpa(target, item));
+                    .filter(jpa -> jpa.getId().equals(item.getId().value()))
+                    .findFirst()
+                    .ifPresentOrElse(
+                        jpa -> updatePortfolioItemJpa(jpa, item),
+                        () -> addPortfolioItemJpa(target, item)));
   }
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "title", source = "title.value")
+  @Mapping(target = "description", source = "description.value")
+  @Mapping(target = "mediaId", source = "mediaId.value")
+  void updatePortfolioItemJpa(@MappingTarget PortfolioItemJpa target, PortfolioItem source);
 
   private void addUserService(ServiceProviderJpa target, UserService userService) {
     UserServiceJpa userServiceJpa = toUserServiceJpa(userService);
@@ -206,41 +222,39 @@ public interface JpaMapper {
   }
 
   default ServiceProvider toServiceProviderDomain(ServiceProviderJpa serviceProviderJpa) {
-    ServiceProvider serviceProvider =
-        ServiceProvider.reconstitute(
-            new ServiceProviderId(serviceProviderJpa.getId()),
-            new UserId(serviceProviderJpa.getUserId()),
-            new ProviderContact(
-                new ProviderLocation(
-                    new UserCityId(serviceProviderJpa.getCity()),
-                    new UserDistrictId(serviceProviderJpa.getDistrict()),
-                    new UserQuarterId(serviceProviderJpa.getQuarter())),
-                new PhoneNumber(
-                    serviceProviderJpa.getPhoneNumber().getCountryCode(),
-                    serviceProviderJpa.getPhoneNumber().getNumber())),
-            new ProviderReview(
-                ServiceProviderStatus.valueOf(serviceProviderJpa.getStatus()),
-                serviceProviderJpa.getApprovedBy() != null
-                    ? new UserId(serviceProviderJpa.getApprovedBy())
-                    : null,
-                serviceProviderJpa.getRejectedBy() != null
-                    ? new UserId(serviceProviderJpa.getRejectedBy())
-                    : null,
-                serviceProviderJpa.getRejectionReason() != null
-                    ? new RejectionReason(serviceProviderJpa.getRejectionReason())
-                    : null),
-            new ProviderAudit(
-                new CreatedAt(serviceProviderJpa.getCreatedAt()),
-                serviceProviderJpa.getUpdatedAt() != null
-                    ? new CreatedAt(serviceProviderJpa.getUpdatedAt())
-                    : null),
-            serviceProviderJpa.getAbout() != null
-                ? new AboutProvider(serviceProviderJpa.getAbout())
+    return ServiceProvider.reconstitute(
+        new ServiceProviderId(serviceProviderJpa.getId()),
+        new UserId(serviceProviderJpa.getUserId()),
+        new ProviderContact(
+            new ProviderLocation(
+                new UserCityId(serviceProviderJpa.getCity()),
+                new UserDistrictId(serviceProviderJpa.getDistrict()),
+                new UserQuarterId(serviceProviderJpa.getQuarter())),
+            new PhoneNumber(
+                serviceProviderJpa.getPhoneNumber().getCountryCode(),
+                serviceProviderJpa.getPhoneNumber().getNumber())),
+        new ProviderReview(
+            ServiceProviderStatus.valueOf(serviceProviderJpa.getStatus()),
+            serviceProviderJpa.getApprovedBy() != null
+                ? new UserId(serviceProviderJpa.getApprovedBy())
                 : null,
-            new ServiceCollections(
-                toUserServiceDomain(serviceProviderJpa.getUserServices()),
-                toPortfolioItemDomain(serviceProviderJpa.getPortfolioItems())));
-    return serviceProvider;
+            serviceProviderJpa.getRejectedBy() != null
+                ? new UserId(serviceProviderJpa.getRejectedBy())
+                : null,
+            serviceProviderJpa.getRejectionReason() != null
+                ? new RejectionReason(serviceProviderJpa.getRejectionReason())
+                : null),
+        new ProviderAudit(
+            new CreatedAt(serviceProviderJpa.getCreatedAt()),
+            serviceProviderJpa.getUpdatedAt() != null
+                ? new CreatedAt(serviceProviderJpa.getUpdatedAt())
+                : null),
+        serviceProviderJpa.getAbout() != null
+            ? new AboutProvider(serviceProviderJpa.getAbout())
+            : null,
+        new ServiceCollections(
+            toUserServiceDomain(serviceProviderJpa.getUserServices()),
+            toPortfolioItemDomain(serviceProviderJpa.getPortfolioItems())));
   }
 
   default List<UserService> toUserServiceDomain(List<UserServiceJpa> userServices) {
@@ -303,7 +317,7 @@ public interface JpaMapper {
         item.getCreatedAt());
   }
 
-  default ServiceProviderView toServiceProviderView(
+  default ServiceProviderView2 toServiceProviderView(
       ServiceProviderJpa serviceProviderJpa, UserJpa userJpa, List<ServiceTypeJpa> serviceTypes) {
     Map<UUID, ServiceTypeJpa> serviceTypesById =
         serviceTypes.stream().collect(Collectors.toMap(ServiceTypeJpa::getId, Function.identity()));
@@ -319,7 +333,10 @@ public interface JpaMapper {
                         us.getCreatedAt()))
             .toList();
 
-    return new ServiceProviderView(
+    List<PortfolioView> portfolios =
+        serviceProviderJpa.getPortfolioItems().stream().map(this::toPortfolioView).toList();
+
+    return new ServiceProviderView2(
         serviceProviderJpa.getId(),
         serviceProviderJpa.getUserId(),
         userJpa.getFirstname(),
@@ -337,7 +354,8 @@ public interface JpaMapper {
         serviceProviderJpa.getStatus(),
         serviceProviderJpa.getCreatedAt(),
         serviceProviderJpa.getUpdatedAt(),
-        services);
+        services,
+        portfolios);
   }
 
   default ServiceTypeView toServiceTypeView(ServiceTypeJpa serviceTypeJpa) {
@@ -346,5 +364,83 @@ public interface JpaMapper {
         serviceTypeJpa.getName(),
         serviceTypeJpa.getCategory(),
         serviceTypeJpa.isActive());
+  }
+
+  default List<UserServiceView> toUserServiceViews(
+      List<UserServiceJpa> userServices, List<ServiceTypeJpa> serviceTypes) {
+    Map<UUID, ServiceTypeJpa> serviceTypesById =
+        serviceTypes.stream().collect(Collectors.toMap(ServiceTypeJpa::getId, Function.identity()));
+    return userServices.stream()
+        .map(
+            userService ->
+                new UserServiceView(
+                    toServiceTypeView(serviceTypesById.get(userService.getId().getServiceTypeId())),
+                    userService.getYearOfExperience(),
+                    userService.getUserDocument(),
+                    userService.getCreatedAt()))
+        .toList();
+  }
+
+  default ServiceProviderView2 toServiceProviderView2(
+      ServiceProviderJpa serviceProviderJpa,
+      UserJpa userJpa,
+      List<UserServiceJpa> userServices,
+      List<PortfolioItemJpa> portfolioItems) {
+
+    List<UserServiceView> services =
+        userServices.stream()
+            .map(
+                us ->
+                    new UserServiceView(
+                        new ServiceTypeView(UUID.randomUUID(), "Service Type", "category", true),
+                        us.getYearOfExperience(),
+                        us.getUserDocument(),
+                        us.getCreatedAt()))
+            .toList();
+
+    List<PortfolioView> portfolios = portfolioItems.stream().map(this::toPortfolioView).toList();
+
+    return new ServiceProviderView2(
+        serviceProviderJpa.getId(),
+        serviceProviderJpa.getUserId(),
+        userJpa.getFirstname(),
+        userJpa.getLastname(),
+        serviceProviderJpa.getCity(),
+        serviceProviderJpa.getDistrict(),
+        serviceProviderJpa.getQuarter(),
+        serviceProviderJpa.getApprovedBy(),
+        serviceProviderJpa.getRejectedBy(),
+        serviceProviderJpa.getRejectionReason(),
+        serviceProviderJpa.getAbout(),
+        PhoneNumber.from(
+            serviceProviderJpa.getPhoneNumber().getCountryCode(),
+            serviceProviderJpa.getPhoneNumber().getNumber()),
+        serviceProviderJpa.getStatus(),
+        serviceProviderJpa.getCreatedAt(),
+        serviceProviderJpa.getUpdatedAt(),
+        services,
+        portfolios);
+  }
+
+  default ServiceProviderViews.ServiceProviderView1 toServiceProviderView1(
+      ServiceProviderJpa serviceProviderJpa, UserJpa userJpa) {
+    return new ServiceProviderViews.ServiceProviderView1(
+        serviceProviderJpa.getId(),
+        serviceProviderJpa.getUserId(),
+        userJpa.getFirstname(),
+        userJpa.getLastname(),
+        serviceProviderJpa.getCity(),
+        serviceProviderJpa.getDistrict(),
+        serviceProviderJpa.getQuarter(),
+        serviceProviderJpa.getApprovedBy(),
+        serviceProviderJpa.getRejectedBy(),
+        serviceProviderJpa.getRejectionReason(),
+        serviceProviderJpa.getAbout(),
+        PhoneNumber.from(
+            serviceProviderJpa.getPhoneNumber().getCountryCode(),
+            serviceProviderJpa.getPhoneNumber().getNumber()),
+        serviceProviderJpa.getStatus(),
+        serviceProviderJpa.getCreatedAt(),
+        serviceProviderJpa.getUpdatedAt());
   }
 }

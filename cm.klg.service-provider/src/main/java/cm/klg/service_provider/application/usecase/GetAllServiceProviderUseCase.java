@@ -1,7 +1,7 @@
 package cm.klg.service_provider.application.usecase;
 
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
 import cm.klg.service_provider.domain.common.PageData;
 import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -18,7 +18,7 @@ public class GetAllServiceProviderUseCase {
     PaginationFetchRequest pagination =
         new PaginationFetchRequest(command.limit(), command.pageIndex());
 
-    PageData<ServiceProviderView> pageData =
+    PageData<ServiceProviderView1> pageData =
         command.status() != null
             ? serviceProviderRepository.loadAllByStatusAsView(
                 Objects.requireNonNull(command.status()), pagination)
@@ -29,5 +29,5 @@ public class GetAllServiceProviderUseCase {
 
   public record Command(@Nullable ServiceProviderStatus status, int limit, int pageIndex) {}
 
-  public record Response(long count, List<ServiceProviderView> serviceProviderViews) {}
+  public record Response(long count, List<ServiceProviderView1> serviceProviderViews) {}
 }

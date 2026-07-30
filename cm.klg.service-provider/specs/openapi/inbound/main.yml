@@ -131,13 +131,19 @@ paths:
         schema:
           type: "string"
           format: "uuid"
+      - name: "userId"
+        in: "query"
+        required: false
+        schema:
+          type: "string"
+          format: "uuid"
       responses:
         "200":
           description: "Successful operation"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ServiceProvider"
+                $ref: "#/components/schemas/ServiceProviderPublicProfile"
         "404":
           description: "SERVICE_PROVIDER_404_002"
   /service-provider/{serviceProviderId}/approve:
@@ -162,25 +168,6 @@ paths:
           description: "Successful operation"
         "404":
           description: "SERVICE_PROVIDER_404_002"
-  /service-provider/add-service:
-    put:
-      tags:
-      - "ServiceProvider"
-      summary: "Add new service to provide"
-      description: "Add new service to provide"
-      operationId: "addNewService"
-      security:
-      - bearerAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ServiceType"
-      responses:
-        "204":
-          description: "Successful operation"
-        "404":
-          description: "SERVICE_PROVIDER_404_002 || SERVICE-PROVIDER_404_003 "
   /service-provider/{serviceProviderId}/reject:
     put:
       tags:
@@ -208,7 +195,7 @@ paths:
           description: "Successful operation"
         "404":
           description: "SERVICE_PROVIDER_404_002"
-  /service-provider/{serviceProviderId}/profile:
+  /service-provider/profile:
     get:
       tags:
       - "ServiceProvider"
@@ -217,13 +204,6 @@ paths:
       operationId: "getServiceProviderProfile"
       security:
       - bearerAuth: []
-      parameters:
-      - name: "serviceProviderId"
-        in: "path"
-        required: true
-        schema:
-          type: "string"
-          format: "uuid"
       responses:
         "200":
           description: "Successful operation"
@@ -231,6 +211,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceProvider"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
+    put:
+      tags:
+      - "ServiceProvider"
+      summary: "Update Service Provider Profile"
+      description: "Update the authenticated service provider's contact details, location\
+        \ and description."
+      operationId: "updateServiceProviderProfile"
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateServiceProviderProfileRequest"
+      responses:
+        "204":
+          description: "Successful operation"
         "404":
           description: "SERVICE_PROVIDER_404_002"
   /service-provider/portfolio:
@@ -292,6 +292,110 @@ paths:
                 type: "array"
                 items:
                   $ref: "#/components/schemas/PortfolioItem"
+  /service-provider/portfolio/{portfolioId}:
+    put:
+      tags:
+      - "ServiceProvider"
+      summary: "Update a portfolio item"
+      operationId: "updatePortfolioItem"
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: "portfolioId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePortfolioItemRequest"
+      responses:
+        "204":
+          description: "Successful operation"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
+    delete:
+      tags:
+      - "ServiceProvider"
+      summary: "Delete a portfolio item"
+      operationId: "deletePortfolioItem"
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: "portfolioId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "204":
+          description: "Successful operation"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
+  /service-provider/services:
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "Get my services"
+      operationId: "getMyServices"
+      security:
+      - bearerAuth: []
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/UserService"
+    post:
+      tags:
+      - "ServiceProvider"
+      summary: "Add a service to provide"
+      operationId: "addNewService"
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceType"
+      responses:
+        "201":
+          description: "Successful operation"
+        "404":
+          description: "SERVICE_PROVIDER_404_002 || SERVICE-PROVIDER_404_003"
+  /service-provider/{serviceProviderId}/services:
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "Get a service provider's services"
+      operationId: "getProviderServices"
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/UserService"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
   /service-catalog:
     get:
       tags:
@@ -312,6 +416,27 @@ paths:
                     $ref: "#/components/schemas/ServiceCatalogItem"
 components:
   schemas:
+    UpdateServiceProviderProfileRequest:
+      required:
+      - "phoneNumber"
+      - "city"
+      - "district"
+      - "quarter"
+      type: "object"
+      properties:
+        city:
+          type: "string"
+          format: "uuid"
+        district:
+          type: "string"
+          format: "uuid"
+        quarter:
+          type: "string"
+          format: "uuid"
+        about:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
     RejectionReason:
       type: "object"
       properties:
@@ -354,6 +479,56 @@ components:
         count:
           type: "integer"
           format: "int64"
+    ServiceProviderPublicProfile:
+      required:
+      - "id"
+      - "userId"
+      - "lastname"
+      - "city"
+      - "district"
+      - "quarter"
+      - "userIsProviderClient"
+      - "serviceProviderStatus"
+      - "createdAt"
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        firstname:
+          type: "string"
+        lastname:
+          type: "string"
+        city:
+          type: "string"
+          format: "uuid"
+        district:
+          type: "string"
+          format: "uuid"
+        quarter:
+          type: "string"
+          format: "uuid"
+        about:
+          type: "string"
+        createdAt:
+          type: "string"
+          format: "date-time"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        userServices:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/UserService"
+        portfolio:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PortfolioItem"
     ServiceProvider:
       required:
       - "id"
@@ -362,7 +537,6 @@ components:
       - "city"
       - "district"
       - "quarter"
-      - "serviceProviderStatus"
       - "phoneNumber"
       - "createdAt"
       type: "object"
@@ -388,8 +562,6 @@ components:
           format: "uuid"
         about:
           type: "string"
-        rejectionReason:
-          type: "string"
         createdAt:
           type: "string"
           format: "date-time"
@@ -398,12 +570,6 @@ components:
           format: "date-time"
         phoneNumber:
           $ref: "#/components/schemas/PhoneNumber"
-        serviceProviderStatus:
-          $ref: "#/components/schemas/ServiceProviderStatus"
-        userServices:
-          type: "array"
-          items:
-            $ref: "#/components/schemas/UserService"
     UserService:
       type: "object"
       required:
