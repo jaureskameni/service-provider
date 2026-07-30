@@ -11,6 +11,7 @@ import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
@@ -21,11 +22,13 @@ import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
@@ -64,6 +67,7 @@ class ServiceProviderControllerTest {
   @Mock private AddNewServiceUseCase addNewServiceUseCase;
   @Mock private AddPortfolioItemUseCase addPortfolioItemUseCase;
   @Mock private GetServiceProviderProfileUseCase getServiceProviderProfileUseCase;
+  @Mock private GetAllMyPortfolioUseCase getAllMyPortfolioUseCase;
   @Mock private SearchServiceProviderUseCase searchServiceProviderUseCase;
 
   @InjectMocks private ServiceProviderController objectUnderTest;
@@ -408,5 +412,84 @@ class ServiceProviderControllerTest {
     verify(getServiceProviderProfileUseCase)
         .execute(new ServiceProviderId(spId), new UserId(userId));
     verify(restMapper).toServiceProviderProfileDTO(response);
+  }
+
+  @Test
+  void getAllMyPortfolioItem_shouldReturnOk_whenItemsExist() {
+    UUID userId = UUID.randomUUID();
+    var views =
+        List.of(
+            new PortfolioView(
+                UUID.randomUUID(), "A", "Desc A", UUID.randomUUID(), LocalDateTime.now()),
+            new PortfolioView(
+                UUID.randomUUID(), "B", "Desc B", UUID.randomUUID(), LocalDateTime.now()));
+    var dtos = List.of(new PortfolioItemDTO().title("A"), new PortfolioItemDTO().title("B"));
+
+    var jwtAuth = mock(JwtAuthenticationToken.class);
+    Map<String, Object> attrs = new HashMap<>();
+    attrs.put(JwtClaimNames.SUB, userId.toString());
+    when(jwtAuth.getTokenAttributes()).thenReturn(attrs);
+    SecurityContextHolder.getContext().setAuthentication(jwtAuth);
+
+    when(useCaseExecutor.executeQuery(any()))
+        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
+    when(getAllMyPortfolioUseCase.execute(new UserId(userId))).thenReturn(views);
+    when(restMapper.toPortfolioItemDTOs(views)).thenReturn(dtos);
+
+    // When
+    @SuppressWarnings("unchecked")
+    var result =
+        // spotless:off
+        given()
+                .standaloneSetup(objectUnderTest)
+        .when()
+                .get("/service-provider/portfolio")
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(PortfolioItemDTO[].class);
+        // spotless:on
+
+    // Then
+    assertThat(result).hasSize(2);
+    assertThat(result[0].getTitle()).isEqualTo("A");
+    assertThat(result[1].getTitle()).isEqualTo("B");
+    verify(getAllMyPortfolioUseCase).execute(new UserId(userId));
+    verify(restMapper).toPortfolioItemDTOs(views);
+  }
+
+  @Test
+  void getAllMyPortfolioItem_shouldReturnOkEmptyList_whenNoItems() {
+    UUID userId = UUID.randomUUID();
+
+    var jwtAuth = mock(JwtAuthenticationToken.class);
+    Map<String, Object> attrs = new HashMap<>();
+    attrs.put(JwtClaimNames.SUB, userId.toString());
+    when(jwtAuth.getTokenAttributes()).thenReturn(attrs);
+    SecurityContextHolder.getContext().setAuthentication(jwtAuth);
+
+    when(useCaseExecutor.executeQuery(any()))
+        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
+    when(getAllMyPortfolioUseCase.execute(new UserId(userId))).thenReturn(List.of());
+    when(restMapper.toPortfolioItemDTOs(List.of())).thenReturn(List.of());
+
+    // When
+    @SuppressWarnings("unchecked")
+    var result =
+        // spotless:off
+        given()
+                .standaloneSetup(objectUnderTest)
+        .when()
+                .get("/service-provider/portfolio")
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(PortfolioItemDTO[].class);
+        // spotless:on
+
+    // Then
+    assertThat(result).isEmpty();
+    verify(getAllMyPortfolioUseCase).execute(new UserId(userId));
+    verify(restMapper).toPortfolioItemDTOs(List.of());
   }
 }

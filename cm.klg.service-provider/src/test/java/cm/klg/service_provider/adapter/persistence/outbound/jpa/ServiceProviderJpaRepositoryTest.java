@@ -3,6 +3,7 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
@@ -119,6 +120,47 @@ class ServiceProviderJpaRepositoryTest {
 
     // Then
     assertThat(result).isEqualTo(serviceProvider);
+  }
+
+  @Test
+  void loadAllPortfolio_shouldReturnPortfolioViews_whenItemsExist() {
+    var userId = UserId.from(UUID.randomUUID());
+    var spJpa = new ServiceProviderJpa();
+    spJpa.setId(UUID.randomUUID());
+    PortfolioItemJpa pi1 = new PortfolioItemJpa();
+    pi1.setId(UUID.randomUUID());
+    PortfolioItemJpa pi2 = new PortfolioItemJpa();
+    pi2.setId(UUID.randomUUID());
+    spJpa.setPortfolioItems(List.of(pi1, pi2));
+
+    PortfolioView view1 = mock(PortfolioView.class);
+    PortfolioView view2 = mock(PortfolioView.class);
+
+    when(serviceProviderSpringRepository.findPortfolioItemsByUserId(userId.value()))
+        .thenReturn(spJpa.getPortfolioItems());
+    when(jpaMapper.toPortfolioView(pi1)).thenReturn(view1);
+    when(jpaMapper.toPortfolioView(pi2)).thenReturn(view2);
+
+    var result = objectUnderTest.loadAllPortfolio(userId);
+
+    assertThat(result).hasSize(2).containsExactly(view1, view2);
+    verify(serviceProviderSpringRepository).findPortfolioItemsByUserId(userId.value());
+    verify(jpaMapper).toPortfolioView(pi1);
+    verify(jpaMapper).toPortfolioView(pi2);
+  }
+
+  @Test
+  void loadAllPortfolio_shouldReturnEmptyList_whenNoItems() {
+    var userId = UserId.from(UUID.randomUUID());
+
+    when(serviceProviderSpringRepository.findPortfolioItemsByUserId(userId.value()))
+        .thenReturn(List.of());
+
+    var result = objectUnderTest.loadAllPortfolio(userId);
+
+    assertThat(result).isEmpty();
+    verify(serviceProviderSpringRepository).findPortfolioItemsByUserId(userId.value());
+    verifyNoInteractions(jpaMapper);
   }
 
   @Test

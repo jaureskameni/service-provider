@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.common.base.entity.PhoneNumberJpa;
+import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
@@ -574,6 +575,27 @@ class JpaMapperTest {
     void toPortfolioItemDomain_shouldHandleEmptyList() {
       List<PortfolioItem> items = objectUnderTest.toPortfolioItemDomain(List.of());
       assertThat(items).isEmpty();
+    }
+
+    @Test
+    void toPortfolioView_shouldMapAllFields() {
+      var itemId = UUID.randomUUID();
+      var mediaId = UUID.randomUUID();
+      var now = LocalDateTime.now();
+      var item = new PortfolioItemJpa();
+      item.setId(itemId);
+      item.setTitle("My project");
+      item.setDescription("A great project");
+      item.setMediaId(mediaId);
+      item.setCreatedAt(now);
+
+      PortfolioView result = objectUnderTest.toPortfolioView(item);
+
+      assertThat(result.id()).isEqualTo(itemId);
+      assertThat(result.title()).isEqualTo("My project");
+      assertThat(result.description()).isEqualTo("A great project");
+      assertThat(result.mediaId()).isEqualTo(mediaId);
+      assertThat(result.createdAt()).isEqualTo(now);
     }
   }
 

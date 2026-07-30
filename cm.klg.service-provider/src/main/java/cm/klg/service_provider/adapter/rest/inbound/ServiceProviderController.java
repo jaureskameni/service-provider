@@ -8,6 +8,7 @@ import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.api.ServiceProviderApi;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
@@ -18,6 +19,7 @@ import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
@@ -26,6 +28,7 @@ import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +47,7 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
   private final AddNewServiceUseCase addNewServiceUseCase;
   private final AddPortfolioItemUseCase addPortfolioItemUseCase;
+  private final GetAllMyPortfolioUseCase getAllMyPortfolioUseCase;
   private final SearchServiceProviderUseCase searchServiceProviderUseCase;
 
   @Override
@@ -114,6 +118,14 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
                     restMapper.toBecomeServiceProviderCommand(
                         serviceProviderRegisterDTO, getCurrentUserId())));
     return ResponseEntity.status(CREATED).body(new CreationResponseDTO().newId(result.value()));
+  }
+
+  @Override
+  public ResponseEntity<List<PortfolioItemDTO>> getAllMyPortfolioItem() {
+    var result =
+        useCaseExecutor.executeQuery(
+            () -> getAllMyPortfolioUseCase.execute(UserId.from(getCurrentUserId())));
+    return ResponseEntity.status(OK).body(restMapper.toPortfolioItemDTOs(result));
   }
 
   @Override

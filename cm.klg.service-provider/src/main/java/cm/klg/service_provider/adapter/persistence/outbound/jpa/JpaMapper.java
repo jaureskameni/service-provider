@@ -1,6 +1,7 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.common.base.domain.CreatedAt;
+import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
 import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import cm.klg.service_provider.application.views.UserServiceView;
@@ -291,6 +292,15 @@ public interface JpaMapper {
     toServiceProviderJpa(serviceProviderJpa, serviceProvider);
     fromUserServicesDomain(serviceProvider, serviceProviderJpa);
     fromPortfolioItemDomain(serviceProvider, serviceProviderJpa);
+  }
+
+  default PortfolioView toPortfolioView(PortfolioItemJpa item) {
+    return new PortfolioView(
+        item.getId(),
+        item.getTitle(),
+        item.getDescription(),
+        item.getMediaId(),
+        item.getCreatedAt());
   }
 
   default ServiceProviderView toServiceProviderView(

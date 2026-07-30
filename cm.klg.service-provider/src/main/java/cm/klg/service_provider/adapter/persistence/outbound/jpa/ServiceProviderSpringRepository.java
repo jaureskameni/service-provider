@@ -89,4 +89,13 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
           + " LEFT JOIN FETCH s.portfolioItems WHERE s.id IN :ids")
   List<ServiceProviderJpa> findAllAggregatesByIdIn(List<UUID> ids);
+
+  @Query(
+"""
+    SELECT pi
+    FROM PortfolioItemJpa pi
+    JOIN pi.serviceProvider sp
+    WHERE sp.userId = :userId
+""")
+  List<PortfolioItemJpa> findPortfolioItemsByUserId(@Param("userId") UUID userId);
 }

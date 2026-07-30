@@ -11,6 +11,7 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
@@ -232,5 +233,41 @@ class RestMapperTest {
 
     // Then
     assertThat(result.getPhoneNumber()).isNull();
+  }
+
+  @Test
+  void toPortfolioItemDTO_shouldMapAllFields() {
+    var id = UUID.randomUUID();
+    var mediaId = UUID.randomUUID();
+    var now = LocalDateTime.now();
+    var view = new PortfolioView(id, "Title", "Description", mediaId, now);
+
+    var result = objectUnderTest.toPortfolioItemDTO(view);
+
+    assertThat(result.getId()).isEqualTo(id);
+    assertThat(result.getTitle()).isEqualTo("Title");
+    assertThat(result.getDescription()).isEqualTo("Description");
+    assertThat(result.getMediaId()).isEqualTo(mediaId);
+    assertThat(result.getCreatedAt()).isEqualTo(now);
+  }
+
+  @Test
+  void toPortfolioItemDTOs_shouldMapList() {
+    var view1 =
+        new PortfolioView(UUID.randomUUID(), "A", "Desc A", UUID.randomUUID(), LocalDateTime.now());
+    var view2 =
+        new PortfolioView(UUID.randomUUID(), "B", "Desc B", UUID.randomUUID(), LocalDateTime.now());
+
+    var result = objectUnderTest.toPortfolioItemDTOs(List.of(view1, view2));
+
+    assertThat(result).hasSize(2);
+    assertThat(result.get(0).getTitle()).isEqualTo("A");
+    assertThat(result.get(1).getTitle()).isEqualTo("B");
+  }
+
+  @Test
+  void toPortfolioItemDTOs_shouldReturnEmptyList_whenNoViews() {
+    var result = objectUnderTest.toPortfolioItemDTOs(List.of());
+    assertThat(result).isEmpty();
   }
 }
