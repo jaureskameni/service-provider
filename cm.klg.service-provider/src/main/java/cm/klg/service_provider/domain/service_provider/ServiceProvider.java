@@ -103,6 +103,32 @@ public class ServiceProvider {
     portfolioItems.add(PortfolioItem.of(title, description, mediaId));
   }
 
+  public void updatePortfolioItem(
+      PortfolioItemId portfolioItemId,
+      PortfolioItemTitle title,
+      PortfolioItemDescription description,
+      PortfolioItemMediaId mediaId) {
+    portfolioItems.stream()
+        .filter(item -> item.getId().equals(portfolioItemId))
+        .findFirst()
+        .orElseThrow(ServiceProviderNotFoundException::new)
+        .update(title, description, mediaId);
+  }
+
+  public void deletePortfolioItem(PortfolioItemId portfolioItemId) {
+    if (!portfolioItems.removeIf(item -> item.getId().equals(portfolioItemId))) {
+      throw new ServiceProviderNotFoundException();
+    }
+  }
+
+  public void updateProfile(
+      ProviderLocation location, PhoneNumber phoneNumber, @Nullable AboutProvider about) {
+    this.location = location;
+    this.phoneNumber = phoneNumber;
+    this.about = about;
+    this.updatedAt = CreatedAt.from(LocalDateTime.now());
+  }
+
   public void addAllUserService(List<UserService> userServices) {
     userServices.forEach(this::addUserService);
   }

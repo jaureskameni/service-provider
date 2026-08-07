@@ -28,7 +28,8 @@ public class SecurityConfig {
             "/service-catalog",
             "/service-provider/search",
             SERVICE_PROVIDER_ID_PATH,
-            SERVICE_PROVIDER_ID_PATH + "/portfolio")
+            SERVICE_PROVIDER_ID_PATH + "/portfolio",
+            SERVICE_PROVIDER_ID_PATH + "/services")
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .build();
@@ -42,13 +43,21 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(HttpMethod.POST, "/service-provider")
                     .authenticated()
-                    .requestMatchers(HttpMethod.PUT, "/service-provider/add-service")
+                    .requestMatchers(HttpMethod.POST, "/service-provider/services")
                     .authenticated()
                     .requestMatchers(HttpMethod.POST, "/service-provider/portfolio")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/service-provider/portfolio")
                     .authenticated()
-                    .requestMatchers(HttpMethod.GET, SERVICE_PROVIDER_ID_PATH + "/profile")
+                    .requestMatchers(HttpMethod.PUT, "/service-provider/portfolio/*")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/service-provider/portfolio/*")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/service-provider/services")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/service-provider/profile")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/service-provider/profile")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/service-provider")
                     .hasAuthority(Scopes.SERVICE_PROVIDER_READ_ALL)

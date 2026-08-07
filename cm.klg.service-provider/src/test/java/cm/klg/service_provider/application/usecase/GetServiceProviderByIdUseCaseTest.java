@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import cm.klg.service_provider.application.outbound.ProviderClientRepository;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView2;
+import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -17,19 +19,53 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class GetServiceProviderByIdUseCaseTest {
   @Mock private ServiceProviderRepository serviceProviderRepository;
+  @Mock private ProviderClientRepository providerClientRepository;
   @InjectMocks private GetServiceProviderByIdUseCase objectUnderTest;
 
   @Test
-  void execute_shouldReturnServiceProviderView_whenFound() {
-    // Given
-    var serviceProviderId = new ServiceProviderId(UUID.randomUUID());
-    var serviceProviderView = mock(ServiceProviderView.class);
-    when(serviceProviderRepository.loadAsView(serviceProviderId)).thenReturn(serviceProviderView);
+  void execute_shouldReturnResponseWithIsClientTrue_whenUserIsClientTest() {
+    var providerId = new ServiceProviderId(UUID.randomUUID());
+    var userId = new UserId(UUID.randomUUID());
+    var view = mock(ServiceProviderView2.class);
+    var command = new GetServiceProviderByIdUseCase.Command(providerId, userId);
 
-    // When
-    var result = objectUnderTest.execute(serviceProviderId);
+    when(serviceProviderRepository.loadAsView2(providerId)).thenReturn(view);
+    when(providerClientRepository.existsByUserIdAndProviderId(userId, providerId)).thenReturn(true);
 
-    // Then
-    assertThat(result).isEqualTo(serviceProviderView);
+    var result = objectUnderTest.execute(command);
+
+    assertThat(result.serviceProviderView2()).isEqualTo(view);
+    assertThat(result.isClient()).isTrue();
+  }
+
+  @Test
+  void execute_shouldReturnResponseWithIsClientFalse_whenUserIsNotClientTest() {
+    var providerId = new ServiceProviderId(UUID.randomUUID());
+    var userId = new UserId(UUID.randomUUID());
+    var view = mock(ServiceProviderView2.class);
+    var command = new GetServiceProviderByIdUseCase.Command(providerId, userId);
+
+    when(serviceProviderRepository.loadAsView2(providerId)).thenReturn(view);
+    when(providerClientRepository.existsByUserIdAndProviderId(userId, providerId))
+        .thenReturn(false);
+
+    var result = objectUnderTest.execute(command);
+
+    assertThat(result.serviceProviderView2()).isEqualTo(view);
+    assertThat(result.isClient()).isFalse();
+  }
+
+  @Test
+  void execute_shouldReturnIsClientFalse_whenUserIdIsNullTest() {
+    var providerId = new ServiceProviderId(UUID.randomUUID());
+    var view = mock(ServiceProviderView2.class);
+    var command = new GetServiceProviderByIdUseCase.Command(providerId, null);
+
+    when(serviceProviderRepository.loadAsView2(providerId)).thenReturn(view);
+
+    var result = objectUnderTest.execute(command);
+
+    assertThat(result.serviceProviderView2()).isEqualTo(view);
+    assertThat(result.isClient()).isFalse();
   }
 }

@@ -7,35 +7,46 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReaso
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceCatalogItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPublicProfileDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UpdateServiceProviderProfileRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
-import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase.Response;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
+import cm.klg.service_provider.application.usecase.UpdateServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.views.PortfolioView;
-import cm.klg.service_provider.application.views.ServiceProviderViews;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView2;
 import cm.klg.service_provider.application.views.ServiceTypeViews;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
 import cm.klg.service_provider.domain.service_provider.RejectionReason;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -73,6 +84,17 @@ public interface RestMapper {
   @Mapping(target = "userDocument.value", source = "serviceTypeDTO.document")
   AddNewServiceUseCase.AddNewServiceCommand toAddNewServiceCommand(
       ServiceTypeDTO serviceTypeDTO, UUID currentUserId);
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "userId.value", source = "currentUserId")
+  @Mapping(target = "location.cityId.value", source = "request.city")
+  @Mapping(target = "location.districtId.value", source = "request.district")
+  @Mapping(target = "location.quarterId.value", source = "request.quarter")
+  @Mapping(target = "phoneNumber.countryCode", source = "request.phoneNumber.countryCode")
+  @Mapping(target = "phoneNumber.number", source = "request.phoneNumber.number")
+  @Mapping(target = "about.value", source = "request.about")
+  UpdateServiceProviderProfileUseCase.Command toUpdateServiceProviderProfileCommand(
+      UpdateServiceProviderProfileRequestDTO request, UUID currentUserId);
 
   ServiceCatalogItemDTO toServiceCatalogItemDTO(ServiceTypeViews.ServiceTypeView serviceTypeView);
 
@@ -132,36 +154,72 @@ public interface RestMapper {
             pageData.serviceProviderViews().stream().map(this::toServiceProviderDTO).toList());
   }
 
-  default ServiceProviderDTO toServiceProviderProfileDTO(
-      GetServiceProviderProfileUseCase.Response response) {
-    var dto = toServiceProviderDTO(response.profile());
-    if (!response.isClient()) {
-      dto.setPhoneNumber(null);
-    }
-    return dto;
+  default ServiceProviderDTO toServiceProviderDTO(ServiceProviderView1 v) {
+    return toServiceProviderDTOFromCommon(
+        v.id(),
+        v.userId(),
+        v.firstname(),
+        v.lastname(),
+        v.cityId(),
+        v.districtId(),
+        v.quarterId(),
+        v.about(),
+        v.phoneNumber(),
+        v.createdAt(),
+        v.updatedAt());
   }
 
-  default ServiceProviderDTO toServiceProviderDTO(
-      ServiceProviderViews.ServiceProviderView serviceProviderView) {
-
+  private ServiceProviderDTO toServiceProviderDTOFromCommon(
+      UUID id,
+      UUID userId,
+      String firstname,
+      String lastname,
+      UUID cityId,
+      UUID districtId,
+      UUID quarterId,
+      String about,
+      PhoneNumber phoneNumber,
+      LocalDateTime createdAt,
+      LocalDateTime updatedAt) {
     return new ServiceProviderDTO()
-        .id(serviceProviderView.id())
-        .userId(serviceProviderView.userId())
-        .firstname(serviceProviderView.firstname())
-        .lastname(serviceProviderView.lastname())
-        .city(serviceProviderView.cityId())
-        .district(serviceProviderView.districtId())
-        .quarter(serviceProviderView.quarterId())
-        .about(serviceProviderView.about())
-        .rejectionReason(serviceProviderView.rejectionReason())
-        .createdAt(serviceProviderView.createdAt())
-        .updatedAt(serviceProviderView.updatedAt())
-        .phoneNumber(toPhoneNumberDTO(serviceProviderView.phoneNumber()))
-        .serviceProviderStatus(ServiceProviderStatusDTO.fromValue(serviceProviderView.status()))
-        .userServices(serviceProviderView.services().stream().map(this::toUserServiceDTO).toList());
+        .id(id)
+        .userId(userId)
+        .firstname(firstname)
+        .lastname(lastname)
+        .city(cityId)
+        .district(districtId)
+        .quarter(quarterId)
+        .about(about)
+        .createdAt(createdAt)
+        .updatedAt(updatedAt)
+        .phoneNumber(toPhoneNumberDTO(phoneNumber));
   }
 
-  default PhoneNumberDTO toPhoneNumberDTO(PhoneNumber phoneNumber) {
+  default ServiceProviderDTO toServiceProviderProfileDTO(ServiceProviderView1 serviceProviderView) {
+    return toServiceProviderDTO(serviceProviderView);
+  }
+
+  default ServiceProviderDTO toServiceProviderDTO(ServiceProviderView2 v) {
+    return toServiceProviderDTOFromCommon(
+        v.id(),
+        v.userId(),
+        v.firstname(),
+        v.lastname(),
+        v.cityId(),
+        v.districtId(),
+        v.quarterId(),
+        v.about(),
+        v.phoneNumber(),
+        v.createdAt(),
+        v.updatedAt());
+  }
+
+  @Nullable
+  default PhoneNumberDTO toPhoneNumberDTO(@Nullable PhoneNumber phoneNumber) {
+
+    if (phoneNumber == null) {
+      return null;
+    }
     return new PhoneNumberDTO().countryCode(phoneNumber.countryCode()).number(phoneNumber.number());
   }
 
@@ -183,6 +241,16 @@ public interface RestMapper {
         PortfolioItemMediaId.from(dto.getMediaId()));
   }
 
+  default UpdatePortfolioItemUseCase.Command toUpdatePortfolioItemCommand(
+      UUID portfolioItemId, CreatePortfolioItemRequestDTO dto, UUID userId) {
+    return new UpdatePortfolioItemUseCase.Command(
+        UserId.from(userId),
+        PortfolioItemId.from(portfolioItemId),
+        PortfolioItemTitle.from(dto.getTitle()),
+        PortfolioItemDescription.from(dto.getDescription()),
+        PortfolioItemMediaId.from(dto.getMediaId()));
+  }
+
   default PortfolioItemDTO toPortfolioItemDTO(PortfolioView portfolioView) {
     return new PortfolioItemDTO()
         .id(portfolioView.id())
@@ -194,5 +262,38 @@ public interface RestMapper {
 
   default List<PortfolioItemDTO> toPortfolioItemDTOs(List<PortfolioView> portfolioViews) {
     return portfolioViews.stream().map(this::toPortfolioItemDTO).toList();
+  }
+
+  default List<UserServiceDTO> toUserServiceDTOs(List<UserServiceView> userServiceViews) {
+    return userServiceViews.stream().map(this::toUserServiceDTO).toList();
+  }
+
+  default GetServiceProviderByIdUseCase.Command toGetServiceProviderByIdCommand(
+      UUID serviceProviderId, @Nullable UUID userId) {
+    return new GetServiceProviderByIdUseCase.Command(
+        ServiceProviderId.from(serviceProviderId),
+        Optional.ofNullable(userId).map(UserId::from).orElse(null));
+  }
+
+  default ServiceProviderPublicProfileDTO toServiceProviderPublicProfileDTO(Response result) {
+    var v = result.serviceProviderView2();
+    PhoneNumber phoneNumber = v.phoneNumber();
+    if (!result.isClient()) {
+      phoneNumber = null;
+    }
+    return new ServiceProviderPublicProfileDTO()
+        .id(v.id())
+        .userId(v.userId())
+        .firstname(v.firstname())
+        .lastname(v.lastname())
+        .city(v.cityId())
+        .district(v.districtId())
+        .quarter(v.quarterId())
+        .about(v.about())
+        .createdAt(v.createdAt())
+        .updatedAt(v.updatedAt())
+        .phoneNumber(toPhoneNumberDTO(phoneNumber))
+        .userServices(v.services().stream().map(this::toUserServiceDTO).toList())
+        .portfolio(v.portfolios().stream().map(this::toPortfolioItemDTO).toList());
   }
 }

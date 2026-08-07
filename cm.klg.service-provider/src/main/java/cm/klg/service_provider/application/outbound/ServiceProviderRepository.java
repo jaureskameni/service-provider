@@ -1,7 +1,9 @@
 package cm.klg.service_provider.application.outbound;
 
 import cm.klg.service_provider.application.views.PortfolioView;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
+import cm.klg.service_provider.application.views.ServiceProviderViews;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.common.PageData;
@@ -30,12 +32,12 @@ public interface ServiceProviderRepository {
 
   void update(ServiceProvider serviceProvider);
 
-  PageData<ServiceProviderView> loadAllAsView(PaginationFetchRequest pagination);
+  PageData<ServiceProviderView1> loadAllAsView(PaginationFetchRequest pagination);
 
-  PageData<ServiceProviderView> loadAllByStatusAsView(
+  PageData<ServiceProviderView1> loadAllByStatusAsView(
       ServiceProviderStatus serviceProviderStatus, PaginationFetchRequest pagination);
 
-  PageData<ServiceProviderView> searchByLocationAndStatus(
+  PageData<ServiceProviderView1> searchByLocationAndStatus(
       ServiceTypeId serviceTypeId,
       UserCityId cityId,
       @Nullable UserDistrictId districtId,
@@ -43,13 +45,17 @@ public interface ServiceProviderRepository {
       ServiceProviderStatus status,
       PaginationFetchRequest pagination);
 
-  ServiceProviderView loadAsView(ServiceProviderId serviceProviderId)
+  ServiceProviderViews.ServiceProviderView2 loadAsView2(ServiceProviderId serviceProviderId)
       throws ServiceProviderNotFoundException;
 
-  ServiceProviderView loadProfile(ServiceProviderId serviceProviderId)
+  ServiceProviderView1 loadAsView1(UserId serviceProviderId)
       throws ServiceProviderNotFoundException;
 
   List<PortfolioView> loadAllMyPortfolio(UserId userId);
 
   List<PortfolioView> loadAllProviderPortfolio(ServiceProviderId providerId);
+
+  List<UserServiceView> loadAllProviderServices(ServiceProviderId providerId);
+
+  List<UserServiceView> loadAllMyServices(UserId userId);
 }

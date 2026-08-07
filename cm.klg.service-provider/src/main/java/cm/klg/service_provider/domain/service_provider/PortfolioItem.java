@@ -35,4 +35,13 @@ public class PortfolioItem {
       CreatedAt createdAt) {
     return new PortfolioItem(id, title, description, mediaId, createdAt);
   }
+
+  public void update(
+      PortfolioItemTitle title,
+      PortfolioItemDescription description,
+      PortfolioItemMediaId mediaId) {
+    this.title = title;
+    this.description = description;
+    this.mediaId = mediaId;
+  }
 }

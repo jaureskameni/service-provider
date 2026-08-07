@@ -113,4 +113,138 @@ class ServiceProviderTest {
     assertThatThrownBy(() -> userServices.add(dummyService))
         .isInstanceOf(UnsupportedOperationException.class);
   }
+
+  @Test
+  void updatePortfolioItem_shouldThrow_whenPortfolioItemNotFound() {
+    // Given
+    ServiceProvider serviceProvider =
+        ServiceProvider.of(
+            new UserId(UUID.randomUUID()),
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
+            new PhoneNumber("+237", "678901234"),
+            null,
+            new ArrayList<>());
+
+    var nonExistentId = new PortfolioItemId(UUID.randomUUID());
+    PortfolioItemTitle title = PortfolioItemTitle.from("Title");
+    PortfolioItemDescription description = PortfolioItemDescription.from("Description");
+    PortfolioItemMediaId mediaId = new PortfolioItemMediaId(UUID.randomUUID());
+
+    // When & Then
+    assertThatThrownBy(
+            () -> serviceProvider.updatePortfolioItem(nonExistentId, title, description, mediaId))
+        .isInstanceOf(ServiceProviderNotFoundException.class);
+  }
+
+  @Test
+  void deletePortfolioItem_shouldRemoveItem_whenItemExists() {
+    // Given
+    ServiceProvider serviceProvider =
+        ServiceProvider.of(
+            new UserId(UUID.randomUUID()),
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
+            new PhoneNumber("+237", "678901234"),
+            null,
+            new ArrayList<>());
+
+    serviceProvider.addPortfolioItem(
+        PortfolioItemTitle.from("Title"),
+        PortfolioItemDescription.from("Description"),
+        new PortfolioItemMediaId(UUID.randomUUID()));
+
+    PortfolioItemId itemIdToDelete = serviceProvider.getPortfolioItems().get(0).getId();
+
+    // When
+    serviceProvider.deletePortfolioItem(itemIdToDelete);
+
+    // Then
+    assertThat(serviceProvider.getPortfolioItems()).isEmpty();
+  }
+
+  @Test
+  void deletePortfolioItem_shouldThrow_whenPortfolioItemNotFound() {
+    // Given
+    ServiceProvider serviceProvider =
+        ServiceProvider.of(
+            new UserId(UUID.randomUUID()),
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
+            new PhoneNumber("+237", "678901234"),
+            null,
+            new ArrayList<>());
+
+    var nonExistentId = new PortfolioItemId(UUID.randomUUID());
+
+    // When & Then
+    assertThatThrownBy(() -> serviceProvider.deletePortfolioItem(nonExistentId))
+        .isInstanceOf(ServiceProviderNotFoundException.class);
+  }
+
+  @Test
+  void deletePortfolioItem_shouldRemoveOnlySpecificItem_whenMultipleItemsExist() {
+    // Given
+    ServiceProvider serviceProvider =
+        ServiceProvider.of(
+            new UserId(UUID.randomUUID()),
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
+            new PhoneNumber("+237", "678901234"),
+            null,
+            new ArrayList<>());
+
+    serviceProvider.addPortfolioItem(
+        PortfolioItemTitle.from("Title 1"),
+        PortfolioItemDescription.from("Description 1"),
+        new PortfolioItemMediaId(UUID.randomUUID()));
+    serviceProvider.addPortfolioItem(
+        PortfolioItemTitle.from("Title 2"),
+        PortfolioItemDescription.from("Description 2"),
+        new PortfolioItemMediaId(UUID.randomUUID()));
+
+    PortfolioItemId firstItemId = serviceProvider.getPortfolioItems().get(0).getId();
+
+    // When
+    serviceProvider.deletePortfolioItem(firstItemId);
+
+    // Then
+    assertThat(serviceProvider.getPortfolioItems()).hasSize(1);
+    assertThat(serviceProvider.getPortfolioItems().get(0).getId()).isNotEqualTo(firstItemId);
+  }
+
+  @Test
+  void getPortfolioItems_shouldReturnUnmodifiableList() {
+    // Given
+    ServiceProvider serviceProvider =
+        ServiceProvider.of(
+            new UserId(UUID.randomUUID()),
+            new ProviderLocation(
+                new UserCityId(UUID.randomUUID()),
+                new UserDistrictId(UUID.randomUUID()),
+                new UserQuarterId(UUID.randomUUID())),
+            new PhoneNumber("+237", "678901234"),
+            null,
+            new ArrayList<>());
+
+    var portfolioItems = serviceProvider.getPortfolioItems();
+
+    var portfolioItem =
+        PortfolioItem.of(
+            PortfolioItemTitle.from("Title"),
+            PortfolioItemDescription.from("Description"),
+            new PortfolioItemMediaId(UUID.randomUUID()));
+
+    // When & Then
+    assertThatThrownBy(() -> portfolioItems.add(portfolioItem))
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
 }

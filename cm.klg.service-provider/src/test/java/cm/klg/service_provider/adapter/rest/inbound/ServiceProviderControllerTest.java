@@ -15,22 +15,32 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemD
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPublicProfileDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UpdateServiceProviderProfileRequestDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.DeletePortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
+import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
+import cm.klg.service_provider.application.usecase.GetProviderServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
+import cm.klg.service_provider.application.usecase.UpdateServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.views.PortfolioView;
-import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView2;
+import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -71,6 +81,11 @@ class ServiceProviderControllerTest {
   @Mock private GetAllMyPortfolioUseCase getAllMyPortfolioUseCase;
   @Mock private GetProviderPortfolioUseCase getProviderPortfolioUseCase;
   @Mock private SearchServiceProviderUseCase searchServiceProviderUseCase;
+  @Mock private UpdateServiceProviderProfileUseCase updateServiceProviderProfileUseCase;
+  @Mock private UpdatePortfolioItemUseCase updatePortfolioItemUseCase;
+  @Mock private DeletePortfolioItemUseCase deletePortfolioItemUseCase;
+  @Mock private GetAllMyServicesUseCase getAllMyServicesUseCase;
+  @Mock private GetProviderServicesUseCase getProviderServicesUseCase;
 
   @InjectMocks private ServiceProviderController objectUnderTest;
 
@@ -191,7 +206,7 @@ class ServiceProviderControllerTest {
   }
 
   @Test
-  void addNewService_shouldReturnNoContent_whenSuccessful() {
+  void addNewService_shouldReturnCreated_whenSuccessful() {
     // Given
     var serviceTypeDTO =
         new ServiceTypeDTO().id(UUID.randomUUID()).yearOfExperience(5).document(UUID.randomUUID());
@@ -203,9 +218,9 @@ class ServiceProviderControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .body(serviceTypeDTO)
     .when()
-            .put("/service-provider/add-service")
-    .then()
-            .statusCode(HttpStatus.NO_CONTENT.value());
+            .post("/service-provider/services")
+        .then()
+            .statusCode(HttpStatus.CREATED.value());
     // spotless:on
 
     verify(useCaseExecutor).runCommand(any());
@@ -256,8 +271,8 @@ class ServiceProviderControllerTest {
   @Test
   void getAllServiceProvider_shouldReturnOk_whenSuccessful() {
     // Given
-    ServiceProviderView view =
-        new ServiceProviderView(
+    ServiceProviderView1 view =
+        new ServiceProviderView1(
             UUID.randomUUID(),
             UUID.randomUUID(),
             "John",
@@ -272,8 +287,7 @@ class ServiceProviderControllerTest {
             null,
             "APPROVED",
             LocalDateTime.now(),
-            LocalDateTime.now(),
-            List.of());
+            LocalDateTime.now());
     var useCaseResponse = new GetAllServiceProviderUseCase.Response(1L, List.of(view));
     var paginateDTO =
         new ServiceProviderPaginateDTO()
@@ -314,57 +328,9 @@ class ServiceProviderControllerTest {
   void getServiceProviderById_shouldReturnOk_whenSuccessful() {
     // Given
     UUID spId = UUID.randomUUID();
-    var view =
-        new ServiceProviderView(
-            spId,
-            UUID.randomUUID(),
-            "Jane",
-            "Smith",
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            "APPROVED",
-            LocalDateTime.now(),
-            LocalDateTime.now(),
-            List.of());
-    var dto = new ServiceProviderDTO().id(spId);
-
-    when(useCaseExecutor.executeQuery(any()))
-        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
-    when(getServiceProviderByIdUseCase.execute(new ServiceProviderId(spId))).thenReturn(view);
-    when(restMapper.toServiceProviderDTO(view)).thenReturn(dto);
-
-    // When
-    var result =
-        // spotless:off
-        given()
-                .standaloneSetup(objectUnderTest)
-        .when()
-                .get("/service-provider/{serviceProviderId}", spId)
-        .then()
-                .statusCode(HttpStatus.OK.value())
-                .extract()
-                .as(ServiceProviderDTO.class);
-        // spotless:on
-
-    // Then
-    assertThat(result.getId()).isEqualTo(spId);
-    verify(getServiceProviderByIdUseCase).execute(new ServiceProviderId(spId));
-    verify(restMapper).toServiceProviderDTO(view);
-  }
-
-  @Test
-  void getServiceProviderProfile_shouldReturnOk_whenSuccessful() {
-    // Given
-    UUID spId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     var view =
-        new ServiceProviderView(
+        new ServiceProviderView2(
             spId,
             userId,
             "Jane",
@@ -380,21 +346,15 @@ class ServiceProviderControllerTest {
             "APPROVED",
             LocalDateTime.now(),
             LocalDateTime.now(),
+            List.of(),
             List.of());
-    var response = new GetServiceProviderProfileUseCase.Response(view, true);
-    var dto = new ServiceProviderDTO().id(spId);
-
-    var jwtAuth = mock(JwtAuthenticationToken.class);
-    Map<String, Object> attrs = new HashMap<>();
-    attrs.put(JwtClaimNames.SUB, userId.toString());
-    when(jwtAuth.getTokenAttributes()).thenReturn(attrs);
-    SecurityContextHolder.getContext().setAuthentication(jwtAuth);
+    var useCaseResponse = new GetServiceProviderByIdUseCase.Response(view, true);
+    var dto = new ServiceProviderPublicProfileDTO().id(spId);
 
     when(useCaseExecutor.executeQuery(any()))
         .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
-    when(getServiceProviderProfileUseCase.execute(new ServiceProviderId(spId), new UserId(userId)))
-        .thenReturn(response);
-    when(restMapper.toServiceProviderProfileDTO(response)).thenReturn(dto);
+    when(getServiceProviderByIdUseCase.execute(any())).thenReturn(useCaseResponse);
+    when(restMapper.toServiceProviderPublicProfileDTO(useCaseResponse)).thenReturn(dto);
 
     // When
     var result =
@@ -402,7 +362,35 @@ class ServiceProviderControllerTest {
         given()
                 .standaloneSetup(objectUnderTest)
         .when()
-                .get("/service-provider/{serviceProviderId}/profile", spId)
+                .get("/service-provider/{serviceProviderId}", spId)
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(ServiceProviderPublicProfileDTO.class);
+        // spotless:on
+
+    // Then
+    assertThat(result.getId()).isEqualTo(spId);
+    verify(getServiceProviderByIdUseCase).execute(any());
+    verify(restMapper).toServiceProviderPublicProfileDTO(useCaseResponse);
+  }
+
+  @Test
+  void getServiceProviderProfile_shouldReturnOk_whenSuccessful() {
+    // Given
+    var view = mock(ServiceProviderView1.class);
+    var dto = new ServiceProviderDTO().id(UUID.randomUUID());
+
+    when(useCaseExecutor.executeQuery(any())).thenReturn(view);
+    when(restMapper.toServiceProviderProfileDTO(view)).thenReturn(dto);
+
+    // When
+    var result =
+        // spotless:off
+        given()
+                .standaloneSetup(objectUnderTest)
+        .when()
+                .get("/service-provider/profile")
         .then()
                 .statusCode(HttpStatus.OK.value())
                 .extract()
@@ -410,10 +398,100 @@ class ServiceProviderControllerTest {
         // spotless:on
 
     // Then
-    assertThat(result.getId()).isEqualTo(spId);
-    verify(getServiceProviderProfileUseCase)
-        .execute(new ServiceProviderId(spId), new UserId(userId));
-    verify(restMapper).toServiceProviderProfileDTO(response);
+    assertThat(result.getId()).isEqualTo(dto.getId());
+    verify(restMapper).toServiceProviderProfileDTO(view);
+  }
+
+  @Test
+  void updateServiceProviderProfile_shouldReturnNoContent_whenSuccessful() {
+    var request =
+        new UpdateServiceProviderProfileRequestDTO()
+            .city(UUID.randomUUID())
+            .district(UUID.randomUUID())
+            .quarter(UUID.randomUUID())
+            .about("Updated profile")
+            .phoneNumber(new PhoneNumberDTO().countryCode("+237").number("678901234"));
+
+    // spotless:off
+    given()
+            .standaloneSetup(objectUnderTest)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(request)
+        .when()
+            .put("/service-provider/profile")
+        .then()
+            .statusCode(HttpStatus.NO_CONTENT.value());
+    // spotless:on
+
+    verify(useCaseExecutor).runCommand(any());
+  }
+
+  @Test
+  void updatePortfolioItem_shouldReturnNoContent_whenSuccessful() {
+    var portfolioId = UUID.randomUUID();
+    var request =
+        new CreatePortfolioItemRequestDTO()
+            .title("Updated title")
+            .description("Updated description")
+            .mediaId(UUID.randomUUID());
+
+    given()
+        .standaloneSetup(objectUnderTest)
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(request)
+        .when()
+        .put("/service-provider/portfolio/{portfolioId}", portfolioId)
+        .then()
+        .statusCode(HttpStatus.NO_CONTENT.value());
+
+    verify(useCaseExecutor).runCommand(any());
+  }
+
+  @Test
+  void deletePortfolioItem_shouldReturnNoContent_whenSuccessful() {
+    var portfolioId = UUID.randomUUID();
+
+    given()
+        .standaloneSetup(objectUnderTest)
+        .when()
+        .delete("/service-provider/portfolio/{portfolioId}", portfolioId)
+        .then()
+        .statusCode(HttpStatus.NO_CONTENT.value());
+
+    verify(useCaseExecutor).runCommand(any());
+  }
+
+  @Test
+  void getMyServices_shouldReturnOk_whenSuccessful() {
+    var userServiceViews = List.of();
+    when(useCaseExecutor.executeQuery(any())).thenReturn(userServiceViews);
+
+    given()
+        .standaloneSetup(objectUnderTest)
+        .when()
+        .get("/service-provider/services")
+        .then()
+        .statusCode(HttpStatus.OK.value());
+  }
+
+  @Test
+  void getProviderServices_shouldReturnOk_whenSuccessful() {
+    var providerId = UUID.randomUUID();
+    var services = List.of(serviceView());
+    when(useCaseExecutor.executeQuery(any()))
+        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
+    when(getProviderServicesUseCase.execute(ServiceProviderId.from(providerId)))
+        .thenReturn(services);
+    when(restMapper.toUserServiceDTOs(services)).thenReturn(List.of(new UserServiceDTO()));
+
+    given()
+        .standaloneSetup(objectUnderTest)
+        .when()
+        .get("/service-provider/{providerId}/services", providerId)
+        .then()
+        .statusCode(HttpStatus.OK.value());
+
+    verify(getProviderServicesUseCase).execute(ServiceProviderId.from(providerId));
   }
 
   @Test
@@ -557,5 +635,14 @@ class ServiceProviderControllerTest {
     assertThat(result).isEmpty();
     verify(getProviderPortfolioUseCase).execute(ServiceProviderId.from(providerId));
     verify(restMapper).toPortfolioItemDTOs(List.of());
+  }
+
+  private UserServiceView serviceView() {
+    return new UserServiceView(
+        new cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView(
+            UUID.randomUUID(), "Plumbing", "Repairs", true),
+        5,
+        UUID.randomUUID(),
+        LocalDateTime.now());
   }
 }
