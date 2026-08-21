@@ -16,6 +16,11 @@ components:
       - "SERVICE_PROVIDER_APPROVED"
       - "SERVICE_PROVIDER_CREATED"
       - "SERVICE_PROVIDER_REJECTED"
+      - "SERVICE_PROVIDER_SERVICE_ADDED"
+      - "SERVICE_PROVIDER_PORTFOLIO_ITEM_ADDED"
+      - "SERVICE_PROVIDER_PORTFOLIO_ITEM_UPDATED"
+      - "SERVICE_PROVIDER_PORTFOLIO_ITEM_DELETED"
+      - "SERVICE_PROVIDER_PROFILE_UPDATED"
     ServiceProviderCreatedEventDTO:
       type: "object"
       properties:
@@ -54,15 +59,91 @@ components:
         userId:
           type: "string"
           format: "uuid"
-        lastname:
+        approvedBy:
           type: "string"
-        firstname:
+          format: "uuid"
+        approvedAt:
           type: "string"
-        email:
+          format: "date-time"
+    ServiceProviderServiceAddedEventDTO:
+      type: "object"
+      properties:
+        serviceProviderId:
           type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        serviceTypeId:
+          type: "string"
+          format: "uuid"
+        yearOfExperience:
+          type: "integer"
+        documentId:
+          type: "string"
+          format: "uuid"
+        addedAt:
+          type: "string"
+          format: "date-time"
+    ServiceProviderPortfolioItemAddedEventDTO:
+      type: "object"
+      properties:
+        serviceProviderId:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        portfolioItemId:
+          type: "string"
+          format: "uuid"
+    ServiceProviderPortfolioItemUpdatedEventDTO:
+      type: "object"
+      properties:
+        serviceProviderId:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        portfolioItemId:
+          type: "string"
+          format: "uuid"
+    ServiceProviderPortfolioItemDeletedEventDTO:
+      type: "object"
+      properties:
+        serviceProviderId:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        portfolioItemId:
+          type: "string"
+          format: "uuid"
+    ServiceProviderProfileUpdatedEventDTO:
+      type: "object"
+      properties:
+        serviceProviderId:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        cityId:
+          type: "string"
+          format: "uuid"
+        districtId:
+          type: "string"
+          format: "uuid"
+        quarterId:
+          type: "string"
+          format: "uuid"
         phoneNumber:
           $ref: "#/components/schemas/PhoneNumberDTO"
-        approvedAt:
+        about:
+          type: "string"
+        updatedAt:
           type: "string"
           format: "date-time"
     PhoneNumberDTO:

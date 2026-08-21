@@ -348,7 +348,7 @@ class ServiceProviderControllerTest {
             LocalDateTime.now(),
             List.of(),
             List.of());
-    var useCaseResponse = new GetServiceProviderByIdUseCase.Response(view, true);
+    var useCaseResponse = new GetServiceProviderByIdUseCase.Response(view, true, true);
     var dto = new ServiceProviderPublicProfileDTO().id(spId);
 
     when(useCaseExecutor.executeQuery(any()))

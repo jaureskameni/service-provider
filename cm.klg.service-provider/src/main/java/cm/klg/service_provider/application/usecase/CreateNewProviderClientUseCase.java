@@ -10,10 +10,7 @@ public record CreateNewProviderClientUseCase(ProviderClientRepository providerCl
   public void execute(Command command) {
     UserId userId = command.userId;
     ServiceProviderId providerId = command.providerId;
-    if (providerClientRepository.existsByUserIdAndProviderId(userId, providerId)) {
-      return;
-    }
-    providerClientRepository.insert(ProviderClient.of(userId, providerId));
+    providerClientRepository.insertIfAbsent(ProviderClient.of(userId, providerId));
   }
 
   public record Command(ServiceProviderId providerId, UserId userId, CreatedAt createdAt) {}

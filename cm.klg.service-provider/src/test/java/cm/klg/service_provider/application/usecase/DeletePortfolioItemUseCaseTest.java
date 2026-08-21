@@ -7,6 +7,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItem;
@@ -28,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DeletePortfolioItemUseCaseTest {
 
   @Mock private ServiceProviderRepository serviceProviderRepository;
+  @Mock private DomainEventPublisher domainEventPublisher;
   @InjectMocks private DeletePortfolioItemUseCase objectUnderTest;
 
   @Test

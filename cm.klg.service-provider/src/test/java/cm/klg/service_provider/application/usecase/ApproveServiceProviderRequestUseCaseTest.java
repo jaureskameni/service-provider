@@ -1,7 +1,6 @@
 package cm.klg.service_provider.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,6 +17,7 @@ import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderApprovedEvent;
 import cm.klg.service_provider.domain.user.User;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -67,6 +67,11 @@ class ApproveServiceProviderRequestUseCaseTest {
     verify(serviceProviderRepository).load(serviceProviderId);
     verify(serviceProviderRepository).update(serviceProvider);
     verify(userRepository).load(providerIdentityId);
-    verify(domainEventPublisher).serviceProviderApprovedEvent(any());
+    var eventCaptor = org.mockito.ArgumentCaptor.forClass(ServiceProviderApprovedEvent.class);
+    verify(domainEventPublisher).serviceProviderApprovedEvent(eventCaptor.capture());
+    assertThat(eventCaptor.getValue().serviceProviderId()).isEqualTo(serviceProvider.getId());
+    assertThat(eventCaptor.getValue().userId()).isEqualTo(providerUserId);
+    assertThat(eventCaptor.getValue().approvedBy()).isEqualTo(adminId);
+    assertThat(eventCaptor.getValue().approvedAt()).isNotNull();
   }
 }

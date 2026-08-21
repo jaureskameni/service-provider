@@ -1,5 +1,6 @@
 package cm.klg.service_provider.application.usecase;
 
+import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
@@ -11,13 +12,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AddPortfolioItemUseCase {
   private final ServiceProviderRepository serviceProviderRepository;
+  private final DomainEventPublisher domainEventPublisher;
 
   public void execute(Command command) {
     ServiceProvider serviceProvider = serviceProviderRepository.loadByUserId(command.userId());
 
-    serviceProvider.addPortfolioItem(command.title(), command.description(), command.mediaId());
+    var portfolioItem =
+        serviceProvider.addPortfolioItem(command.title(), command.description(), command.mediaId());
 
     serviceProviderRepository.update(serviceProvider);
+    domainEventPublisher.serviceProviderPortfolioItemAddedEvent(
+        serviceProvider.toPortfolioItemAddedEvent(portfolioItem));
   }
 
   public record Command(

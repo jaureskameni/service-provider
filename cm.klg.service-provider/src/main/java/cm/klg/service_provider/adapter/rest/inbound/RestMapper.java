@@ -17,6 +17,7 @@ import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetMyFavoriteServiceProvidersUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase.Response;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
@@ -33,6 +34,7 @@ import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
+import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.RejectionReason;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
@@ -115,8 +117,8 @@ public interface RestMapper {
       Integer limit, ServiceProviderStatusDTO status, Integer page) {
     return new GetAllServiceProviderUseCase.Command(
         toServiceProviderStatus(status),
-        java.util.Optional.ofNullable(limit).orElse(20),
-        java.util.Optional.ofNullable(page).orElse(0));
+        Optional.ofNullable(limit).orElse(20),
+        Optional.ofNullable(page).orElse(0));
   }
 
   default SearchServiceProviderUseCase.Command toSearchServiceProviderCommand(
@@ -132,8 +134,8 @@ public interface RestMapper {
         districtId != null ? new UserDistrictId(districtId) : null,
         quarterId != null ? new UserQuarterId(quarterId) : null,
         ServiceProviderStatus.APPROVED, // Default search status
-        java.util.Optional.ofNullable(limit).orElse(20),
-        java.util.Optional.ofNullable(page).orElse(0));
+        Optional.ofNullable(limit).orElse(20),
+        Optional.ofNullable(page).orElse(0));
   }
 
   default ServiceProviderPaginateDTO toServiceProviderPaginateDTO(
@@ -154,45 +156,47 @@ public interface RestMapper {
             pageData.serviceProviderViews().stream().map(this::toServiceProviderDTO).toList());
   }
 
+  default ServiceProviderPaginateDTO toServiceProviderPaginateDTO(
+      GetMyFavoriteServiceProvidersUseCase.Response pageData) {
+
+    return new ServiceProviderPaginateDTO()
+        .count(pageData.count())
+        .serviceProvider(
+            pageData.serviceProviderViews().stream().map(this::toServiceProviderDTO).toList());
+  }
+
+  default GetMyFavoriteServiceProvidersUseCase.Command toGetMyFavoriteServiceProvidersCommand(
+      UUID userId, Integer limit, Integer page) {
+    return new GetMyFavoriteServiceProvidersUseCase.Command(
+        UserId.from(userId),
+        Optional.ofNullable(limit).orElse(20),
+        Optional.ofNullable(page).orElse(0));
+  }
+
   default ServiceProviderDTO toServiceProviderDTO(ServiceProviderView1 v) {
     return toServiceProviderDTOFromCommon(
-        v.id(),
-        v.userId(),
-        v.firstname(),
-        v.lastname(),
-        v.cityId(),
-        v.districtId(),
-        v.quarterId(),
-        v.about(),
-        v.phoneNumber(),
-        v.createdAt(),
-        v.updatedAt());
+        new UserInfo(v.id(), v.userId(), v.firstname(), v.lastname()),
+        new ProviderLocation(
+            UserCityId.from(v.cityId()),
+            UserDistrictId.from(v.districtId()),
+            v.quarterId() != null ? UserQuarterId.from(v.quarterId()) : null),
+        new ProviderMetadata(v.about(), v.phoneNumber(), v.createdAt(), v.updatedAt()));
   }
 
   private ServiceProviderDTO toServiceProviderDTOFromCommon(
-      UUID id,
-      UUID userId,
-      String firstname,
-      String lastname,
-      UUID cityId,
-      UUID districtId,
-      UUID quarterId,
-      String about,
-      PhoneNumber phoneNumber,
-      LocalDateTime createdAt,
-      LocalDateTime updatedAt) {
+      UserInfo userInfo, ProviderLocation location, ProviderMetadata metadata) {
     return new ServiceProviderDTO()
-        .id(id)
-        .userId(userId)
-        .firstname(firstname)
-        .lastname(lastname)
-        .city(cityId)
-        .district(districtId)
-        .quarter(quarterId)
-        .about(about)
-        .createdAt(createdAt)
-        .updatedAt(updatedAt)
-        .phoneNumber(toPhoneNumberDTO(phoneNumber));
+        .id(userInfo.id())
+        .userId(userInfo.userId())
+        .firstname(userInfo.firstname())
+        .lastname(userInfo.lastname())
+        .city(location.cityId().value())
+        .district(location.districtId().value())
+        .quarter(location.quarterId() != null ? location.quarterId().value() : null)
+        .about(metadata.about() != null ? metadata.about() : null)
+        .createdAt(metadata.createdAt())
+        .updatedAt(metadata.updatedAt())
+        .phoneNumber(toPhoneNumberDTO(metadata.phoneNumber()));
   }
 
   default ServiceProviderDTO toServiceProviderProfileDTO(ServiceProviderView1 serviceProviderView) {
@@ -201,17 +205,12 @@ public interface RestMapper {
 
   default ServiceProviderDTO toServiceProviderDTO(ServiceProviderView2 v) {
     return toServiceProviderDTOFromCommon(
-        v.id(),
-        v.userId(),
-        v.firstname(),
-        v.lastname(),
-        v.cityId(),
-        v.districtId(),
-        v.quarterId(),
-        v.about(),
-        v.phoneNumber(),
-        v.createdAt(),
-        v.updatedAt());
+        new UserInfo(v.id(), v.userId(), v.firstname(), v.lastname()),
+        new ProviderLocation(
+            UserCityId.from(v.cityId()),
+            UserDistrictId.from(v.districtId()),
+            v.quarterId() != null ? UserQuarterId.from(v.quarterId()) : null),
+        new ProviderMetadata(v.about(), v.phoneNumber(), v.createdAt(), v.updatedAt()));
   }
 
   @Nullable
@@ -293,7 +292,18 @@ public interface RestMapper {
         .createdAt(v.createdAt())
         .updatedAt(v.updatedAt())
         .phoneNumber(toPhoneNumberDTO(phoneNumber))
+        .userIsProviderClient(result.isClient())
+        .userHasFavorited(result.isFavorite())
+        .serviceProviderStatus(ServiceProviderStatusDTO.fromValue(v.status()))
         .userServices(v.services().stream().map(this::toUserServiceDTO).toList())
         .portfolio(v.portfolios().stream().map(this::toPortfolioItemDTO).toList());
   }
+
+  record ProviderMetadata(
+      @Nullable String about,
+      PhoneNumber phoneNumber,
+      @Nullable LocalDateTime createdAt,
+      @Nullable LocalDateTime updatedAt) {}
+
+  record UserInfo(UUID id, UUID userId, String firstname, String lastname) {}
 }

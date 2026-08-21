@@ -5,7 +5,7 @@ import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.user.User;
 
 public interface UserRepository {
-  void insert(User newUser);
+  void insertIfAbsent(User newUser);
 
   User load(IdentityId identityId);
 

@@ -6,6 +6,7 @@ import cm.klg.common.base.exception.HttpErrorException;
 import cm.klg.common.base.exception.InternalException;
 import cm.klg.common.base.exception.ResourceNotFoundException;
 import cm.klg.common.base.transaction.DomainToHttpExceptionTranslator;
+import cm.klg.service_provider.domain.favorite.CannotFavoriteOwnProfileException;
 import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderDataException;
 import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderStatusTransitionException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExistsException;
@@ -30,7 +31,8 @@ public record DefaultDomainToHttpExceptionTranslator() implements DomainToHttpEx
           ServiceProviderAlreadyProvidesServiceException _,
           InvalidServiceProviderStatusTransitionException _ ->
           new ConflictException(message);
-      case InvalidServiceProviderDataException _ -> new BadRequestException(message);
+      case InvalidServiceProviderDataException _, CannotFavoriteOwnProfileException _ ->
+          new BadRequestException(message);
       default -> new InternalException(message, ex);
     };
   }

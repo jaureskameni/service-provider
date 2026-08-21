@@ -28,7 +28,6 @@ public class ApproveServiceProviderRequestUseCase {
     providerUser.promoteToProvider();
     userRepository.update(providerUser);
 
-    domainEventPublisher.serviceProviderApprovedEvent(
-        serviceProvider.toApprovedEvent(providerUser));
+    domainEventPublisher.serviceProviderApprovedEvent(serviceProvider.toApprovedEvent());
   }
 }

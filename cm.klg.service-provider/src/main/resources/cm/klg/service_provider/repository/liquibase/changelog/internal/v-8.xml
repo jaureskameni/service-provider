@@ -29,7 +29,8 @@
 			</column>
 		</createTable>
 
-		<addUniqueConstraint tableName="t_favorite_provider"
+		<addUniqueConstraint
+			tableName="t_favorite_provider"
 			columnNames="c_user_id, c_provider_id"
 			constraintName="uq_favorite_provider_user_provider" />
 
@@ -40,8 +41,7 @@
 			onDelete="CASCADE" onUpdate="CASCADE" />
 
 		<addForeignKeyConstraint
-			baseTableName="t_favorite_provider"
-			baseColumnNames="c_provider_id"
+			baseTableName="t_favorite_provider" baseColumnNames="c_provider_id"
 			constraintName="fk_favorite_provider_provider"
 			referencedTableName="t_service_provider" referencedColumnNames="c_id"
 			onDelete="CASCADE" onUpdate="CASCADE" />

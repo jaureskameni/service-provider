@@ -9,6 +9,7 @@ import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.favorite.FavoriteProvider;
 import cm.klg.service_provider.domain.provider_client.ProviderClient;
 import cm.klg.service_provider.domain.service_provider.AboutProvider;
 import cm.klg.service_provider.domain.service_provider.PortfolioItem;
@@ -123,6 +124,13 @@ public interface JpaMapper {
   @Mapping(target = "providerId", source = "providerId.value")
   @Mapping(target = "createdAt", source = "createdAt.value")
   ProviderClientJpa toJpa(ProviderClient providerClient);
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "id", source = "id.value")
+  @Mapping(target = "userId", source = "userId.value")
+  @Mapping(target = "providerId", source = "providerId.value")
+  @Mapping(target = "createdAt", source = "createdAt.value")
+  FavoriteProviderJpa toJpa(FavoriteProvider favoriteProvider);
 
   @BeanMapping(ignoreByDefault = true)
   @Mapping(target = "id", source = "id.value")

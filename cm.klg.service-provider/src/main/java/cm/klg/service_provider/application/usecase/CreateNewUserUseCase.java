@@ -32,7 +32,7 @@ public record CreateNewUserUseCase(UserRepository userRepository) {
             false,
             CreatedAt.from(command.createdAt));
 
-    userRepository.insert(newUser);
+    userRepository.insertIfAbsent(newUser);
   }
 
   public record CreateNewUserCommand(

@@ -1,5 +1,6 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
+import cm.klg.service_provider.application.outbound.FavoriteProviderRepository;
 import cm.klg.service_provider.application.outbound.ProviderClientRepository;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
@@ -46,5 +47,14 @@ public class JpaSpringBeans {
   public ProviderClientRepository providerClientRepository(
       ProviderClientSpringRepository providerClientSpringRepository, JpaMapper jpaMapper) {
     return new ProviderClientJpaRepository(providerClientSpringRepository, jpaMapper);
+  }
+
+  @Bean
+  public FavoriteProviderRepository favoriteProviderRepository(
+      FavoriteProviderSpringRepository favoriteProviderSpringRepository,
+      UserSpringRepository userSpringRepository,
+      JpaMapper jpaMapper) {
+    return new FavoriteProviderJpaRepository(
+        favoriteProviderSpringRepository, userSpringRepository, jpaMapper);
   }
 }
