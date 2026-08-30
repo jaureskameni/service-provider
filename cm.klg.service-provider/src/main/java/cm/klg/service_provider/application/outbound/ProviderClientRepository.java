@@ -7,5 +7,5 @@ import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 public interface ProviderClientRepository {
   boolean existsByUserIdAndProviderId(UserId userId, ServiceProviderId providerId);
 
-  void insert(ProviderClient providerClient);
+  void insertIfAbsent(ProviderClient providerClient);
 }

@@ -1,5 +1,6 @@
 package cm.klg.service_provider.application.usecase;
 
+import cm.klg.service_provider.application.outbound.FavoriteProviderRepository;
 import cm.klg.service_provider.application.outbound.ProviderClientRepository;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.views.ServiceProviderViews;
@@ -12,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 public class GetServiceProviderByIdUseCase {
   private final ServiceProviderRepository serviceProviderRepository;
   private final ProviderClientRepository providerClientRepository;
+  private final FavoriteProviderRepository favoriteProviderRepository;
 
   public Response execute(Command command) {
     ServiceProviderId providerId = command.providerId;
@@ -22,11 +24,16 @@ public class GetServiceProviderByIdUseCase {
 
     boolean isClient =
         userId != null && providerClientRepository.existsByUserIdAndProviderId(userId, providerId);
-    return new Response(providerView, isClient);
+    boolean isFavorite =
+        userId != null
+            && favoriteProviderRepository.existsByUserIdAndProviderId(userId, providerId);
+    return new Response(providerView, isClient, isFavorite);
   }
 
   public record Command(ServiceProviderId providerId, @Nullable UserId userId) {}
 
   public record Response(
-      ServiceProviderViews.ServiceProviderView2 serviceProviderView2, boolean isClient) {}
+      ServiceProviderViews.ServiceProviderView2 serviceProviderView2,
+      boolean isClient,
+      boolean isFavorite) {}
 }

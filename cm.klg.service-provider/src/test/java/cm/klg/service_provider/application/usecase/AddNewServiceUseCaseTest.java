@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
@@ -32,6 +33,7 @@ class AddNewServiceUseCaseTest {
 
   @Mock private ServiceProviderRepository serviceProviderRepository;
   @Mock private ServiceTypeRepository serviceTypeRepository;
+  @Mock private DomainEventPublisher domainEventPublisher;
 
   @InjectMocks private AddNewServiceUseCase objectUnderTest;
 

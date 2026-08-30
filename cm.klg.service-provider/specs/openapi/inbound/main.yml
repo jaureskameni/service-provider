@@ -396,6 +396,76 @@ paths:
                   $ref: "#/components/schemas/UserService"
         "404":
           description: "SERVICE_PROVIDER_404_002"
+  /me/favorites/service-providers:
+    get:
+      tags:
+      - "Favorite"
+      summary: "List my favorite service providers"
+      description: "List service providers favorited by the authenticated user"
+      operationId: "getMyFavoriteServiceProviders"
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: "page"
+        in: "query"
+        required: false
+        schema:
+          type: "integer"
+          minimum: "0"
+      - name: "limit"
+        in: "query"
+        required: true
+        schema:
+          type: "integer"
+          minimum: "10"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceProviderPaginate"
+  /me/favorites/service-providers/{serviceProviderId}:
+    post:
+      tags:
+      - "Favorite"
+      summary: "Add service provider to favorites"
+      description: "Add a service provider to the authenticated user's favorites"
+      operationId: "addServiceProviderToFavorites"
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "204":
+          description: "Successful operation"
+        "400":
+          description: "SERVICE_PROVIDER_400_002"
+        "404":
+          description: "SERVICE_PROVIDER_404_002"
+    delete:
+      tags:
+      - "Favorite"
+      summary: "Remove service provider from favorites"
+      description: "Remove a service provider from the authenticated user's favorites"
+      operationId: "removeServiceProviderFromFavorites"
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "204":
+          description: "Successful operation"
   /service-catalog:
     get:
       tags:
@@ -488,6 +558,7 @@ components:
       - "district"
       - "quarter"
       - "userIsProviderClient"
+      - "userHasFavorited"
       - "serviceProviderStatus"
       - "createdAt"
       type: "object"
@@ -521,6 +592,12 @@ components:
           format: "date-time"
         phoneNumber:
           $ref: "#/components/schemas/PhoneNumber"
+        userIsProviderClient:
+          type: "boolean"
+        userHasFavorited:
+          type: "boolean"
+        serviceProviderStatus:
+          $ref: "#/components/schemas/ServiceProviderStatus"
         userServices:
           type: "array"
           items:

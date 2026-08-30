@@ -1,5 +1,7 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,7 +31,7 @@ class UserJpaRepositoryTest {
   @InjectMocks private UserJpaRepository userJpaRepository;
 
   @Test
-  void shouldInsertUser() {
+  void shouldInsertUserIfAbsent() {
     // Given
     User user =
         User.reconstitute(
@@ -43,12 +45,25 @@ class UserJpaRepositoryTest {
             false,
             CreatedAt.from(LocalDateTime.now()));
     UserJpa userJpa = new UserJpa();
+    userJpa.setId(user.getId().value());
+    userJpa.setIdentityId(user.getIdentityId().value());
+    userJpa.setCreatedAt(user.getCreatedAt().value());
     when(jpaMapper.toUserJpa(user)).thenReturn(userJpa);
+    when(userSpringRepository.insertIfAbsent(any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(1);
 
     // When
-    userJpaRepository.insert(user);
+    userJpaRepository.insertIfAbsent(user);
 
     // Then
-    verify(userSpringRepository).save(userJpa);
+    verify(userSpringRepository)
+        .insertIfAbsent(
+            eq(user.getId().value()),
+            eq(user.getIdentityId().value()),
+            any(),
+            any(),
+            any(),
+            any(),
+            eq(user.getCreatedAt().value()));
   }
 }

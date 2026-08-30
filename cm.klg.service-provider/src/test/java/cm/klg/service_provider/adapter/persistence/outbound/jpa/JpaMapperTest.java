@@ -8,6 +8,8 @@ import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.favorite.FavoriteProvider;
+import cm.klg.service_provider.domain.favorite.FavoriteProviderId;
 import cm.klg.service_provider.domain.provider_client.ProviderClient;
 import cm.klg.service_provider.domain.provider_client.ProviderClientId;
 import cm.klg.service_provider.domain.service_provider.AboutProvider;
@@ -720,6 +722,26 @@ class JpaMapperTest {
       ProviderClientJpa jpa = objectUnderTest.toJpa(client);
 
       assertThat(jpa.getId()).isEqualTo(clientId.value());
+      assertThat(jpa.getUserId()).isEqualTo(userId.value());
+      assertThat(jpa.getProviderId()).isEqualTo(providerId.value());
+      assertThat(jpa.getCreatedAt()).isEqualTo(now.value());
+    }
+  }
+
+  @Nested
+  class FavoriteProviderMapping {
+
+    @Test
+    void toJpa_shouldMapFavoriteProviderToJpa() {
+      var favoriteId = FavoriteProviderId.generate();
+      var userId = new UserId(UUID.randomUUID());
+      var providerId = ServiceProviderId.generate();
+      var now = CreatedAt.from(LocalDateTime.now());
+      var favorite = new FavoriteProvider(favoriteId, userId, providerId, now);
+
+      FavoriteProviderJpa jpa = objectUnderTest.toJpa(favorite);
+
+      assertThat(jpa.getId()).isEqualTo(favoriteId.value());
       assertThat(jpa.getUserId()).isEqualTo(userId.value());
       assertThat(jpa.getProviderId()).isEqualTo(providerId.value());
       assertThat(jpa.getCreatedAt()).isEqualTo(now.value());

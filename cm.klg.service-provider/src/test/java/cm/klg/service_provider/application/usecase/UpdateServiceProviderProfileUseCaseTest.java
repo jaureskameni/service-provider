@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
@@ -24,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UpdateServiceProviderProfileUseCaseTest {
   @Mock private ServiceProviderRepository serviceProviderRepository;
+  @Mock private DomainEventPublisher domainEventPublisher;
   @InjectMocks private UpdateServiceProviderProfileUseCase objectUnderTest;
 
   @Test

@@ -4,12 +4,14 @@ import cm.klg.common.base.config.TransactionBeansProvider;
 import cm.klg.common.base.transaction.DomainToHttpExceptionTranslator;
 import cm.klg.service_provider.adapter.rest.inbound.DefaultDomainToHttpExceptionTranslator;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
+import cm.klg.service_provider.application.outbound.FavoriteProviderRepository;
 import cm.klg.service_provider.application.outbound.ProviderClientRepository;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
+import cm.klg.service_provider.application.usecase.AddServiceProviderToFavoritesUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
@@ -19,11 +21,13 @@ import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
+import cm.klg.service_provider.application.usecase.GetMyFavoriteServiceProvidersUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
+import cm.klg.service_provider.application.usecase.RemoveServiceProviderFromFavoritesUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.UpdateServiceProviderProfileUseCase;
@@ -70,8 +74,10 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   @Bean
   public GetServiceProviderByIdUseCase getServiceProviderByIdUseCase(
       ServiceProviderRepository serviceProviderRepository,
-      ProviderClientRepository providerClientRepository) {
-    return new GetServiceProviderByIdUseCase(serviceProviderRepository, providerClientRepository);
+      ProviderClientRepository providerClientRepository,
+      FavoriteProviderRepository favoriteProviderRepository) {
+    return new GetServiceProviderByIdUseCase(
+        serviceProviderRepository, providerClientRepository, favoriteProviderRepository);
   }
 
   @Bean
@@ -92,15 +98,18 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public AddPortfolioItemUseCase addPortfolioItemUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new AddPortfolioItemUseCase(serviceProviderRepository);
+      ServiceProviderRepository serviceProviderRepository,
+      DomainEventPublisher domainEventPublisher) {
+    return new AddPortfolioItemUseCase(serviceProviderRepository, domainEventPublisher);
   }
 
   @Bean
   public AddNewServiceUseCase addNewServiceUseCase(
       ServiceProviderRepository serviceProviderRepository,
-      ServiceTypeRepository serviceTypeRepository) {
-    return new AddNewServiceUseCase(serviceProviderRepository, serviceTypeRepository);
+      ServiceTypeRepository serviceTypeRepository,
+      DomainEventPublisher domainEventPublisher) {
+    return new AddNewServiceUseCase(
+        serviceProviderRepository, serviceTypeRepository, domainEventPublisher);
   }
 
   @Bean
@@ -128,8 +137,9 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public UpdateServiceProviderProfileUseCase updateServiceProviderProfileUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new UpdateServiceProviderProfileUseCase(serviceProviderRepository);
+      ServiceProviderRepository serviceProviderRepository,
+      DomainEventPublisher domainEventPublisher) {
+    return new UpdateServiceProviderProfileUseCase(serviceProviderRepository, domainEventPublisher);
   }
 
   @Bean
@@ -146,14 +156,16 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public UpdatePortfolioItemUseCase updatePortfolioItemUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new UpdatePortfolioItemUseCase(serviceProviderRepository);
+      ServiceProviderRepository serviceProviderRepository,
+      DomainEventPublisher domainEventPublisher) {
+    return new UpdatePortfolioItemUseCase(serviceProviderRepository, domainEventPublisher);
   }
 
   @Bean
   public DeletePortfolioItemUseCase deletePortfolioItemUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new DeletePortfolioItemUseCase(serviceProviderRepository);
+      ServiceProviderRepository serviceProviderRepository,
+      DomainEventPublisher domainEventPublisher) {
+    return new DeletePortfolioItemUseCase(serviceProviderRepository, domainEventPublisher);
   }
 
   @Bean
@@ -166,5 +178,25 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   public GetProviderServicesUseCase getProviderServicesUseCase(
       ServiceProviderRepository serviceProviderRepository) {
     return new GetProviderServicesUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public AddServiceProviderToFavoritesUseCase addServiceProviderToFavoritesUseCase(
+      FavoriteProviderRepository favoriteProviderRepository,
+      ServiceProviderRepository serviceProviderRepository) {
+    return new AddServiceProviderToFavoritesUseCase(
+        favoriteProviderRepository, serviceProviderRepository);
+  }
+
+  @Bean
+  public RemoveServiceProviderFromFavoritesUseCase removeServiceProviderFromFavoritesUseCase(
+      FavoriteProviderRepository favoriteProviderRepository) {
+    return new RemoveServiceProviderFromFavoritesUseCase(favoriteProviderRepository);
+  }
+
+  @Bean
+  public GetMyFavoriteServiceProvidersUseCase getMyFavoriteServiceProvidersUseCase(
+      FavoriteProviderRepository favoriteProviderRepository) {
+    return new GetMyFavoriteServiceProvidersUseCase(favoriteProviderRepository);
   }
 }

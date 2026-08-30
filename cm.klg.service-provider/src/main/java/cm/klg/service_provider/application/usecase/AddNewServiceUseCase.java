@@ -1,5 +1,6 @@
 package cm.klg.service_provider.application.usecase;
 
+import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.domain.UserId;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 public class AddNewServiceUseCase {
   private final ServiceProviderRepository serviceProviderRepository;
   private final ServiceTypeRepository serviceTypeRepository;
+  private final DomainEventPublisher domainEventPublisher;
 
   public void execute(AddNewServiceCommand command) {
     if (!serviceTypeRepository.existsById(command.serviceTypeId())) {
@@ -25,6 +27,9 @@ public class AddNewServiceUseCase {
         command.serviceTypeId(), command.yearOfExperience(), command.userDocument());
 
     serviceProviderRepository.update(serviceProvider);
+    domainEventPublisher.serviceProviderServiceAddedEvent(
+        serviceProvider.toServiceAddedEvent(
+            command.serviceTypeId(), command.yearOfExperience(), command.userDocument()));
   }
 
   public record AddNewServiceCommand(

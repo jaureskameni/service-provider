@@ -5,6 +5,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
@@ -29,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AddPortfolioItemUseCaseTest {
 
   @Mock private ServiceProviderRepository serviceProviderRepository;
+  @Mock private DomainEventPublisher domainEventPublisher;
 
   @InjectMocks private AddPortfolioItemUseCase objectUnderTest;
 

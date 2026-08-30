@@ -7,9 +7,13 @@ import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderApprovedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderCreatedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPortfolioItemAddedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPortfolioItemDeletedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPortfolioItemUpdatedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderProfileUpdatedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderRejectedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderServiceAddedEvent;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
-import cm.klg.service_provider.domain.user.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,11 +100,13 @@ public class ServiceProvider {
     addUserService(UserService.of(this.id, serviceTypeId, yearOfExperience, document));
   }
 
-  public void addPortfolioItem(
+  public PortfolioItem addPortfolioItem(
       PortfolioItemTitle title,
       PortfolioItemDescription description,
       PortfolioItemMediaId mediaId) {
-    portfolioItems.add(PortfolioItem.of(title, description, mediaId));
+    PortfolioItem portfolioItem = PortfolioItem.of(title, description, mediaId);
+    portfolioItems.add(portfolioItem);
+    return portfolioItem;
   }
 
   public void updatePortfolioItem(
@@ -169,8 +175,9 @@ public class ServiceProvider {
     this.updatedAt = CreatedAt.from(LocalDateTime.now());
   }
 
-  public ServiceProviderApprovedEvent toApprovedEvent(User user) {
-    return new ServiceProviderApprovedEvent(this.id, this.userId, user, LocalDateTime.now());
+  public ServiceProviderApprovedEvent toApprovedEvent() {
+    return new ServiceProviderApprovedEvent(
+        this.id, this.userId, Objects.requireNonNull(this.approvedBy), LocalDateTime.now());
   }
 
   public ServiceProviderCreatedEvent toCreatedEvent() {
@@ -184,5 +191,30 @@ public class ServiceProvider {
         Objects.requireNonNull(this.rejectedBy),
         Objects.requireNonNull(this.rejectionReason),
         LocalDateTime.now());
+  }
+
+  public ServiceProviderServiceAddedEvent toServiceAddedEvent(
+      ServiceTypeId serviceTypeId, YearOfExperience yearOfExperience, UserDocument document) {
+    return new ServiceProviderServiceAddedEvent(
+        this.id, this.userId, serviceTypeId, yearOfExperience, document, LocalDateTime.now());
+  }
+
+  public ServiceProviderPortfolioItemAddedEvent toPortfolioItemAddedEvent(PortfolioItem item) {
+    return new ServiceProviderPortfolioItemAddedEvent(this.id, this.userId, item.getId());
+  }
+
+  public ServiceProviderPortfolioItemUpdatedEvent toPortfolioItemUpdatedEvent(
+      PortfolioItemId itemId) {
+    return new ServiceProviderPortfolioItemUpdatedEvent(this.id, this.userId, itemId);
+  }
+
+  public ServiceProviderPortfolioItemDeletedEvent toPortfolioItemDeletedEvent(
+      PortfolioItemId itemId) {
+    return new ServiceProviderPortfolioItemDeletedEvent(this.id, this.userId, itemId);
+  }
+
+  public ServiceProviderProfileUpdatedEvent toProfileUpdatedEvent() {
+    return new ServiceProviderProfileUpdatedEvent(
+        this.id, this.userId, this.location, this.phoneNumber, this.about, LocalDateTime.now());
   }
 }
