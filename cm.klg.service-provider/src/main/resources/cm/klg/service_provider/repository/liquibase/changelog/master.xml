@@ -8,4 +8,6 @@
 	<includeAll
 		path="cm/klg/service_provider/repository/liquibase/changelog/internal/" />
 
+	<include file="classpath:liquibase/emb/changelog-master.xml" />
+
 </databaseChangeLog>
