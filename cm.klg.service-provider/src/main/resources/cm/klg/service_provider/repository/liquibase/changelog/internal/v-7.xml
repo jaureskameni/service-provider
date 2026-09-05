@@ -14,18 +14,18 @@
 		</preConditions>
 
 		<createTable tableName="t_portfolio_item">
-			<column name="c_id" type="uuid">
+			<column name="c_id" type="varchar(36)">
 				<constraints nullable="false" primaryKey="true"
 					primaryKeyName="pk_portfolio_item" />
 			</column>
-			<column name="c_service_provider_id" type="uuid">
+			<column name="c_service_provider_id" type="varchar(36)">
 				<constraints nullable="false" />
 			</column>
 			<column name="c_title" type="varchar(255)">
 				<constraints nullable="false" />
 			</column>
 			<column name="c_description" type="text" />
-			<column name="c_media_id" type="uuid">
+			<column name="c_media_id" type="varchar(36)">
 				<constraints nullable="false" />
 			</column>
 			<column name="c_created_at" type="datetime">
@@ -39,6 +39,11 @@
 			constraintName="fk_portfolio_item_service_provider"
 			referencedTableName="t_service_provider" referencedColumnNames="c_id"
 			onDelete="CASCADE" onUpdate="CASCADE" />
+
+		<createIndex tableName="t_portfolio_item"
+			indexName="idx_portfolio_item_service_provider">
+			<column name="c_service_provider_id" />
+		</createIndex>
 
 	</changeSet>
 
