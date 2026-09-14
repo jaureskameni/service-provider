@@ -14,15 +14,15 @@ components:
       type: "string"
       enum:
       - "USER_CREATED"
+      - "USER_UPDATED"
+      - "USER_DELETED"
     UserCreatedEventDTO:
       type: "object"
       properties:
-        id:
+        userId:
           type: "string"
           format: "uuid"
-        identityId:
-          type: "string"
-          format: "uuid"
+          description: "Keycloak user id"
         lastname:
           type: "string"
         firstname:
@@ -35,6 +35,34 @@ components:
           type: "string"
           format: "date-time"
           description: "specify the user's creation date"
+    UserUpdatedEventDTO:
+      type: "object"
+      properties:
+        userId:
+          type: "string"
+          format: "uuid"
+          description: "Keycloak user id"
+        lastname:
+          type: "string"
+        firstname:
+          type: "string"
+        email:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumberDTO"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+    UserDeletedEventDTO:
+      type: "object"
+      properties:
+        userId:
+          type: "string"
+          format: "uuid"
+          description: "Keycloak user id"
+        deletedAt:
+          type: "string"
+          format: "date-time"
     PhoneNumberDTO:
       type: "object"
       properties:

@@ -6,7 +6,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cm.klg.common.base.domain.CreatedAt;
-import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.user.EmailAddress;
@@ -36,7 +35,6 @@ class UserJpaRepositoryTest {
     User user =
         User.reconstitute(
             UserId.from(UUID.randomUUID()),
-            IdentityId.from(UUID.randomUUID()),
             new UserProfile(
                 Firstname.from("John"),
                 Lastname.from("Doe"),
@@ -46,10 +44,9 @@ class UserJpaRepositoryTest {
             CreatedAt.from(LocalDateTime.now()));
     UserJpa userJpa = new UserJpa();
     userJpa.setId(user.getId().value());
-    userJpa.setIdentityId(user.getIdentityId().value());
     userJpa.setCreatedAt(user.getCreatedAt().value());
     when(jpaMapper.toUserJpa(user)).thenReturn(userJpa);
-    when(userSpringRepository.insertIfAbsent(any(), any(), any(), any(), any(), any(), any()))
+    when(userSpringRepository.insertIfAbsent(any(), any(), any(), any(), any(), any()))
         .thenReturn(1);
 
     // When
@@ -58,12 +55,6 @@ class UserJpaRepositoryTest {
     // Then
     verify(userSpringRepository)
         .insertIfAbsent(
-            eq(user.getId().value()),
-            eq(user.getIdentityId().value()),
-            any(),
-            any(),
-            any(),
-            any(),
-            eq(user.getCreatedAt().value()));
+            eq(user.getId().value()), any(), any(), any(), any(), eq(user.getCreatedAt().value()));
   }
 }

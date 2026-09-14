@@ -2,7 +2,6 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import cm.klg.common.base.entity.PhoneNumberJpaConverter;
 import cm.klg.service_provider.application.outbound.UserRepository;
-import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.user.User;
 import cm.klg.service_provider.domain.user.UserNotFoundException;
@@ -26,23 +25,20 @@ public class UserJpaRepository implements UserRepository {
     int insertedRows =
         userSpringRepository.insertIfAbsent(
             userJpa.getId(),
-            userJpa.getIdentityId(),
             userJpa.getFirstname(),
             userJpa.getLastname(),
             userJpa.getEmailAddress(),
             PHONE_NUMBER_CONVERTER.convertToDatabaseColumn(userJpa.getPhoneNumber()),
             userJpa.getCreatedAt());
     if (insertedRows == 0) {
-      log.debug(
-          "User with identityId {} already exists, skipping insertion.",
-          user.getIdentityId().value());
+      log.debug("User with id {} already exists, skipping insertion.", user.getId().value());
     }
   }
 
   @Override
-  public User load(@NonNull IdentityId identityId) {
+  public User load(@NonNull UserId userId) {
     return userSpringRepository
-        .findByIdentityId(identityId.value())
+        .findById(userId.value())
         .map(jpaMapper::toUserDomain)
         .orElseThrow(UserNotFoundException::new);
   }
@@ -60,6 +56,11 @@ public class UserJpaRepository implements UserRepository {
 
   @Override
   public boolean existsByUserId(@NonNull UserId userId) {
-    return userSpringRepository.existsByIdentityId(userId.value());
+    return userSpringRepository.existsById(userId.value());
+  }
+
+  @Override
+  public void deleteById(@NonNull UserId userId) {
+    userSpringRepository.deleteById(userId.value());
   }
 }

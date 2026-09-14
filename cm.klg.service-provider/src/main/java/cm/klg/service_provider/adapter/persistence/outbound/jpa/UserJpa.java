@@ -27,9 +27,6 @@ public class UserJpa {
   @Column(name = "c_id")
   private UUID id;
 
-  @Column(name = "c_identity_id")
-  private UUID identityId;
-
   @Column(name = "c_firstname")
   private String firstname;
 

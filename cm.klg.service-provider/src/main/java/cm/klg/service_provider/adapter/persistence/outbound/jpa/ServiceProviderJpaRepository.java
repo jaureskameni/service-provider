@@ -127,7 +127,7 @@ public record ServiceProviderJpaRepository(
 
     UserJpa userJpa =
         userSpringRepository
-            .findByIdentityId(serviceProviderJpa.getUserId())
+            .findById(serviceProviderJpa.getUserId())
             .orElseThrow(ServiceProviderNotFoundException::new);
 
     List<UserServiceJpa> userServices =
@@ -188,8 +188,8 @@ public record ServiceProviderJpaRepository(
         serviceProviderJpas.getContent().stream().map(ServiceProviderJpa::getUserId).toList();
 
     Map<UUID, UserJpa> usersById =
-        userSpringRepository.findAllByIdentityIdIn(userIds).stream()
-            .collect(Collectors.toMap(UserJpa::getIdentityId, Function.identity()));
+        userSpringRepository.findAllByIdIn(userIds).stream()
+            .collect(Collectors.toMap(UserJpa::getId, Function.identity()));
 
     return new PageData<>(
         serviceProviderJpas.getTotalElements(),
@@ -199,8 +199,7 @@ public record ServiceProviderJpaRepository(
   }
 
   private ServiceProviderView1 toView1(ServiceProviderJpa serviceProviderJpa) {
-    UserJpa userJpa =
-        userSpringRepository.findByIdentityId(serviceProviderJpa.getUserId()).orElseThrow();
+    UserJpa userJpa = userSpringRepository.findById(serviceProviderJpa.getUserId()).orElseThrow();
     return jpaMapper.toServiceProviderView1(serviceProviderJpa, userJpa);
   }
 

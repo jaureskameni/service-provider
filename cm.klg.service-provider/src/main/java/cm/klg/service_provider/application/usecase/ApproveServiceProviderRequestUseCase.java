@@ -3,7 +3,6 @@ package cm.klg.service_provider.application.usecase;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
-import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
@@ -23,7 +22,7 @@ public class ApproveServiceProviderRequestUseCase {
 
     serviceProviderRepository.update(serviceProvider);
 
-    User providerUser = userRepository.load(IdentityId.from(serviceProvider.getUserId()));
+    User providerUser = userRepository.load(serviceProvider.getUserId());
 
     providerUser.promoteToProvider();
     userRepository.update(providerUser);

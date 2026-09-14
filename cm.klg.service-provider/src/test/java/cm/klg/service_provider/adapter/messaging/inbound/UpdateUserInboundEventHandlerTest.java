@@ -9,10 +9,9 @@ import static org.mockito.Mockito.when;
 
 import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamDomainEventType;
-import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamUserCreatedEventDTO;
-import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
+import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamUserUpdatedEventDTO;
+import cm.klg.service_provider.application.usecase.UpdateUserUseCase;
 import com.emb.domain.inboxevent.InboxEventCommand;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,35 +20,35 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class CreateUserInboundEventHandlerTest {
+class UpdateUserInboundEventHandlerTest {
 
-  @Mock private CreateNewUserUseCase createNewUserUseCase;
+  @Mock private UpdateUserUseCase updateUserUseCase;
   @Mock private MessagingInboundMapper messagingInboundMapper;
   @Mock private UseCaseExecutor useCaseExecutor;
 
-  @InjectMocks private CreateUserInboundEventHandler createUserInboundEventHandler;
+  @InjectMocks private UpdateUserInboundEventHandler updateUserInboundEventHandler;
 
   @Test
   void shouldReturnCorrectEventType() {
-    assertThat(createUserInboundEventHandler.getEventType())
-        .isEqualTo(UamDomainEventType.USER_CREATED.getValue());
+    assertThat(updateUserInboundEventHandler.getEventType())
+        .isEqualTo(UamDomainEventType.USER_UPDATED.getValue());
   }
 
   @Test
   void shouldReturnCorrectDataType() {
-    assertThat(createUserInboundEventHandler.getDataType()).isEqualTo(UamUserCreatedEventDTO.class);
+    assertThat(updateUserInboundEventHandler.getDataType()).isEqualTo(UamUserUpdatedEventDTO.class);
   }
 
   @Test
-  void shouldHandleUserCreatedEvent() {
+  void shouldHandleUserUpdatedEvent() {
     // Given
-    UamUserCreatedEventDTO userCreatedEventDTO = new UamUserCreatedEventDTO();
+    UamUserUpdatedEventDTO userUpdatedEventDTO = new UamUserUpdatedEventDTO();
     InboxEventCommand inboxEventCommand = mock(InboxEventCommand.class);
-    CreateNewUserUseCase.CreateNewUserCommand command =
-        new CreateNewUserUseCase.CreateNewUserCommand(
-            UUID.randomUUID(), "Doe", "John", "john@doe.com", "237", "699", LocalDateTime.now());
+    UpdateUserUseCase.UpdateUserCommand command =
+        new UpdateUserUseCase.UpdateUserCommand(
+            UUID.randomUUID(), "Smith", "Jane", "jane@doe.com", "237", "699");
 
-    when(messagingInboundMapper.toCreateUserCommand(userCreatedEventDTO)).thenReturn(command);
+    when(messagingInboundMapper.toUpdateUserCommand(userUpdatedEventDTO)).thenReturn(command);
 
     doAnswer(
             invocation -> {
@@ -61,9 +60,9 @@ class CreateUserInboundEventHandlerTest {
         .runCommand(any(Runnable.class));
 
     // When
-    createUserInboundEventHandler.handle(userCreatedEventDTO, inboxEventCommand);
+    updateUserInboundEventHandler.handle(userUpdatedEventDTO, inboxEventCommand);
 
     // Then
-    verify(createNewUserUseCase).execute(command);
+    verify(updateUserUseCase).execute(command);
   }
 }

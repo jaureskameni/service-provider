@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.common.base.entity.PhoneNumberJpa;
 import cm.klg.service_provider.application.views.PortfolioView;
-import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.favorite.FavoriteProvider;
@@ -61,12 +60,10 @@ class JpaMapperTest {
     @Test
     void toUserJpa_shouldMapAllFields() {
       var userId = UUID.randomUUID();
-      var identityId = UUID.randomUUID();
       var now = LocalDateTime.now();
       var user =
           User.reconstitute(
               new UserId(userId),
-              new IdentityId(identityId),
               new UserProfile(
                   Firstname.from("John"),
                   Lastname.from("Doe"),
@@ -78,7 +75,6 @@ class JpaMapperTest {
       UserJpa result = objectUnderTest.toUserJpa(user);
 
       assertThat(result.getId()).isEqualTo(userId);
-      assertThat(result.getIdentityId()).isEqualTo(identityId);
       assertThat(result.getFirstname()).isEqualTo("John");
       assertThat(result.getLastname()).isEqualTo("Doe");
       assertThat(result.getEmailAddress()).isEqualTo("john@example.com");
@@ -94,7 +90,6 @@ class JpaMapperTest {
       var user =
           User.reconstitute(
               new UserId(userId),
-              new IdentityId(UUID.randomUUID()),
               new UserProfile(
                   Firstname.from("Jane"),
                   Lastname.from("Smith"),
@@ -114,11 +109,9 @@ class JpaMapperTest {
     @Test
     void toUserDomain_shouldMapAllFields() {
       var userId = UUID.randomUUID();
-      var identityId = UUID.randomUUID();
       var now = LocalDateTime.now();
       UserJpa jpa = new UserJpa();
       jpa.setId(userId);
-      jpa.setIdentityId(identityId);
       jpa.setFirstname("John");
       jpa.setLastname("Doe");
       jpa.setEmailAddress("john@example.com");
@@ -129,7 +122,6 @@ class JpaMapperTest {
       User result = objectUnderTest.toUserDomain(jpa);
 
       assertThat(result.getId().value()).isEqualTo(userId);
-      assertThat(result.getIdentityId().value()).isEqualTo(identityId);
       assertThat(result.getFirstname().value()).isEqualTo("John");
       assertThat(result.getLastname().value()).isEqualTo("Doe");
       assertThat(result.getEmail().value()).isEqualTo("john@example.com");

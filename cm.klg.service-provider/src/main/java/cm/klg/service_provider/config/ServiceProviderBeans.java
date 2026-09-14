@@ -17,6 +17,7 @@ import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.DeletePortfolioItemUseCase;
+import cm.klg.service_provider.application.usecase.DeleteUserUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
@@ -31,6 +32,7 @@ import cm.klg.service_provider.application.usecase.RemoveServiceProviderFromFavo
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.UpdateServiceProviderProfileUseCase;
+import cm.klg.service_provider.application.usecase.UpdateUserUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -115,6 +117,16 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   @Bean
   public CreateNewUserUseCase createNewUserUseCase(UserRepository userRepository) {
     return new CreateNewUserUseCase(userRepository);
+  }
+
+  @Bean
+  public UpdateUserUseCase updateUserUseCase(UserRepository userRepository) {
+    return new UpdateUserUseCase(userRepository);
+  }
+
+  @Bean
+  public DeleteUserUseCase deleteUserUseCase(UserRepository userRepository) {
+    return new DeleteUserUseCase(userRepository);
   }
 
   @Bean

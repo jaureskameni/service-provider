@@ -25,11 +25,10 @@ class CreateNewUserUseCaseTest {
   void shouldCreateNewUser() {
     // Given
     UUID userId = UUID.randomUUID();
-    UUID identityId = UUID.randomUUID();
     LocalDateTime now = LocalDateTime.now();
     CreateNewUserUseCase.CreateNewUserCommand command =
         new CreateNewUserUseCase.CreateNewUserCommand(
-            userId, identityId, "Doe", "John", "john.doe@example.com", "+237", "699999999", now);
+            userId, "Doe", "John", "john.doe@example.com", "+237", "699999999", now);
 
     // When
     createNewUserUseCase.execute(command);
@@ -41,7 +40,6 @@ class CreateNewUserUseCaseTest {
     assertThat(userCaptor.getValue())
         .satisfies(
             u -> {
-              assertThat(u.getId().value()).isEqualTo(userId);
               assertThat(u.getId().value()).isEqualTo(userId);
               assertThat(u.getLastname().value()).isEqualTo("Doe");
               assertThat(u.getFirstname().value()).isEqualTo("John");
