@@ -75,8 +75,8 @@ public class FavoriteProviderJpaRepository implements FavoriteProviderRepository
         serviceProviderJpas.getContent().stream().map(ServiceProviderJpa::getUserId).toList();
 
     Map<UUID, UserJpa> usersById =
-        userSpringRepository.findAllByIdentityIdIn(userIds).stream()
-            .collect(Collectors.toMap(UserJpa::getIdentityId, Function.identity()));
+        userSpringRepository.findAllByIdIn(userIds).stream()
+            .collect(Collectors.toMap(UserJpa::getId, Function.identity()));
 
     return new PageData<>(
         serviceProviderJpas.getTotalElements(),

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-46:1" author="kameni.nguematcha">
+		<preConditions onFail="MARK_RAN">
+			<columnExists tableName="t_user"
+				columnName="c_identity_id" />
+		</preConditions>
+
+		<dropForeignKeyConstraint
+			baseTableName="t_service_provider"
+			constraintName="fk_service_provider_user_identity" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_service_provider" baseColumnNames="c_user_id"
+			constraintName="fk_service_provider_user"
+			referencedTableName="t_user" referencedColumnNames="c_id"
+			onDelete="RESTRICT" onUpdate="CASCADE" />
+
+		<dropForeignKeyConstraint
+			baseTableName="t_provider_client"
+			constraintName="fk_provider_client_user" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_provider_client" baseColumnNames="c_user_id"
+			constraintName="fk_provider_client_user" referencedTableName="t_user"
+			referencedColumnNames="c_id" onDelete="CASCADE" onUpdate="CASCADE" />
+
+		<dropForeignKeyConstraint
+			baseTableName="t_favorite_provider"
+			constraintName="fk_favorite_provider_user" />
+
+		<addForeignKeyConstraint
+			baseTableName="t_favorite_provider" baseColumnNames="c_user_id"
+			constraintName="fk_favorite_provider_user"
+			referencedTableName="t_user" referencedColumnNames="c_id"
+			onDelete="CASCADE" onUpdate="CASCADE" />
+
+		<dropUniqueConstraint tableName="t_user"
+			constraintName="uq_user_identity_id" />
+
+		<dropColumn tableName="t_user" columnName="c_identity_id" />
+	</changeSet>
+
+</databaseChangeLog>

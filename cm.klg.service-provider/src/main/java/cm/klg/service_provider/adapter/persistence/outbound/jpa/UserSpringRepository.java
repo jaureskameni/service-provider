@@ -10,26 +10,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface UserSpringRepository extends JpaRepository<UserJpa, UUID> {
-  @Query("SELECT u FROM UserJpa u WHERE u.identityId = :identityId")
-  Optional<UserJpa> findByIdentityId(@Param("identityId") UUID identityId);
-
-  boolean existsByIdentityId(UUID identityId);
+  @Query("SELECT u FROM UserJpa u WHERE u.id = :id")
+  Optional<UserJpa> findById(@Param("id") UUID id);
 
   @Modifying
   @Query(
       value =
-          "INSERT INTO t_user (c_id, c_identity_id, c_firstname, c_lastname, c_email_address,"
-              + " c_phone_number, c_created_at) VALUES (:id, :identityId, :firstname, :lastname,"
-              + " :emailAddress, :phoneNumber, :createdAt) ON CONFLICT (c_identity_id) DO NOTHING",
+          "INSERT INTO t_user (c_id, c_firstname, c_lastname, c_email_address,"
+              + " c_phone_number, c_created_at) VALUES (:id, :firstname, :lastname,"
+              + " :emailAddress, :phoneNumber, :createdAt) ON CONFLICT (c_id) DO NOTHING",
       nativeQuery = true)
   int insertIfAbsent(
       @Param("id") UUID id,
-      @Param("identityId") UUID identityId,
       @Param("firstname") String firstname,
       @Param("lastname") String lastname,
       @Param("emailAddress") String emailAddress,
       @Param("phoneNumber") String phoneNumber,
       @Param("createdAt") LocalDateTime createdAt);
 
-  List<UserJpa> findAllByIdentityIdIn(List<UUID> uuids);
+  List<UserJpa> findAllByIdIn(List<UUID> uuids);
 }

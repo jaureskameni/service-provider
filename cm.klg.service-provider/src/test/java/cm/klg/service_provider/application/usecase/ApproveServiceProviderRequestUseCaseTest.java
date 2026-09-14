@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
-import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
@@ -42,7 +41,6 @@ class ApproveServiceProviderRequestUseCaseTest {
     UserId adminId = new UserId(UUID.randomUUID());
     ServiceProviderId serviceProviderId = new ServiceProviderId(UUID.randomUUID());
     UserId providerUserId = new UserId(UUID.randomUUID());
-    IdentityId providerIdentityId = IdentityId.from(providerUserId.value());
     ServiceProvider serviceProvider =
         ServiceProvider.of(
             providerUserId,
@@ -57,7 +55,7 @@ class ApproveServiceProviderRequestUseCaseTest {
     User user = org.mockito.Mockito.mock(User.class);
 
     when(serviceProviderRepository.load(serviceProviderId)).thenReturn(serviceProvider);
-    when(userRepository.load(providerIdentityId)).thenReturn(user);
+    when(userRepository.load(providerUserId)).thenReturn(user);
 
     // When
     objectUnderTest.execute(adminId, serviceProviderId);
@@ -66,7 +64,7 @@ class ApproveServiceProviderRequestUseCaseTest {
     assertThat(serviceProvider.getStatus()).isEqualTo(ServiceProviderStatus.APPROVED);
     verify(serviceProviderRepository).load(serviceProviderId);
     verify(serviceProviderRepository).update(serviceProvider);
-    verify(userRepository).load(providerIdentityId);
+    verify(userRepository).load(providerUserId);
     var eventCaptor = org.mockito.ArgumentCaptor.forClass(ServiceProviderApprovedEvent.class);
     verify(domainEventPublisher).serviceProviderApprovedEvent(eventCaptor.capture());
     assertThat(eventCaptor.getValue().serviceProviderId()).isEqualTo(serviceProvider.getId());

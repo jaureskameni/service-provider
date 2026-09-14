@@ -6,7 +6,6 @@ import cm.klg.service_provider.application.views.ServiceProviderViews;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView2;
 import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import cm.klg.service_provider.application.views.UserServiceView;
-import cm.klg.service_provider.domain.IdentityId;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.favorite.FavoriteProvider;
@@ -59,7 +58,6 @@ public interface JpaMapper {
 
   @BeanMapping(ignoreByDefault = true)
   @Mapping(target = "id", source = "id.value")
-  @Mapping(target = "identityId", source = "identityId.value")
   @Mapping(target = "lastname", source = "lastname.value")
   @Mapping(target = "firstname", source = "firstname.value")
   @Mapping(target = "emailAddress", source = "email.value")
@@ -134,7 +132,6 @@ public interface JpaMapper {
 
   @BeanMapping(ignoreByDefault = true)
   @Mapping(target = "id", source = "id.value")
-  @Mapping(target = "identityId", source = "identityId.value")
   @Mapping(target = "lastname", source = "lastname.value")
   @Mapping(target = "firstname", source = "firstname.value")
   @Mapping(target = "emailAddress", source = "email.value")
@@ -156,7 +153,6 @@ public interface JpaMapper {
             phoneNumber);
     return User.reconstitute(
         new UserId(userJpa.getId()),
-        new IdentityId(userJpa.getIdentityId()),
         userProfile,
         userJpa.isServiceProvider(),
         CreatedAt.from(userJpa.getCreatedAt()));
