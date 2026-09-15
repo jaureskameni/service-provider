@@ -11,39 +11,91 @@
 				columnName="c_identity_id" />
 		</preConditions>
 
+		<sql>
+			UPDATE public.t_user
+			SET c_identity_id = c_id::varchar(36)
+			WHERE
+			c_identity_id IS NULL;
+
+			DELETE FROM public.t_service_provider sp
+			WHERE
+			NOT EXISTS (
+			SELECT 1 FROM public.t_user u
+			WHERE u.c_identity_id =
+			sp.c_user_id
+			);
+			DELETE FROM public.t_provider_client
+			pc
+			WHERE NOT EXISTS
+			(
+			SELECT 1 FROM public.t_user u
+			WHERE u.c_identity_id = pc.c_user_id
+			);
+			DELETE FROM
+			public.t_favorite_provider fp
+			WHERE NOT EXISTS (
+			SELECT 1
+			FROM public.t_user u
+			WHERE u.c_identity_id = fp.c_user_id
+			);
+		</sql>
+
 		<dropForeignKeyConstraint
 			baseTableName="t_service_provider"
 			constraintName="fk_service_provider_user_identity" />
+		<dropForeignKeyConstraint
+			baseTableName="t_service_provider"
+			constraintName="fk_service_provider_user" />
+		<dropForeignKeyConstraint
+			baseTableName="t_service_provider"
+			constraintName="fk_service_provider_approved_by" />
+		<dropForeignKeyConstraint
+			baseTableName="t_service_provider"
+			constraintName="fk_service_provider_rejected_by" />
+		<dropForeignKeyConstraint
+			baseTableName="t_provider_client"
+			constraintName="fk_provider_client_user" />
+		<dropForeignKeyConstraint
+			baseTableName="t_favorite_provider"
+			constraintName="fk_favorite_provider_user" />
+
+		<dropPrimaryKey tableName="t_user"
+			constraintName="pk_user" />
+		<dropUniqueConstraint tableName="t_user"
+			constraintName="uq_user_identity_id" />
+		<dropColumn tableName="t_user" columnName="c_id" />
+		<renameColumn tableName="t_user"
+			oldColumnName="c_identity_id" newColumnName="c_id"
+			columnDataType="varchar(36)" />
+		<addNotNullConstraint tableName="t_user"
+			columnName="c_id" columnDataType="varchar(36)" />
+		<addPrimaryKey tableName="t_user" columnNames="c_id"
+			constraintName="pk_user" />
 
 		<addForeignKeyConstraint
 			baseTableName="t_service_provider" baseColumnNames="c_user_id"
 			constraintName="fk_service_provider_user"
 			referencedTableName="t_user" referencedColumnNames="c_id"
 			onDelete="RESTRICT" onUpdate="CASCADE" />
-
-		<dropForeignKeyConstraint
-			baseTableName="t_provider_client"
-			constraintName="fk_provider_client_user" />
-
+		<addForeignKeyConstraint
+			baseTableName="t_service_provider" baseColumnNames="c_approved_by"
+			constraintName="fk_service_provider_approved_by"
+			referencedTableName="t_user" referencedColumnNames="c_id"
+			onDelete="SET NULL" onUpdate="CASCADE" />
+		<addForeignKeyConstraint
+			baseTableName="t_service_provider" baseColumnNames="c_rejected_by"
+			constraintName="fk_service_provider_rejected_by"
+			referencedTableName="t_user" referencedColumnNames="c_id"
+			onDelete="SET NULL" onUpdate="CASCADE" />
 		<addForeignKeyConstraint
 			baseTableName="t_provider_client" baseColumnNames="c_user_id"
 			constraintName="fk_provider_client_user" referencedTableName="t_user"
 			referencedColumnNames="c_id" onDelete="CASCADE" onUpdate="CASCADE" />
-
-		<dropForeignKeyConstraint
-			baseTableName="t_favorite_provider"
-			constraintName="fk_favorite_provider_user" />
-
 		<addForeignKeyConstraint
 			baseTableName="t_favorite_provider" baseColumnNames="c_user_id"
 			constraintName="fk_favorite_provider_user"
 			referencedTableName="t_user" referencedColumnNames="c_id"
 			onDelete="CASCADE" onUpdate="CASCADE" />
-
-		<dropUniqueConstraint tableName="t_user"
-			constraintName="uq_user_identity_id" />
-
-		<dropColumn tableName="t_user" columnName="c_identity_id" />
 	</changeSet>
 
 </databaseChangeLog>
