@@ -12,57 +12,137 @@
 		</preConditions>
 
 		<sql>
-			UPDATE public.t_user
-			SET c_identity_id = c_id::varchar(36)
-			WHERE
-			c_identity_id IS NULL;
+			DO $$ BEGIN
+			IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname =
+			'fk_service_provider_user_identity' AND conrelid =
+			't_service_provider'::regclass) THEN
+			ALTER TABLE
+			public.t_service_provider DROP CONSTRAINT
+			fk_service_provider_user_identity;
+			END IF;
+			END $$;
+			DO $$ BEGIN
+			IF EXISTS
+			(SELECT 1 FROM pg_constraint WHERE conname =
+			'fk_service_provider_approved_by' AND conrelid =
+			't_service_provider'::regclass) THEN
+			ALTER TABLE
+			public.t_service_provider DROP CONSTRAINT
+			fk_service_provider_approved_by;
+			END IF;
+			END $$;
+			DO $$ BEGIN
+			IF EXISTS
+			(SELECT 1 FROM pg_constraint WHERE conname =
+			'fk_service_provider_rejected_by' AND conrelid =
+			't_service_provider'::regclass) THEN
+			ALTER TABLE
+			public.t_service_provider DROP CONSTRAINT
+			fk_service_provider_rejected_by;
+			END IF;
+			END $$;
+			DO $$ BEGIN
+			IF EXISTS
+			(SELECT 1 FROM pg_constraint WHERE conname =
+			'fk_provider_client_user' AND conrelid =
+			't_provider_client'::regclass) THEN
+			ALTER TABLE
+			public.t_provider_client DROP CONSTRAINT
+			fk_provider_client_user;
+			END
+			IF;
+			END $$;
+			DO $$ BEGIN
+			IF EXISTS (SELECT 1 FROM pg_constraint WHERE
+			conname =
+			'fk_favorite_provider_user' AND conrelid =
+			't_favorite_provider'::regclass) THEN
+			ALTER TABLE
+			public.t_favorite_provider DROP CONSTRAINT
+			fk_favorite_provider_user;
+			END IF;
+			END $$;
+			DO $$ BEGIN
+			IF EXISTS (SELECT 1 FROM pg_constraint WHERE
+			conname = 'pk_user' AND
+			conrelid = 't_user'::regclass) THEN
+			ALTER TABLE
+			public.t_user DROP CONSTRAINT pk_user;
+			END IF;
+			END $$;
+			DO $$ BEGIN
+			IF
+			EXISTS (SELECT 1 FROM pg_constraint WHERE conname =
+			'uq_user_identity_id' AND conrelid = 't_user'::regclass) THEN
+			ALTER
+			TABLE public.t_user DROP CONSTRAINT uq_user_identity_id;
+			END IF;
+			END
+			$$;
+		</sql>
 
-			DELETE FROM public.t_service_provider sp
-			WHERE
-			NOT EXISTS (
-			SELECT 1 FROM public.t_user u
-			WHERE u.c_identity_id =
-			sp.c_user_id
-			);
-			DELETE FROM public.t_provider_client
-			pc
-			WHERE NOT EXISTS
-			(
-			SELECT 1 FROM public.t_user u
-			WHERE u.c_identity_id = pc.c_user_id
-			);
-			DELETE FROM
-			public.t_favorite_provider fp
-			WHERE NOT EXISTS (
-			SELECT 1
+		<sql>
+			UPDATE public.t_service_provider sp
+			SET c_user_id =
+			u.c_identity_id
 			FROM public.t_user u
-			WHERE u.c_identity_id = fp.c_user_id
+			WHERE sp.c_user_id = u.c_id
+			AND
+			sp.c_user_id != u.c_identity_id;
+
+			UPDATE public.t_service_provider sp
+			SET c_approved_by = u.c_identity_id
+			FROM public.t_user u
+			WHERE
+			sp.c_approved_by = u.c_id
+			AND sp.c_approved_by != u.c_identity_id;
+
+			UPDATE public.t_service_provider sp
+			SET c_rejected_by =
+			u.c_identity_id
+			FROM public.t_user u
+			WHERE sp.c_rejected_by = u.c_id
+			AND sp.c_rejected_by != u.c_identity_id;
+
+			UPDATE
+			public.t_provider_client pc
+			SET c_user_id = u.c_identity_id
+			FROM
+			public.t_user u
+			WHERE pc.c_user_id = u.c_id
+			AND pc.c_user_id !=
+			u.c_identity_id;
+
+			UPDATE public.t_favorite_provider fp
+			SET c_user_id =
+			u.c_identity_id
+			FROM public.t_user u
+			WHERE fp.c_user_id = u.c_id
+			AND
+			fp.c_user_id != u.c_identity_id;
+
+			DELETE FROM public.t_service_provider
+			sp
+			WHERE NOT EXISTS (
+			SELECT 1 FROM public.t_user u WHERE
+			u.c_identity_id = sp.c_user_id
+			);
+			DELETE
+			FROM public.t_provider_client
+			pc
+			WHERE NOT EXISTS (
+			SELECT 1 FROM public.t_user u WHERE
+			u.c_identity_id = pc.c_user_id
+			);
+			DELETE
+			FROM public.t_favorite_provider
+			fp
+			WHERE NOT EXISTS (
+			SELECT 1 FROM public.t_user u WHERE
+			u.c_identity_id = fp.c_user_id
 			);
 		</sql>
 
-		<dropForeignKeyConstraint
-			baseTableName="t_service_provider"
-			constraintName="fk_service_provider_user_identity" />
-		<dropForeignKeyConstraint
-			baseTableName="t_service_provider"
-			constraintName="fk_service_provider_user" />
-		<dropForeignKeyConstraint
-			baseTableName="t_service_provider"
-			constraintName="fk_service_provider_approved_by" />
-		<dropForeignKeyConstraint
-			baseTableName="t_service_provider"
-			constraintName="fk_service_provider_rejected_by" />
-		<dropForeignKeyConstraint
-			baseTableName="t_provider_client"
-			constraintName="fk_provider_client_user" />
-		<dropForeignKeyConstraint
-			baseTableName="t_favorite_provider"
-			constraintName="fk_favorite_provider_user" />
-
-		<dropPrimaryKey tableName="t_user"
-			constraintName="pk_user" />
-		<dropUniqueConstraint tableName="t_user"
-			constraintName="uq_user_identity_id" />
 		<dropColumn tableName="t_user" columnName="c_id" />
 		<renameColumn tableName="t_user"
 			oldColumnName="c_identity_id" newColumnName="c_id"
