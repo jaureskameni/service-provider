@@ -11,75 +11,39 @@
 				columnName="c_identity_id" />
 		</preConditions>
 
-		<sql>
-			DO $$ BEGIN
-			IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname =
-			'fk_service_provider_user_identity' AND conrelid =
-			't_service_provider'::regclass) THEN
-			ALTER TABLE
+		<sql splitStatements="false">DO $$ BEGIN IF EXISTS (SELECT 1 FROM
+			pg_constraint WHERE conname = 'fk_service_provider_user_identity' AND
+			conrelid = 't_service_provider'::regclass) THEN ALTER TABLE
 			public.t_service_provider DROP CONSTRAINT
-			fk_service_provider_user_identity;
-			END IF;
-			END $$;
-			DO $$ BEGIN
-			IF EXISTS
-			(SELECT 1 FROM pg_constraint WHERE conname =
-			'fk_service_provider_approved_by' AND conrelid =
-			't_service_provider'::regclass) THEN
-			ALTER TABLE
+			fk_service_provider_user_identity; END IF; END $$;</sql>
+		<sql splitStatements="false">DO $$ BEGIN IF EXISTS (SELECT 1 FROM
+			pg_constraint WHERE conname = 'fk_service_provider_approved_by' AND
+			conrelid = 't_service_provider'::regclass) THEN ALTER TABLE
 			public.t_service_provider DROP CONSTRAINT
-			fk_service_provider_approved_by;
-			END IF;
-			END $$;
-			DO $$ BEGIN
-			IF EXISTS
-			(SELECT 1 FROM pg_constraint WHERE conname =
-			'fk_service_provider_rejected_by' AND conrelid =
-			't_service_provider'::regclass) THEN
-			ALTER TABLE
+			fk_service_provider_approved_by; END IF; END $$;</sql>
+		<sql splitStatements="false">DO $$ BEGIN IF EXISTS (SELECT 1 FROM
+			pg_constraint WHERE conname = 'fk_service_provider_rejected_by' AND
+			conrelid = 't_service_provider'::regclass) THEN ALTER TABLE
 			public.t_service_provider DROP CONSTRAINT
-			fk_service_provider_rejected_by;
-			END IF;
-			END $$;
-			DO $$ BEGIN
-			IF EXISTS
-			(SELECT 1 FROM pg_constraint WHERE conname =
-			'fk_provider_client_user' AND conrelid =
-			't_provider_client'::regclass) THEN
-			ALTER TABLE
-			public.t_provider_client DROP CONSTRAINT
-			fk_provider_client_user;
-			END
-			IF;
-			END $$;
-			DO $$ BEGIN
-			IF EXISTS (SELECT 1 FROM pg_constraint WHERE
-			conname =
-			'fk_favorite_provider_user' AND conrelid =
-			't_favorite_provider'::regclass) THEN
-			ALTER TABLE
-			public.t_favorite_provider DROP CONSTRAINT
-			fk_favorite_provider_user;
-			END IF;
-			END $$;
-			DO $$ BEGIN
-			IF EXISTS (SELECT 1 FROM pg_constraint WHERE
-			conname = 'pk_user' AND
-			conrelid = 't_user'::regclass) THEN
-			ALTER TABLE
-			public.t_user DROP CONSTRAINT pk_user;
-			END IF;
-			END $$;
-			DO $$ BEGIN
-			IF
-			EXISTS (SELECT 1 FROM pg_constraint WHERE conname =
-			'uq_user_identity_id' AND conrelid = 't_user'::regclass) THEN
-			ALTER
-			TABLE public.t_user DROP CONSTRAINT uq_user_identity_id;
-			END IF;
-			END
-			$$;
-		</sql>
+			fk_service_provider_rejected_by; END IF; END $$;</sql>
+		<sql splitStatements="false">DO $$ BEGIN IF EXISTS (SELECT 1 FROM
+			pg_constraint WHERE conname = 'fk_provider_client_user' AND conrelid
+			= 't_provider_client'::regclass) THEN ALTER TABLE
+			public.t_provider_client DROP CONSTRAINT fk_provider_client_user; END
+			IF; END $$;</sql>
+		<sql splitStatements="false">DO $$ BEGIN IF EXISTS (SELECT 1 FROM
+			pg_constraint WHERE conname = 'fk_favorite_provider_user' AND
+			conrelid = 't_favorite_provider'::regclass) THEN ALTER TABLE
+			public.t_favorite_provider DROP CONSTRAINT fk_favorite_provider_user;
+			END IF; END $$;</sql>
+		<sql splitStatements="false">DO $$ BEGIN IF EXISTS (SELECT 1 FROM
+			pg_constraint WHERE conname = 'pk_user' AND conrelid =
+			't_user'::regclass) THEN ALTER TABLE public.t_user DROP CONSTRAINT
+			pk_user; END IF; END $$;</sql>
+		<sql splitStatements="false">DO $$ BEGIN IF EXISTS (SELECT 1 FROM
+			pg_constraint WHERE conname = 'uq_user_identity_id' AND conrelid =
+			't_user'::regclass) THEN ALTER TABLE public.t_user DROP CONSTRAINT
+			uq_user_identity_id; END IF; END $$;</sql>
 
 		<sql>
 			UPDATE public.t_service_provider sp
