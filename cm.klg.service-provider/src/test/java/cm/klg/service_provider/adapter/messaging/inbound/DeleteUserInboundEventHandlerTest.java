@@ -1,15 +1,16 @@
 package cm.klg.service_provider.adapter.messaging.inbound;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamDomainEventType;
 import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamUserDeletedEventDTO;
 import cm.klg.service_provider.application.usecase.DeleteUserUseCase;
+import cm.klg.service_provider.domain.UserId;
 import com.emb.domain.inboxevent.InboxEventCommand;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,7 +22,6 @@ class DeleteUserInboundEventHandlerTest {
 
   @Mock private DeleteUserUseCase deleteUserUseCase;
   @Mock private MessagingInboundMapper messagingInboundMapper;
-  @Mock private UseCaseExecutor useCaseExecutor;
 
   @InjectMocks private DeleteUserInboundEventHandler deleteUserInboundEventHandler;
 
@@ -39,13 +39,15 @@ class DeleteUserInboundEventHandlerTest {
   @Test
   void shouldHandleUserDeletedEvent() {
     // Given
+    UUID userId = UUID.randomUUID();
     UamUserDeletedEventDTO userDeletedEventDTO = mock(UamUserDeletedEventDTO.class);
+    when(userDeletedEventDTO.getId()).thenReturn(userId);
     InboxEventCommand inboxEventCommand = mock(InboxEventCommand.class);
 
     // When
     deleteUserInboundEventHandler.handle(userDeletedEventDTO, inboxEventCommand);
 
     // Then
-    verify(useCaseExecutor).runCommand(any());
+    verify(deleteUserUseCase).execute(UserId.from(userId));
   }
 }

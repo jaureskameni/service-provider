@@ -1,14 +1,11 @@
 package cm.klg.service_provider.adapter.messaging.inbound;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cm.klg.common.base.domain.CreatedAt;
-import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
@@ -28,7 +25,6 @@ class ServiceRequestAcceptedInboundEventHandlerTest {
 
   @Mock private CreateNewProviderClientUseCase createNewProviderClientUseCase;
   @Mock private MessagingInboundMapper messagingInboundMapper;
-  @Mock private UseCaseExecutor useCaseExecutor;
 
   @InjectMocks private ServiceRequestAcceptedInboundEventHandler handler;
 
@@ -55,15 +51,6 @@ class ServiceRequestAcceptedInboundEventHandlerTest {
             new CreatedAt(LocalDateTime.now()));
 
     when(messagingInboundMapper.toCreateProviderClientCommand(eventDTO)).thenReturn(command);
-
-    doAnswer(
-            invocation -> {
-              Runnable runnable = invocation.getArgument(0);
-              runnable.run();
-              return null;
-            })
-        .when(useCaseExecutor)
-        .runCommand(any(Runnable.class));
 
     // When
     handler.handle(eventDTO, inboxEventCommand);
