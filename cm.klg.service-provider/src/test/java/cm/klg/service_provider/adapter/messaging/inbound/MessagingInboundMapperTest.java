@@ -17,7 +17,7 @@ class MessagingInboundMapperTest {
     // Given
     UUID id = UUID.randomUUID();
     var dto = new UamUserCreatedEventDTO();
-    dto.setUserId(id);
+    dto.setId(id);
     dto.setFirstname("John");
     dto.setLastname("Doe");
     dto.setEmail("john.doe@example.com");

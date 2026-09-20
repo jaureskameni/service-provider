@@ -1,6 +1,5 @@
 package cm.klg.service_provider.adapter.messaging.inbound;
 
-import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.DeleteUserUseCase;
@@ -13,37 +12,27 @@ public class MessagingInboundSpringBeans {
 
   @Bean
   public CreateUserInboundEventHandler createUserInboundEventHandler(
-      CreateNewUserUseCase createNewUserUseCase,
-      MessagingInboundMapper messagingInboundMapper,
-      UseCaseExecutor useCaseExecutor) {
-    return new CreateUserInboundEventHandler(
-        createNewUserUseCase, messagingInboundMapper, useCaseExecutor);
+      CreateNewUserUseCase createNewUserUseCase, MessagingInboundMapper messagingInboundMapper) {
+    return new CreateUserInboundEventHandler(createNewUserUseCase, messagingInboundMapper);
   }
 
   @Bean
   public UpdateUserInboundEventHandler updateUserInboundEventHandler(
-      UpdateUserUseCase updateUserUseCase,
-      MessagingInboundMapper messagingInboundMapper,
-      UseCaseExecutor useCaseExecutor) {
-    return new UpdateUserInboundEventHandler(
-        updateUserUseCase, messagingInboundMapper, useCaseExecutor);
+      UpdateUserUseCase updateUserUseCase, MessagingInboundMapper messagingInboundMapper) {
+    return new UpdateUserInboundEventHandler(updateUserUseCase, messagingInboundMapper);
   }
 
   @Bean
   public DeleteUserInboundEventHandler deleteUserInboundEventHandler(
-      DeleteUserUseCase deleteUserUseCase,
-      MessagingInboundMapper messagingInboundMapper,
-      UseCaseExecutor useCaseExecutor) {
-    return new DeleteUserInboundEventHandler(
-        deleteUserUseCase, messagingInboundMapper, useCaseExecutor);
+      DeleteUserUseCase deleteUserUseCase, MessagingInboundMapper messagingInboundMapper) {
+    return new DeleteUserInboundEventHandler(deleteUserUseCase, messagingInboundMapper);
   }
 
   @Bean
   public ServiceRequestAcceptedInboundEventHandler serviceRequestAcceptedInboundEventHandler(
       CreateNewProviderClientUseCase createNewProviderClientUseCase,
-      MessagingInboundMapper messagingInboundMapper,
-      UseCaseExecutor useCaseExecutor) {
+      MessagingInboundMapper messagingInboundMapper) {
     return new ServiceRequestAcceptedInboundEventHandler(
-        createNewProviderClientUseCase, messagingInboundMapper, useCaseExecutor);
+        createNewProviderClientUseCase, messagingInboundMapper);
   }
 }

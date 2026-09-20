@@ -1,6 +1,5 @@
 package cm.klg.service_provider.adapter.messaging.inbound;
 
-import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
 import com.emb.application.handler.InboxEventHandler;
 import com.emb.domain.inboxevent.InboxEventCommand;
@@ -9,8 +8,7 @@ import org.openapitools.model.SRServiceRequestAcceptedEventDTO;
 
 public record ServiceRequestAcceptedInboundEventHandler(
     CreateNewProviderClientUseCase createNewProviderClientUseCase,
-    MessagingInboundMapper messagingInboundMapper,
-    UseCaseExecutor useCaseExecutor)
+    MessagingInboundMapper messagingInboundMapper)
     implements InboxEventHandler<SRServiceRequestAcceptedEventDTO> {
   @Override
   public String getEventType() {
@@ -26,10 +24,7 @@ public record ServiceRequestAcceptedInboundEventHandler(
   public void handle(
       SRServiceRequestAcceptedEventDTO serviceRequestAcceptedEventDTO,
       InboxEventCommand inboxEventCommand) {
-    useCaseExecutor.runCommand(
-        () ->
-            createNewProviderClientUseCase.execute(
-                messagingInboundMapper.toCreateProviderClientCommand(
-                    serviceRequestAcceptedEventDTO)));
+    createNewProviderClientUseCase.execute(
+        messagingInboundMapper.toCreateProviderClientCommand(serviceRequestAcceptedEventDTO));
   }
 }
