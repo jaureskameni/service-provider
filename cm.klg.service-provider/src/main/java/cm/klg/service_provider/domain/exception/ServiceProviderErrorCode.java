@@ -18,8 +18,11 @@ public enum ServiceProviderErrorCode implements ErrorCode {
       "SERVICE_PROVIDER-409-004", "Invalid Service Provider Status Transition"),
 
   // ERROR-400
-  SERVICE_PROVIDER_400_001("SERVICE_PROVIDER-400-001", "Invalid Service Provider Data"),
-  SERVICE_PROVIDER_400_002("SERVICE_PROVIDER-400-002", "Cannot Favorite Own Profile");
+  SERVICE_PROVIDER_400_001("SERVICE_PROVIDER-400-001", "Invalid Service Provider Pagination Data"),
+  SERVICE_PROVIDER_400_002("SERVICE_PROVIDER-400-002", "Cannot Favorite Own Profile"),
+  SERVICE_PROVIDER_400_003("SERVICE_PROVIDER-400-003", "Invalid Service Provider Phone Number"),
+  SERVICE_PROVIDER_400_004(
+      "SERVICE_PROVIDER-400-004", "Invalid Service Provider Year of Experience");
 
   private final String value;
   @Getter private final String description;

@@ -267,12 +267,12 @@ class JpaMapperTest {
       PortfolioItem item1 =
           PortfolioItem.of(
               title1,
-              PortfolioItemDescription.from("Desc A"),
+              PortfolioItemDescription.from("Description A"),
               new PortfolioItemMediaId(UUID.randomUUID()));
       PortfolioItem item2 =
           PortfolioItem.of(
               title2,
-              PortfolioItemDescription.from("Desc B"),
+              PortfolioItemDescription.from("Description B"),
               new PortfolioItemMediaId(UUID.randomUUID()));
       ServiceProvider serviceProvider =
           ServiceProvider.reconstitute(
@@ -800,14 +800,14 @@ class JpaMapperTest {
           PortfolioItem.reconstitute(
               PortfolioItemId.from(existingItemId),
               PortfolioItemTitle.from("Existing"),
-              PortfolioItemDescription.from("Existing desc"),
+              PortfolioItemDescription.from("Existing description"),
               new PortfolioItemMediaId(UUID.randomUUID()),
               CreatedAt.from(now));
       PortfolioItem newItem =
           PortfolioItem.reconstitute(
               PortfolioItemId.from(newItemId),
               PortfolioItemTitle.from("New"),
-              PortfolioItemDescription.from("New desc"),
+              PortfolioItemDescription.from("New description"),
               new PortfolioItemMediaId(UUID.randomUUID()),
               CreatedAt.from(now));
 

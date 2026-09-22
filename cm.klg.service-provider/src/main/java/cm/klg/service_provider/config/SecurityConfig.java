@@ -31,7 +31,18 @@ public class SecurityConfig {
             SERVICE_PROVIDER_ID_PATH + "/portfolio",
             SERVICE_PROVIDER_ID_PATH + "/services")
         .csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers(
+                        HttpMethod.GET,
+                        "/service-catalog",
+                        "/service-provider/search",
+                        SERVICE_PROVIDER_ID_PATH,
+                        SERVICE_PROVIDER_ID_PATH + "/portfolio",
+                        SERVICE_PROVIDER_ID_PATH + "/services")
+                    .permitAll()
+                    .anyRequest()
+                    .denyAll())
         .build();
   }
 

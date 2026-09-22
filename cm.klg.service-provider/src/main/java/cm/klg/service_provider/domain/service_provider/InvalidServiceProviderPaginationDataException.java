@@ -4,8 +4,8 @@ import static cm.klg.service_provider.domain.exception.ServiceProviderErrorCode.
 
 import cm.klg.common.base.exception.DomainException;
 
-public class InvalidServiceProviderDataException extends DomainException {
-  public InvalidServiceProviderDataException() {
+public class InvalidServiceProviderPaginationDataException extends DomainException {
+  public InvalidServiceProviderPaginationDataException() {
     super(SERVICE_PROVIDER_400_001);
   }
 }

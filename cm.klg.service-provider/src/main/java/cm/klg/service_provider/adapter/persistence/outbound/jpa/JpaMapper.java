@@ -233,7 +233,9 @@ public interface JpaMapper {
             new ProviderLocation(
                 new UserCityId(serviceProviderJpa.getCity()),
                 new UserDistrictId(serviceProviderJpa.getDistrict()),
-                new UserQuarterId(serviceProviderJpa.getQuarter())),
+                serviceProviderJpa.getQuarter() != null
+                    ? new UserQuarterId(serviceProviderJpa.getQuarter())
+                    : null),
             new PhoneNumber(
                 serviceProviderJpa.getPhoneNumber().getCountryCode(),
                 serviceProviderJpa.getPhoneNumber().getNumber())),

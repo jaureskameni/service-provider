@@ -15,30 +15,53 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
 
   boolean existsByPhoneNumber(PhoneNumberJpa phoneNumberJpa);
 
+  boolean existsByPhoneNumberAndIdNot(PhoneNumberJpa phoneNumberJpa, UUID id);
+
   @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " LEFT JOIN FETCH s.portfolioItems WHERE s.id = :serviceProviderId")
+          + " WHERE s.id = :serviceProviderId")
   Optional<ServiceProviderJpa> findAggregateById(
       @Param("serviceProviderId") UUID serviceProviderId);
 
   @Query(
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
+          + " WHERE s.id = :serviceProviderId")
+  Optional<ServiceProviderJpa> findAggregateWithPortfolioById(
+      @Param("serviceProviderId") UUID serviceProviderId);
+
+  @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " LEFT JOIN FETCH s.portfolioItems WHERE s.id = :serviceProviderId"
-          + " AND s.status = :status")
+          + " WHERE s.id = :serviceProviderId AND s.status = :status")
   Optional<ServiceProviderJpa> findAggregateByIdAndStatus(
       @Param("serviceProviderId") UUID serviceProviderId, @Param("status") String status);
 
   @Query(
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
+          + " WHERE s.id = :serviceProviderId AND s.status = :status")
+  Optional<ServiceProviderJpa> findAggregateWithPortfolioByIdAndStatus(
+      @Param("serviceProviderId") UUID serviceProviderId, @Param("status") String status);
+
+  @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " LEFT JOIN FETCH s.portfolioItems WHERE s.userId = :userId"
-          + " AND s.status = :status")
+          + " WHERE s.userId = :userId AND s.status = :status")
   Optional<ServiceProviderJpa> findAggregateByUserId(
       @Param("userId") UUID userId, @Param("status") String status);
 
   @Query(
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
+          + " WHERE s.userId = :userId AND s.status = :status")
+  Optional<ServiceProviderJpa> findAggregateWithPortfolioByUserId(
+      @Param("userId") UUID userId, @Param("status") String status);
+
+  @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " LEFT JOIN FETCH s.portfolioItems WHERE s.userId = :userId")
+          + " WHERE s.userId = :userId")
   Optional<ServiceProviderJpa> findAggregateByUserId(@Param("userId") UUID userId);
+
+  @Query(
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
+          + " WHERE s.userId = :userId")
+  Optional<ServiceProviderJpa> findAggregateWithPortfolioByUserId(@Param("userId") UUID userId);
 
   @Query(
       value = "SELECT s FROM ServiceProviderJpa s ORDER BY s.createdAt DESC",
@@ -107,16 +130,23 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
   List<PortfolioItemJpa> findPortfolioItemsByUserId(@Param("userId") UUID userId);
 
   @Query(
-"""
-    SELECT pi
-    FROM PortfolioItemJpa pi
-    JOIN pi.serviceProvider sp
-    WHERE sp.id = :providerId
-""")
-  List<PortfolioItemJpa> findPortfolioItemsByProviderId(@Param("providerId") UUID providerId);
+      """
+          SELECT pi
+          FROM PortfolioItemJpa pi
+          JOIN pi.serviceProvider sp
+          WHERE sp.id = :providerId
+            AND sp.status = 'APPROVED'
+      """)
+  List<PortfolioItemJpa> findPortfolioItemsByApprovedProviderId(
+      @Param("providerId") UUID providerId);
 
   @Query("SELECT s FROM ServiceProviderJpa s WHERE s.id = :serviceProviderId")
   Optional<ServiceProviderJpa> findById(@Param("serviceProviderId") UUID serviceProviderId);
+
+  @Query(
+      "SELECT s FROM ServiceProviderJpa s WHERE s.id = :serviceProviderId AND s.status = :status")
+  Optional<ServiceProviderJpa> findByIdAndStatus(
+      @Param("serviceProviderId") UUID serviceProviderId, @Param("status") String status);
 
   @Query(
 """
@@ -135,4 +165,6 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
 """)
   List<PortfolioItemJpa> findPortfolioItemsByServiceProviderId(
       @Param("serviceProviderId") UUID serviceProviderId);
+
+  boolean existsByIdAndStatus(UUID id, String status);
 }

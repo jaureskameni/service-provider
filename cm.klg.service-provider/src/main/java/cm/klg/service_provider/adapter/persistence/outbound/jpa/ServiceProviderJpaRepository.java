@@ -11,9 +11,11 @@ import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.common.PageData;
 import cm.klg.service_provider.domain.common.PaginationFetchRequest;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExistsException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderNotFoundException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderWithPhoneNumberAlreadyExistsException;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
@@ -21,11 +23,13 @@ import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,9 +40,17 @@ public record ServiceProviderJpaRepository(
     ServiceTypeSpringRepository serviceTypeSpringRepository,
     JpaMapper jpaMapper)
     implements ServiceProviderRepository {
+
   @Override
   public void insert(@NonNull ServiceProvider serviceProvider) {
-    serviceProviderSpringRepository.save(jpaMapper.toServiceProviderJpa(serviceProvider));
+    try {
+      serviceProviderSpringRepository.saveAndFlush(jpaMapper.toServiceProviderJpa(serviceProvider));
+    } catch (DataIntegrityViolationException _) {
+      if (existsByPhoneNumber(serviceProvider.getPhoneNumber())) {
+        throw new ServiceProviderWithPhoneNumberAlreadyExistsException();
+      }
+      throw new ServiceProviderAlreadyExistsException();
+    }
   }
 
   @Override
@@ -53,10 +65,16 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
+  public boolean existsByPhoneNumberExceptProviderId(
+      @NonNull PhoneNumber phoneNumber, @NonNull ServiceProviderId providerId) {
+    return serviceProviderSpringRepository.existsByPhoneNumberAndIdNot(
+        new PhoneNumberJpa(phoneNumber.countryCode(), phoneNumber.number()), providerId.value());
+  }
+
+  @Override
   public ServiceProvider load(@NonNull ServiceProviderId serviceProviderId)
       throws ServiceProviderNotFoundException {
-    return serviceProviderSpringRepository
-        .findAggregateById(serviceProviderId.value())
+    return findAggregateById(serviceProviderId.value())
         .map(jpaMapper::toServiceProviderDomain)
         .orElseThrow(ServiceProviderNotFoundException::new);
   }
@@ -64,20 +82,22 @@ public record ServiceProviderJpaRepository(
   @Override
   public ServiceProvider loadByUserId(@NonNull UserId userId)
       throws ServiceProviderNotFoundException {
-    return serviceProviderSpringRepository
-        .findAggregateByUserId(userId.value())
+    return findAggregateByUserId(userId.value())
         .map(jpaMapper::toServiceProviderDomain)
         .orElseThrow(ServiceProviderNotFoundException::new);
   }
 
   @Override
   public void update(@NonNull ServiceProvider serviceProvider) {
-    serviceProviderSpringRepository
-        .findAggregateById(serviceProvider.getId().value())
+    findAggregateById(serviceProvider.getId().value())
         .ifPresentOrElse(
             serviceProviderJpa -> {
               jpaMapper.fromServiceProvider(serviceProviderJpa, serviceProvider);
-              serviceProviderSpringRepository.save(serviceProviderJpa);
+              try {
+                serviceProviderSpringRepository.saveAndFlush(serviceProviderJpa);
+              } catch (DataIntegrityViolationException _) {
+                throw new ServiceProviderWithPhoneNumberAlreadyExistsException();
+              }
             },
             () -> {
               throw new ServiceProviderNotFoundException();
@@ -119,10 +139,17 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
-  public ServiceProviderView2 loadAsView2(@NonNull ServiceProviderId serviceProviderId) {
+  public ServiceProviderView2 loadApprovedAsView2(@NonNull ServiceProviderId serviceProviderId) {
+    return loadAsView2(serviceProviderId, ServiceProviderStatus.APPROVED);
+  }
+
+  private ServiceProviderView2 loadAsView2(
+      ServiceProviderId serviceProviderId, @Nullable ServiceProviderStatus status) {
     ServiceProviderJpa serviceProviderJpa =
-        serviceProviderSpringRepository
-            .findById(serviceProviderId.value())
+        (status == null
+                ? serviceProviderSpringRepository.findById(serviceProviderId.value())
+                : serviceProviderSpringRepository.findByIdAndStatus(
+                    serviceProviderId.value(), status.name()))
             .orElseThrow(ServiceProviderNotFoundException::new);
 
     UserJpa userJpa =
@@ -144,8 +171,7 @@ public record ServiceProviderJpaRepository(
 
   @Override
   public ServiceProviderView1 loadAsView1(UserId userId) throws ServiceProviderNotFoundException {
-    return serviceProviderSpringRepository
-        .findAggregateByUserId(userId.value(), ServiceProviderStatus.APPROVED.name())
+    return findAggregateByUserId(userId.value())
         .map(this::toView1)
         .orElseThrow(ServiceProviderNotFoundException::new);
   }
@@ -158,23 +184,61 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
-  public List<PortfolioView> loadAllProviderPortfolio(@NonNull ServiceProviderId providerId) {
+  public List<PortfolioView> loadAllApprovedProviderPortfolio(
+      @NonNull ServiceProviderId providerId) {
+    ensureApprovedProviderExists(providerId);
     return serviceProviderSpringRepository
-        .findPortfolioItemsByProviderId(providerId.value())
+        .findPortfolioItemsByServiceProviderId(providerId.value())
         .stream()
         .map(jpaMapper::toPortfolioView)
         .toList();
   }
 
   @Override
-  public List<UserServiceView> loadAllProviderServices(@NonNull ServiceProviderId providerId) {
-    load(providerId);
+  public List<UserServiceView> loadAllApprovedProviderServices(
+      @NonNull ServiceProviderId providerId) {
+    ensureApprovedProviderExists(providerId);
     return loadUserServiceViews(providerId.value());
+  }
+
+  private void ensureApprovedProviderExists(ServiceProviderId providerId) {
+    boolean exists =
+        serviceProviderSpringRepository.existsByIdAndStatus(
+            providerId.value(), ServiceProviderStatus.APPROVED.name());
+    if (!exists) {
+      throw new ServiceProviderNotFoundException();
+    }
   }
 
   @Override
   public List<UserServiceView> loadAllMyServices(@NonNull UserId userId) {
     return loadUserServiceViews(loadByUserId(userId).getId().value());
+  }
+
+  private Optional<ServiceProviderJpa> findAggregateById(UUID serviceProviderId) {
+    Optional<ServiceProviderJpa> aggregate =
+        serviceProviderSpringRepository.findAggregateById(serviceProviderId);
+    aggregate.ifPresent(
+        serviceProvider ->
+            serviceProviderSpringRepository
+                .findAggregateWithPortfolioById(serviceProviderId)
+                .ifPresent(
+                    withPortfolio ->
+                        serviceProvider.setPortfolioItems(withPortfolio.getPortfolioItems())));
+    return aggregate;
+  }
+
+  private Optional<ServiceProviderJpa> findAggregateByUserId(UUID userId) {
+    Optional<ServiceProviderJpa> aggregate =
+        serviceProviderSpringRepository.findAggregateByUserId(userId);
+    aggregate.ifPresent(
+        serviceProvider ->
+            serviceProviderSpringRepository
+                .findAggregateWithPortfolioByUserId(userId)
+                .ifPresent(
+                    withPortfolio ->
+                        serviceProvider.setPortfolioItems(withPortfolio.getPortfolioItems())));
+    return aggregate;
   }
 
   private PageData<ServiceProviderView1> toPageData(Page<ServiceProviderJpa> serviceProviderJpas) {

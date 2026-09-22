@@ -20,7 +20,7 @@ public class GetServiceProviderByIdUseCase {
     UserId userId = command.userId;
 
     ServiceProviderViews.ServiceProviderView2 providerView =
-        serviceProviderRepository.loadAsView2(providerId);
+        serviceProviderRepository.loadApprovedAsView2(providerId);
 
     boolean isClient =
         userId != null && providerClientRepository.existsByUserIdAndProviderId(userId, providerId);

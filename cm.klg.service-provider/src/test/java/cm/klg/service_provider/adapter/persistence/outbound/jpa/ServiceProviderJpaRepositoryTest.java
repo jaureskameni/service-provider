@@ -57,7 +57,7 @@ class ServiceProviderJpaRepositoryTest {
 
     // Then
     verify(jpaMapper).toServiceProviderJpa(serviceProvider);
-    verify(serviceProviderSpringRepository).save(serviceProviderJpa);
+    verify(serviceProviderSpringRepository).saveAndFlush(serviceProviderJpa);
   }
 
   @Test
@@ -112,6 +112,8 @@ class ServiceProviderJpaRepositoryTest {
 
     when(serviceProviderSpringRepository.findAggregateById(serviceProviderId.value()))
         .thenReturn(java.util.Optional.of(serviceProviderJpa));
+    when(serviceProviderSpringRepository.findAggregateWithPortfolioById(serviceProviderId.value()))
+        .thenReturn(java.util.Optional.of(serviceProviderJpa));
     when(jpaMapper.toServiceProviderDomain(serviceProviderJpa)).thenReturn(serviceProvider);
 
     // When
@@ -119,6 +121,9 @@ class ServiceProviderJpaRepositoryTest {
 
     // Then
     assertThat(result).isEqualTo(serviceProvider);
+    verify(serviceProviderSpringRepository).findAggregateById(serviceProviderId.value());
+    verify(serviceProviderSpringRepository)
+        .findAggregateWithPortfolioById(serviceProviderId.value());
   }
 
   @Test
@@ -163,47 +168,6 @@ class ServiceProviderJpaRepositoryTest {
   }
 
   @Test
-  void loadAllProviderPortfolio_shouldReturnPortfolioViews_whenItemsExist() {
-    var providerId = ServiceProviderId.from(UUID.randomUUID());
-    var spJpa = new ServiceProviderJpa();
-    spJpa.setId(providerId.value());
-    PortfolioItemJpa pi1 = new PortfolioItemJpa();
-    pi1.setId(UUID.randomUUID());
-    PortfolioItemJpa pi2 = new PortfolioItemJpa();
-    pi2.setId(UUID.randomUUID());
-    spJpa.setPortfolioItems(List.of(pi1, pi2));
-
-    PortfolioView view1 = mock(PortfolioView.class);
-    PortfolioView view2 = mock(PortfolioView.class);
-
-    when(serviceProviderSpringRepository.findPortfolioItemsByProviderId(providerId.value()))
-        .thenReturn(spJpa.getPortfolioItems());
-    when(jpaMapper.toPortfolioView(pi1)).thenReturn(view1);
-    when(jpaMapper.toPortfolioView(pi2)).thenReturn(view2);
-
-    var result = objectUnderTest.loadAllProviderPortfolio(providerId);
-
-    assertThat(result).hasSize(2).containsExactly(view1, view2);
-    verify(serviceProviderSpringRepository).findPortfolioItemsByProviderId(providerId.value());
-    verify(jpaMapper).toPortfolioView(pi1);
-    verify(jpaMapper).toPortfolioView(pi2);
-  }
-
-  @Test
-  void loadAllProviderPortfolio_shouldReturnEmptyList_whenNoItems() {
-    var providerId = ServiceProviderId.from(UUID.randomUUID());
-
-    when(serviceProviderSpringRepository.findPortfolioItemsByProviderId(providerId.value()))
-        .thenReturn(List.of());
-
-    var result = objectUnderTest.loadAllProviderPortfolio(providerId);
-
-    assertThat(result).isEmpty();
-    verify(serviceProviderSpringRepository).findPortfolioItemsByProviderId(providerId.value());
-    verifyNoInteractions(jpaMapper);
-  }
-
-  @Test
   void loadByUserId_shouldReturnServiceProvider_whenFound() {
     // Given
     UUID userId = UUID.randomUUID();
@@ -214,6 +178,8 @@ class ServiceProviderJpaRepositoryTest {
     ServiceProvider domainSp = createServiceProvider();
     when(serviceProviderSpringRepository.findAggregateByUserId(userId))
         .thenReturn(Optional.of(spJpa));
+    when(serviceProviderSpringRepository.findAggregateWithPortfolioByUserId(userId))
+        .thenReturn(Optional.of(spJpa));
     when(jpaMapper.toServiceProviderDomain(spJpa)).thenReturn(domainSp);
 
     // When
@@ -222,6 +188,7 @@ class ServiceProviderJpaRepositoryTest {
     // Then
     assertThat(result).isEqualTo(domainSp);
     verify(serviceProviderSpringRepository).findAggregateByUserId(userId);
+    verify(serviceProviderSpringRepository).findAggregateWithPortfolioByUserId(userId);
     verify(jpaMapper).toServiceProviderDomain(spJpa);
   }
 

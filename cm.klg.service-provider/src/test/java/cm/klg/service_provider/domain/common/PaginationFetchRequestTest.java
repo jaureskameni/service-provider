@@ -3,7 +3,7 @@ package cm.klg.service_provider.domain.common;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderDataException;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderPaginationDataException;
 import org.junit.jupiter.api.Test;
 
 class PaginationFetchRequestTest {
@@ -21,12 +21,12 @@ class PaginationFetchRequestTest {
   @Test
   void shouldThrowExceptionWhenLimitIsTooSmall() {
     assertThatThrownBy(() -> new PaginationFetchRequest(5, 0))
-        .isInstanceOf(InvalidServiceProviderDataException.class);
+        .isInstanceOf(InvalidServiceProviderPaginationDataException.class);
   }
 
   @Test
   void shouldThrowExceptionWhenPageIndexIsNegative() {
     assertThatThrownBy(() -> new PaginationFetchRequest(20, -1))
-        .isInstanceOf(InvalidServiceProviderDataException.class);
+        .isInstanceOf(InvalidServiceProviderPaginationDataException.class);
   }
 }

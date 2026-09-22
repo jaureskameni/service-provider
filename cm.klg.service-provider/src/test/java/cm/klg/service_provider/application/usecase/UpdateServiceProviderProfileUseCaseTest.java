@@ -41,6 +41,7 @@ class UpdateServiceProviderProfileUseCaseTest {
             PhoneNumber.from("+237", "678901234"),
             AboutProvider.from("Original profile"),
             List.of());
+    serviceProvider.approve(UserId.from(UUID.randomUUID()));
     var location =
         ProviderLocation.of(
             UserCityId.from(UUID.randomUUID()),

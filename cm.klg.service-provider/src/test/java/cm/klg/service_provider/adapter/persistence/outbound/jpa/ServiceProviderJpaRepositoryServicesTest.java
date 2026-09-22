@@ -38,6 +38,8 @@ class ServiceProviderJpaRepositoryServicesTest {
     var view = serviceView();
     when(serviceProviderSpringRepository.findAggregateByUserId(userId.value()))
         .thenReturn(Optional.of(providerJpa));
+    when(serviceProviderSpringRepository.findAggregateWithPortfolioByUserId(userId.value()))
+        .thenReturn(Optional.of(providerJpa));
     when(jpaMapper.toServiceProviderDomain(providerJpa)).thenReturn(provider);
     when(provider.getId()).thenReturn(providerId);
     when(serviceProviderSpringRepository.findUserServicesByServiceProviderId(providerId.value()))
@@ -49,29 +51,7 @@ class ServiceProviderJpaRepositoryServicesTest {
 
     assertThat(result).containsExactly(view);
     verify(serviceProviderSpringRepository).findAggregateByUserId(userId.value());
-    verify(serviceProviderSpringRepository).findUserServicesByServiceProviderId(providerId.value());
-  }
-
-  @Test
-  void loadAllProviderServices_shouldVerifyTheProviderThenMapItsServices() {
-    var providerId = ServiceProviderId.from(UUID.randomUUID());
-    var providerJpa = new ServiceProviderJpa();
-    var provider = org.mockito.Mockito.mock(ServiceProvider.class);
-    var userServiceJpa = new UserServiceJpa();
-    userServiceJpa.setId(userServiceJpaId());
-    var view = serviceView();
-    when(serviceProviderSpringRepository.findAggregateById(providerId.value()))
-        .thenReturn(Optional.of(providerJpa));
-    when(jpaMapper.toServiceProviderDomain(providerJpa)).thenReturn(provider);
-    when(serviceProviderSpringRepository.findUserServicesByServiceProviderId(providerId.value()))
-        .thenReturn(List.of(userServiceJpa));
-    when(jpaMapper.toUserServiceViews(List.of(userServiceJpa), List.of()))
-        .thenReturn(List.of(view));
-
-    var result = objectUnderTest.loadAllProviderServices(providerId);
-
-    assertThat(result).containsExactly(view);
-    verify(serviceProviderSpringRepository).findAggregateById(providerId.value());
+    verify(serviceProviderSpringRepository).findAggregateWithPortfolioByUserId(userId.value());
     verify(serviceProviderSpringRepository).findUserServicesByServiceProviderId(providerId.value());
   }
 

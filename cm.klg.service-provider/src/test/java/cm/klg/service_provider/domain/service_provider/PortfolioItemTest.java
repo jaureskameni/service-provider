@@ -78,12 +78,12 @@ class PortfolioItemTest {
         PortfolioItem.reconstitute(
             id,
             PortfolioItemTitle.from("Original"),
-            PortfolioItemDescription.from("Original"),
+            PortfolioItemDescription.from("Original description"),
             new PortfolioItemMediaId(UUID.randomUUID()),
             createdAt);
 
     var newTitle = PortfolioItemTitle.from("Updated");
-    var newDescription = PortfolioItemDescription.from("Updated");
+    var newDescription = PortfolioItemDescription.from("Updated description");
     var newMediaId = new PortfolioItemMediaId(UUID.randomUUID());
 
     // When
