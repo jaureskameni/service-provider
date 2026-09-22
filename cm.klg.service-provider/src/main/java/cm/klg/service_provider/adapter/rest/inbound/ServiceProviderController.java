@@ -189,12 +189,12 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
 
   @Override
   public ResponseEntity<ServiceProviderPublicProfileDTO> getServiceProviderById(
-      UUID serviceProviderId, UUID userId) {
+      UUID serviceProviderId) {
     var result =
         useCaseExecutor.executeQuery(
             () ->
                 getServiceProviderByIdUseCase.execute(
-                    restMapper.toGetServiceProviderByIdCommand(serviceProviderId, userId)));
+                    restMapper.toGetServiceProviderByIdCommand(serviceProviderId)));
     return ResponseEntity.status(OK).body(restMapper.toServiceProviderPublicProfileDTO(result));
   }
 

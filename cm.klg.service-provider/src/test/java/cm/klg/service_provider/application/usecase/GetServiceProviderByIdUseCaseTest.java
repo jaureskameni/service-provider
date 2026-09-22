@@ -32,7 +32,7 @@ class GetServiceProviderByIdUseCaseTest {
     var view = mock(ServiceProviderView2.class);
     var command = new GetServiceProviderByIdUseCase.Command(providerId, userId);
 
-    when(serviceProviderRepository.loadAsView2(providerId)).thenReturn(view);
+    when(serviceProviderRepository.loadApprovedAsView2(providerId)).thenReturn(view);
     when(providerClientRepository.existsByUserIdAndProviderId(userId, providerId)).thenReturn(true);
     when(favoriteProviderRepository.existsByUserIdAndProviderId(userId, providerId))
         .thenReturn(true);
@@ -51,7 +51,7 @@ class GetServiceProviderByIdUseCaseTest {
     var view = mock(ServiceProviderView2.class);
     var command = new GetServiceProviderByIdUseCase.Command(providerId, userId);
 
-    when(serviceProviderRepository.loadAsView2(providerId)).thenReturn(view);
+    when(serviceProviderRepository.loadApprovedAsView2(providerId)).thenReturn(view);
     when(providerClientRepository.existsByUserIdAndProviderId(userId, providerId))
         .thenReturn(false);
     when(favoriteProviderRepository.existsByUserIdAndProviderId(userId, providerId))
@@ -70,7 +70,7 @@ class GetServiceProviderByIdUseCaseTest {
     var view = mock(ServiceProviderView2.class);
     var command = new GetServiceProviderByIdUseCase.Command(providerId, null);
 
-    when(serviceProviderRepository.loadAsView2(providerId)).thenReturn(view);
+    when(serviceProviderRepository.loadApprovedAsView2(providerId)).thenReturn(view);
 
     var result = objectUnderTest.execute(command);
 

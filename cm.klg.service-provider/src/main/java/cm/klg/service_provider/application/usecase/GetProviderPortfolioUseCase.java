@@ -11,6 +11,6 @@ public class GetProviderPortfolioUseCase {
   private final ServiceProviderRepository serviceProviderRepository;
 
   public List<PortfolioView> execute(ServiceProviderId providerId) {
-    return serviceProviderRepository.loadAllProviderPortfolio(providerId);
+    return serviceProviderRepository.loadAllApprovedProviderPortfolio(providerId);
   }
 }

@@ -6,6 +6,7 @@ import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.AboutProvider;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderWithPhoneNumberAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -15,6 +16,10 @@ public class UpdateServiceProviderProfileUseCase {
 
   public void execute(Command command) {
     var serviceProvider = serviceProviderRepository.loadByUserId(command.userId());
+    if (serviceProviderRepository.existsByPhoneNumberExceptProviderId(
+        command.phoneNumber(), serviceProvider.getId())) {
+      throw new ServiceProviderWithPhoneNumberAlreadyExistsException();
+    }
     serviceProvider.updateProfile(command.location(), command.phoneNumber(), command.about());
     serviceProviderRepository.update(serviceProvider);
     domainEventPublisher.serviceProviderProfileUpdatedEvent(

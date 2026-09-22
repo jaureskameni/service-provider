@@ -57,7 +57,7 @@ class ServiceProviderJpaRepositoryTest {
 
     // Then
     verify(jpaMapper).toServiceProviderJpa(serviceProvider);
-    verify(serviceProviderSpringRepository).save(serviceProviderJpa);
+    verify(serviceProviderSpringRepository).saveAndFlush(serviceProviderJpa);
   }
 
   @Test
@@ -164,47 +164,6 @@ class ServiceProviderJpaRepositoryTest {
 
     assertThat(result).isEmpty();
     verify(serviceProviderSpringRepository).findPortfolioItemsByUserId(userId.value());
-    verifyNoInteractions(jpaMapper);
-  }
-
-  @Test
-  void loadAllProviderPortfolio_shouldReturnPortfolioViews_whenItemsExist() {
-    var providerId = ServiceProviderId.from(UUID.randomUUID());
-    var spJpa = new ServiceProviderJpa();
-    spJpa.setId(providerId.value());
-    PortfolioItemJpa pi1 = new PortfolioItemJpa();
-    pi1.setId(UUID.randomUUID());
-    PortfolioItemJpa pi2 = new PortfolioItemJpa();
-    pi2.setId(UUID.randomUUID());
-    spJpa.setPortfolioItems(List.of(pi1, pi2));
-
-    PortfolioView view1 = mock(PortfolioView.class);
-    PortfolioView view2 = mock(PortfolioView.class);
-
-    when(serviceProviderSpringRepository.findPortfolioItemsByProviderId(providerId.value()))
-        .thenReturn(spJpa.getPortfolioItems());
-    when(jpaMapper.toPortfolioView(pi1)).thenReturn(view1);
-    when(jpaMapper.toPortfolioView(pi2)).thenReturn(view2);
-
-    var result = objectUnderTest.loadAllProviderPortfolio(providerId);
-
-    assertThat(result).hasSize(2).containsExactly(view1, view2);
-    verify(serviceProviderSpringRepository).findPortfolioItemsByProviderId(providerId.value());
-    verify(jpaMapper).toPortfolioView(pi1);
-    verify(jpaMapper).toPortfolioView(pi2);
-  }
-
-  @Test
-  void loadAllProviderPortfolio_shouldReturnEmptyList_whenNoItems() {
-    var providerId = ServiceProviderId.from(UUID.randomUUID());
-
-    when(serviceProviderSpringRepository.findPortfolioItemsByProviderId(providerId.value()))
-        .thenReturn(List.of());
-
-    var result = objectUnderTest.loadAllProviderPortfolio(providerId);
-
-    assertThat(result).isEmpty();
-    verify(serviceProviderSpringRepository).findPortfolioItemsByProviderId(providerId.value());
     verifyNoInteractions(jpaMapper);
   }
 

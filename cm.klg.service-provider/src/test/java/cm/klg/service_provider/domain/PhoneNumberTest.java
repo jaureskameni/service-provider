@@ -3,7 +3,7 @@ package cm.klg.service_provider.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderDataException;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderPaginationDataException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -41,6 +41,6 @@ class PhoneNumberTest {
   })
   void shouldThrowException_whenDataIsInvalid(String countryCode, String number) {
     assertThatThrownBy(() -> new PhoneNumber(countryCode, number))
-        .isInstanceOf(InvalidServiceProviderDataException.class);
+        .isInstanceOf(InvalidServiceProviderPaginationDataException.class);
   }
 }

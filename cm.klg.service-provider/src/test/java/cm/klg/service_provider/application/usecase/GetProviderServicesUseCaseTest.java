@@ -42,14 +42,15 @@ class GetProviderServicesUseCaseTest {
                 UUID.randomUUID(),
                 LocalDateTime.now()));
 
-    when(serviceProviderRepository.loadAllProviderServices(serviceProviderId)).thenReturn(views);
+    when(serviceProviderRepository.loadAllApprovedProviderServices(serviceProviderId))
+        .thenReturn(views);
 
     // When
     var result = objectUnderTest.execute(serviceProviderId);
 
     // Then
     assertThat(result).hasSize(2).isEqualTo(views);
-    verify(serviceProviderRepository).loadAllProviderServices(serviceProviderId);
+    verify(serviceProviderRepository).loadAllApprovedProviderServices(serviceProviderId);
   }
 
   @Test
@@ -57,7 +58,7 @@ class GetProviderServicesUseCaseTest {
     // Given
     var serviceProviderId = new ServiceProviderId(UUID.randomUUID());
 
-    when(serviceProviderRepository.loadAllProviderServices(serviceProviderId))
+    when(serviceProviderRepository.loadAllApprovedProviderServices(serviceProviderId))
         .thenReturn(List.of());
 
     // When
@@ -65,21 +66,21 @@ class GetProviderServicesUseCaseTest {
 
     // Then
     assertThat(result).isEmpty();
-    verify(serviceProviderRepository).loadAllProviderServices(serviceProviderId);
+    verify(serviceProviderRepository).loadAllApprovedProviderServices(serviceProviderId);
   }
 
   @Test
   void execute_shouldCallRepositoryWithCorrectServiceProviderIdTest() {
     // Given
     var serviceProviderId = new ServiceProviderId(UUID.randomUUID());
-    when(serviceProviderRepository.loadAllProviderServices(serviceProviderId))
+    when(serviceProviderRepository.loadAllApprovedProviderServices(serviceProviderId))
         .thenReturn(List.of());
 
     // When
     objectUnderTest.execute(serviceProviderId);
 
     // Then
-    verify(serviceProviderRepository).loadAllProviderServices(serviceProviderId);
+    verify(serviceProviderRepository).loadAllApprovedProviderServices(serviceProviderId);
   }
 
   @Test
@@ -98,7 +99,7 @@ class GetProviderServicesUseCaseTest {
             document,
             createdAt);
 
-    when(serviceProviderRepository.loadAllProviderServices(serviceProviderId))
+    when(serviceProviderRepository.loadAllApprovedProviderServices(serviceProviderId))
         .thenReturn(List.of(view));
 
     // When
@@ -124,7 +125,7 @@ class GetProviderServicesUseCaseTest {
             UUID.randomUUID(),
             LocalDateTime.now());
 
-    when(serviceProviderRepository.loadAllProviderServices(serviceProviderId))
+    when(serviceProviderRepository.loadAllApprovedProviderServices(serviceProviderId))
         .thenReturn(List.of(publicView));
 
     // When

@@ -268,10 +268,9 @@ public interface RestMapper {
   }
 
   default GetServiceProviderByIdUseCase.Command toGetServiceProviderByIdCommand(
-      UUID serviceProviderId, @Nullable UUID userId) {
+      UUID serviceProviderId) {
     return new GetServiceProviderByIdUseCase.Command(
-        ServiceProviderId.from(serviceProviderId),
-        Optional.ofNullable(userId).map(UserId::from).orElse(null));
+        ServiceProviderId.from(serviceProviderId), null);
   }
 
   default ServiceProviderPublicProfileDTO toServiceProviderPublicProfileDTO(Response result) {

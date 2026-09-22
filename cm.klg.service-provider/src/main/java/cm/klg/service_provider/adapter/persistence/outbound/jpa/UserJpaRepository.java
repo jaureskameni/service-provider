@@ -47,10 +47,13 @@ public class UserJpaRepository implements UserRepository {
   public void update(@NonNull User user) {
     userSpringRepository
         .findById(user.getId().value())
-        .ifPresent(
+        .ifPresentOrElse(
             userJpa -> {
               jpaMapper.toUserJpa(user, userJpa);
               userSpringRepository.save(userJpa);
+            },
+            () -> {
+              throw new UserNotFoundException();
             });
   }
 

@@ -30,23 +30,24 @@ class GetProviderPortfolioUseCaseTest {
             new PortfolioView(
                 UUID.randomUUID(), "Title", "Desc", UUID.randomUUID(), LocalDateTime.now()));
 
-    when(serviceProviderRepository.loadAllProviderPortfolio(providerId)).thenReturn(views);
+    when(serviceProviderRepository.loadAllApprovedProviderPortfolio(providerId)).thenReturn(views);
 
     var result = objectUnderTest.execute(providerId);
 
     assertThat(result).isEqualTo(views);
-    verify(serviceProviderRepository).loadAllProviderPortfolio(providerId);
+    verify(serviceProviderRepository).loadAllApprovedProviderPortfolio(providerId);
   }
 
   @Test
   void execute_shouldReturnEmptyList_whenNoPortfolioItems() {
     var providerId = ServiceProviderId.from(UUID.randomUUID());
 
-    when(serviceProviderRepository.loadAllProviderPortfolio(providerId)).thenReturn(List.of());
+    when(serviceProviderRepository.loadAllApprovedProviderPortfolio(providerId))
+        .thenReturn(List.of());
 
     var result = objectUnderTest.execute(providerId);
 
     assertThat(result).isEmpty();
-    verify(serviceProviderRepository).loadAllProviderPortfolio(providerId);
+    verify(serviceProviderRepository).loadAllApprovedProviderPortfolio(providerId);
   }
 }

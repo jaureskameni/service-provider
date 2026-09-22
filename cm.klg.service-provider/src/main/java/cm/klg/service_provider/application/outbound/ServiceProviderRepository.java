@@ -26,6 +26,9 @@ public interface ServiceProviderRepository {
 
   boolean existsByPhoneNumber(PhoneNumber phoneNumber);
 
+  boolean existsByPhoneNumberExceptProviderId(
+      PhoneNumber phoneNumber, ServiceProviderId providerId);
+
   ServiceProvider load(ServiceProviderId serviceProviderId) throws ServiceProviderNotFoundException;
 
   ServiceProvider loadByUserId(UserId userId) throws ServiceProviderNotFoundException;
@@ -45,7 +48,7 @@ public interface ServiceProviderRepository {
       ServiceProviderStatus status,
       PaginationFetchRequest pagination);
 
-  ServiceProviderViews.ServiceProviderView2 loadAsView2(ServiceProviderId serviceProviderId)
+  ServiceProviderViews.ServiceProviderView2 loadApprovedAsView2(ServiceProviderId serviceProviderId)
       throws ServiceProviderNotFoundException;
 
   ServiceProviderView1 loadAsView1(UserId serviceProviderId)
@@ -53,9 +56,9 @@ public interface ServiceProviderRepository {
 
   List<PortfolioView> loadAllMyPortfolio(UserId userId);
 
-  List<PortfolioView> loadAllProviderPortfolio(ServiceProviderId providerId);
+  List<PortfolioView> loadAllApprovedProviderPortfolio(ServiceProviderId providerId);
 
-  List<UserServiceView> loadAllProviderServices(ServiceProviderId providerId);
+  List<UserServiceView> loadAllApprovedProviderServices(ServiceProviderId providerId);
 
   List<UserServiceView> loadAllMyServices(UserId userId);
 }

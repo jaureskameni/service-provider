@@ -84,7 +84,7 @@ class ServiceProviderTest {
             new ServiceCollections(new ArrayList<>(), new ArrayList<>()));
 
     assertThatThrownBy(() -> serviceProvider.approve(adminId))
-        .isInstanceOf(InvalidServiceProviderStatusTransitionException.class);
+        .isInstanceOf(InvalidServiceProviderStatusException.class);
   }
 
   @Test
@@ -152,6 +152,7 @@ class ServiceProviderTest {
             new PhoneNumber("+237", "678901234"),
             null,
             new ArrayList<>());
+    serviceProvider.approve(new UserId(UUID.randomUUID()));
 
     serviceProvider.addPortfolioItem(
         PortfolioItemTitle.from("Title"),
@@ -201,6 +202,7 @@ class ServiceProviderTest {
             new PhoneNumber("+237", "678901234"),
             null,
             new ArrayList<>());
+    serviceProvider.approve(new UserId(UUID.randomUUID()));
 
     serviceProvider.addPortfolioItem(
         PortfolioItemTitle.from("Title 1"),
@@ -211,7 +213,7 @@ class ServiceProviderTest {
         PortfolioItemDescription.from("Description 2"),
         new PortfolioItemMediaId(UUID.randomUUID()));
 
-    PortfolioItemId firstItemId = serviceProvider.getPortfolioItems().get(0).getId();
+    PortfolioItemId firstItemId = serviceProvider.getPortfolioItems().getFirst().getId();
 
     // When
     serviceProvider.deletePortfolioItem(firstItemId);

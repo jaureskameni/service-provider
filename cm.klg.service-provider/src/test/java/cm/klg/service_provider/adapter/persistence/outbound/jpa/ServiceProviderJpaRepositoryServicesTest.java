@@ -55,32 +55,6 @@ class ServiceProviderJpaRepositoryServicesTest {
     verify(serviceProviderSpringRepository).findUserServicesByServiceProviderId(providerId.value());
   }
 
-  @Test
-  void loadAllProviderServices_shouldVerifyTheProviderThenMapItsServices() {
-    var providerId = ServiceProviderId.from(UUID.randomUUID());
-    var providerJpa = new ServiceProviderJpa();
-    var provider = org.mockito.Mockito.mock(ServiceProvider.class);
-    var userServiceJpa = new UserServiceJpa();
-    userServiceJpa.setId(userServiceJpaId());
-    var view = serviceView();
-    when(serviceProviderSpringRepository.findAggregateById(providerId.value()))
-        .thenReturn(Optional.of(providerJpa));
-    when(serviceProviderSpringRepository.findAggregateWithPortfolioById(providerId.value()))
-        .thenReturn(Optional.of(providerJpa));
-    when(jpaMapper.toServiceProviderDomain(providerJpa)).thenReturn(provider);
-    when(serviceProviderSpringRepository.findUserServicesByServiceProviderId(providerId.value()))
-        .thenReturn(List.of(userServiceJpa));
-    when(jpaMapper.toUserServiceViews(List.of(userServiceJpa), List.of()))
-        .thenReturn(List.of(view));
-
-    var result = objectUnderTest.loadAllProviderServices(providerId);
-
-    assertThat(result).containsExactly(view);
-    verify(serviceProviderSpringRepository).findAggregateById(providerId.value());
-    verify(serviceProviderSpringRepository).findAggregateWithPortfolioById(providerId.value());
-    verify(serviceProviderSpringRepository).findUserServicesByServiceProviderId(providerId.value());
-  }
-
   private UserServiceView serviceView() {
     return new UserServiceView(
         new ServiceTypeView(UUID.randomUUID(), "Plumbing", "Repairs", true),

@@ -7,8 +7,9 @@ import cm.klg.common.base.exception.InternalException;
 import cm.klg.common.base.exception.ResourceNotFoundException;
 import cm.klg.common.base.transaction.DomainToHttpExceptionTranslator;
 import cm.klg.service_provider.domain.favorite.CannotFavoriteOwnProfileException;
-import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderDataException;
-import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderStatusTransitionException;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderPaginationDataException;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderPhoneNumberException;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderStatusException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExistsException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyProvidesServiceException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderNotFoundException;
@@ -29,9 +30,11 @@ public record DefaultDomainToHttpExceptionTranslator() implements DomainToHttpEx
       case ServiceProviderAlreadyExistsException _,
           ServiceProviderWithPhoneNumberAlreadyExistsException _,
           ServiceProviderAlreadyProvidesServiceException _,
-          InvalidServiceProviderStatusTransitionException _ ->
+          InvalidServiceProviderStatusException _ ->
           new ConflictException(message);
-      case InvalidServiceProviderDataException _, CannotFavoriteOwnProfileException _ ->
+      case InvalidServiceProviderPaginationDataException _,
+          InvalidServiceProviderPhoneNumberException _,
+          CannotFavoriteOwnProfileException _ ->
           new BadRequestException(message);
       default -> new InternalException(message, ex);
     };

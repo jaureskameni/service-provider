@@ -23,8 +23,8 @@ import org.jspecify.annotations.Nullable;
 
 @Getter
 public class ServiceProvider {
-  private ServiceProviderId id;
-  private UserId userId;
+  private final ServiceProviderId id;
+  private final UserId userId;
   private ProviderLocation location;
   private PhoneNumber phoneNumber;
   private ServiceProviderStatus status;
@@ -32,7 +32,7 @@ public class ServiceProvider {
   @Nullable private UserId rejectedBy;
   @Nullable private RejectionReason rejectionReason;
   @Nullable private AboutProvider about;
-  private CreatedAt createdAt;
+  private final CreatedAt createdAt;
   @Nullable private CreatedAt updatedAt;
   private final List<UserService> userServices = new ArrayList<>();
   private final List<PortfolioItem> portfolioItems = new ArrayList<>();
@@ -104,6 +104,9 @@ public class ServiceProvider {
       PortfolioItemTitle title,
       PortfolioItemDescription description,
       PortfolioItemMediaId mediaId) {
+    if (this.status != ServiceProviderStatus.APPROVED) {
+      throw new InvalidServiceProviderStatusException();
+    }
     PortfolioItem portfolioItem = PortfolioItem.of(title, description, mediaId);
     portfolioItems.add(portfolioItem);
     return portfolioItem;
@@ -129,6 +132,9 @@ public class ServiceProvider {
 
   public void updateProfile(
       ProviderLocation location, PhoneNumber phoneNumber, @Nullable AboutProvider about) {
+    if (this.status != ServiceProviderStatus.APPROVED) {
+      throw new InvalidServiceProviderStatusException();
+    }
     this.location = location;
     this.phoneNumber = phoneNumber;
     this.about = about;
@@ -158,7 +164,7 @@ public class ServiceProvider {
 
   public void approve(UserId userId) {
     if (!Objects.equals(this.status, ServiceProviderStatus.PENDING)) {
-      throw new InvalidServiceProviderStatusTransitionException();
+      throw new InvalidServiceProviderStatusException();
     }
     this.status = ServiceProviderStatus.APPROVED;
     this.approvedBy = userId;
@@ -167,7 +173,7 @@ public class ServiceProvider {
 
   public void reject(UserId userId, RejectionReason reason) {
     if (!Objects.equals(this.status, ServiceProviderStatus.PENDING)) {
-      throw new InvalidServiceProviderStatusTransitionException();
+      throw new InvalidServiceProviderStatusException();
     }
     this.status = ServiceProviderStatus.REJECTED;
     this.rejectedBy = userId;

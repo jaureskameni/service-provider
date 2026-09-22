@@ -11,6 +11,6 @@ public class GetProviderServicesUseCase {
   private final ServiceProviderRepository serviceProviderRepository;
 
   public List<UserServiceView> execute(ServiceProviderId serviceProviderId) {
-    return serviceProviderRepository.loadAllProviderServices(serviceProviderId);
+    return serviceProviderRepository.loadAllApprovedProviderServices(serviceProviderId);
   }
 }
