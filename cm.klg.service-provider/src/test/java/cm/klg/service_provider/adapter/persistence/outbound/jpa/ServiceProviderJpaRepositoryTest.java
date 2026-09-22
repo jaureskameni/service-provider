@@ -112,6 +112,8 @@ class ServiceProviderJpaRepositoryTest {
 
     when(serviceProviderSpringRepository.findAggregateById(serviceProviderId.value()))
         .thenReturn(java.util.Optional.of(serviceProviderJpa));
+    when(serviceProviderSpringRepository.findAggregateWithPortfolioById(serviceProviderId.value()))
+        .thenReturn(java.util.Optional.of(serviceProviderJpa));
     when(jpaMapper.toServiceProviderDomain(serviceProviderJpa)).thenReturn(serviceProvider);
 
     // When
@@ -119,6 +121,9 @@ class ServiceProviderJpaRepositoryTest {
 
     // Then
     assertThat(result).isEqualTo(serviceProvider);
+    verify(serviceProviderSpringRepository).findAggregateById(serviceProviderId.value());
+    verify(serviceProviderSpringRepository)
+        .findAggregateWithPortfolioById(serviceProviderId.value());
   }
 
   @Test
@@ -214,6 +219,8 @@ class ServiceProviderJpaRepositoryTest {
     ServiceProvider domainSp = createServiceProvider();
     when(serviceProviderSpringRepository.findAggregateByUserId(userId))
         .thenReturn(Optional.of(spJpa));
+    when(serviceProviderSpringRepository.findAggregateWithPortfolioByUserId(userId))
+        .thenReturn(Optional.of(spJpa));
     when(jpaMapper.toServiceProviderDomain(spJpa)).thenReturn(domainSp);
 
     // When
@@ -222,6 +229,7 @@ class ServiceProviderJpaRepositoryTest {
     // Then
     assertThat(result).isEqualTo(domainSp);
     verify(serviceProviderSpringRepository).findAggregateByUserId(userId);
+    verify(serviceProviderSpringRepository).findAggregateWithPortfolioByUserId(userId);
     verify(jpaMapper).toServiceProviderDomain(spJpa);
   }
 

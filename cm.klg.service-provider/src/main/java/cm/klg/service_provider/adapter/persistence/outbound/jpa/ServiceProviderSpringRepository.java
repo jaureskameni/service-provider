@@ -17,28 +17,49 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
 
   @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " LEFT JOIN FETCH s.portfolioItems WHERE s.id = :serviceProviderId")
+          + " WHERE s.id = :serviceProviderId")
   Optional<ServiceProviderJpa> findAggregateById(
       @Param("serviceProviderId") UUID serviceProviderId);
 
   @Query(
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
+          + " WHERE s.id = :serviceProviderId")
+  Optional<ServiceProviderJpa> findAggregateWithPortfolioById(
+      @Param("serviceProviderId") UUID serviceProviderId);
+
+  @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " LEFT JOIN FETCH s.portfolioItems WHERE s.id = :serviceProviderId"
-          + " AND s.status = :status")
+          + " WHERE s.id = :serviceProviderId AND s.status = :status")
   Optional<ServiceProviderJpa> findAggregateByIdAndStatus(
       @Param("serviceProviderId") UUID serviceProviderId, @Param("status") String status);
 
   @Query(
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
+          + " WHERE s.id = :serviceProviderId AND s.status = :status")
+  Optional<ServiceProviderJpa> findAggregateWithPortfolioByIdAndStatus(
+      @Param("serviceProviderId") UUID serviceProviderId, @Param("status") String status);
+
+  @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " LEFT JOIN FETCH s.portfolioItems WHERE s.userId = :userId"
-          + " AND s.status = :status")
+          + " WHERE s.userId = :userId AND s.status = :status")
   Optional<ServiceProviderJpa> findAggregateByUserId(
       @Param("userId") UUID userId, @Param("status") String status);
 
   @Query(
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
+          + " WHERE s.userId = :userId AND s.status = :status")
+  Optional<ServiceProviderJpa> findAggregateWithPortfolioByUserId(
+      @Param("userId") UUID userId, @Param("status") String status);
+
+  @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " LEFT JOIN FETCH s.portfolioItems WHERE s.userId = :userId")
+          + " WHERE s.userId = :userId")
   Optional<ServiceProviderJpa> findAggregateByUserId(@Param("userId") UUID userId);
+
+  @Query(
+      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
+          + " WHERE s.userId = :userId")
+  Optional<ServiceProviderJpa> findAggregateWithPortfolioByUserId(@Param("userId") UUID userId);
 
   @Query(
       value = "SELECT s FROM ServiceProviderJpa s ORDER BY s.createdAt DESC",

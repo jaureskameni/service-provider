@@ -21,6 +21,7 @@ import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -55,8 +56,7 @@ public record ServiceProviderJpaRepository(
   @Override
   public ServiceProvider load(@NonNull ServiceProviderId serviceProviderId)
       throws ServiceProviderNotFoundException {
-    return serviceProviderSpringRepository
-        .findAggregateById(serviceProviderId.value())
+    return findAggregateById(serviceProviderId.value())
         .map(jpaMapper::toServiceProviderDomain)
         .orElseThrow(ServiceProviderNotFoundException::new);
   }
@@ -64,16 +64,14 @@ public record ServiceProviderJpaRepository(
   @Override
   public ServiceProvider loadByUserId(@NonNull UserId userId)
       throws ServiceProviderNotFoundException {
-    return serviceProviderSpringRepository
-        .findAggregateByUserId(userId.value())
+    return findAggregateByUserId(userId.value())
         .map(jpaMapper::toServiceProviderDomain)
         .orElseThrow(ServiceProviderNotFoundException::new);
   }
 
   @Override
   public void update(@NonNull ServiceProvider serviceProvider) {
-    serviceProviderSpringRepository
-        .findAggregateById(serviceProvider.getId().value())
+    findAggregateById(serviceProvider.getId().value())
         .ifPresentOrElse(
             serviceProviderJpa -> {
               jpaMapper.fromServiceProvider(serviceProviderJpa, serviceProvider);
@@ -144,8 +142,7 @@ public record ServiceProviderJpaRepository(
 
   @Override
   public ServiceProviderView1 loadAsView1(UserId userId) throws ServiceProviderNotFoundException {
-    return serviceProviderSpringRepository
-        .findAggregateByUserId(userId.value(), ServiceProviderStatus.APPROVED.name())
+    return findAggregateByUserId(userId.value(), ServiceProviderStatus.APPROVED.name())
         .map(this::toView1)
         .orElseThrow(ServiceProviderNotFoundException::new);
   }
@@ -175,6 +172,45 @@ public record ServiceProviderJpaRepository(
   @Override
   public List<UserServiceView> loadAllMyServices(@NonNull UserId userId) {
     return loadUserServiceViews(loadByUserId(userId).getId().value());
+  }
+
+  private Optional<ServiceProviderJpa> findAggregateById(UUID serviceProviderId) {
+    Optional<ServiceProviderJpa> aggregate =
+        serviceProviderSpringRepository.findAggregateById(serviceProviderId);
+    aggregate.ifPresent(
+        serviceProvider ->
+            serviceProviderSpringRepository
+                .findAggregateWithPortfolioById(serviceProviderId)
+                .ifPresent(
+                    withPortfolio ->
+                        serviceProvider.setPortfolioItems(withPortfolio.getPortfolioItems())));
+    return aggregate;
+  }
+
+  private Optional<ServiceProviderJpa> findAggregateByUserId(UUID userId) {
+    Optional<ServiceProviderJpa> aggregate =
+        serviceProviderSpringRepository.findAggregateByUserId(userId);
+    aggregate.ifPresent(
+        serviceProvider ->
+            serviceProviderSpringRepository
+                .findAggregateWithPortfolioByUserId(userId)
+                .ifPresent(
+                    withPortfolio ->
+                        serviceProvider.setPortfolioItems(withPortfolio.getPortfolioItems())));
+    return aggregate;
+  }
+
+  private Optional<ServiceProviderJpa> findAggregateByUserId(UUID userId, String status) {
+    Optional<ServiceProviderJpa> aggregate =
+        serviceProviderSpringRepository.findAggregateByUserId(userId, status);
+    aggregate.ifPresent(
+        serviceProvider ->
+            serviceProviderSpringRepository
+                .findAggregateWithPortfolioByUserId(userId, status)
+                .ifPresent(
+                    withPortfolio ->
+                        serviceProvider.setPortfolioItems(withPortfolio.getPortfolioItems())));
+    return aggregate;
   }
 
   private PageData<ServiceProviderView1> toPageData(Page<ServiceProviderJpa> serviceProviderJpas) {

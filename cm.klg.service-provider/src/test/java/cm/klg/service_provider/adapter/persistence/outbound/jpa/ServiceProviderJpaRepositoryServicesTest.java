@@ -38,6 +38,8 @@ class ServiceProviderJpaRepositoryServicesTest {
     var view = serviceView();
     when(serviceProviderSpringRepository.findAggregateByUserId(userId.value()))
         .thenReturn(Optional.of(providerJpa));
+    when(serviceProviderSpringRepository.findAggregateWithPortfolioByUserId(userId.value()))
+        .thenReturn(Optional.of(providerJpa));
     when(jpaMapper.toServiceProviderDomain(providerJpa)).thenReturn(provider);
     when(provider.getId()).thenReturn(providerId);
     when(serviceProviderSpringRepository.findUserServicesByServiceProviderId(providerId.value()))
@@ -49,6 +51,7 @@ class ServiceProviderJpaRepositoryServicesTest {
 
     assertThat(result).containsExactly(view);
     verify(serviceProviderSpringRepository).findAggregateByUserId(userId.value());
+    verify(serviceProviderSpringRepository).findAggregateWithPortfolioByUserId(userId.value());
     verify(serviceProviderSpringRepository).findUserServicesByServiceProviderId(providerId.value());
   }
 
@@ -62,6 +65,8 @@ class ServiceProviderJpaRepositoryServicesTest {
     var view = serviceView();
     when(serviceProviderSpringRepository.findAggregateById(providerId.value()))
         .thenReturn(Optional.of(providerJpa));
+    when(serviceProviderSpringRepository.findAggregateWithPortfolioById(providerId.value()))
+        .thenReturn(Optional.of(providerJpa));
     when(jpaMapper.toServiceProviderDomain(providerJpa)).thenReturn(provider);
     when(serviceProviderSpringRepository.findUserServicesByServiceProviderId(providerId.value()))
         .thenReturn(List.of(userServiceJpa));
@@ -72,6 +77,7 @@ class ServiceProviderJpaRepositoryServicesTest {
 
     assertThat(result).containsExactly(view);
     verify(serviceProviderSpringRepository).findAggregateById(providerId.value());
+    verify(serviceProviderSpringRepository).findAggregateWithPortfolioById(providerId.value());
     verify(serviceProviderSpringRepository).findUserServicesByServiceProviderId(providerId.value());
   }
 
