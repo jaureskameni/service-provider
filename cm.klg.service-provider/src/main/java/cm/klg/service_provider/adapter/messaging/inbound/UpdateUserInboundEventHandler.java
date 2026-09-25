@@ -3,25 +3,24 @@ package cm.klg.service_provider.adapter.messaging.inbound;
 import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamDomainEventType;
 import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamUserUpdatedEventDTO;
 import cm.klg.service_provider.application.usecase.UpdateUserUseCase;
-import com.emb.application.handler.InboxEventHandler;
+import com.emb.application.handler.InboundEventHandler;
 import com.emb.domain.inboxevent.InboxEventCommand;
 
 public record UpdateUserInboundEventHandler(
     UpdateUserUseCase updateUserUseCase, MessagingInboundMapper messagingInboundMapper)
-    implements InboxEventHandler<UamUserUpdatedEventDTO> {
+    implements InboundEventHandler<UamUserUpdatedEventDTO> {
   @Override
-  public String getEventType() {
+  public String handledEventType() {
     return UamDomainEventType.USER_UPDATED.getValue();
   }
 
   @Override
-  public Class<UamUserUpdatedEventDTO> getDataType() {
+  public Class<UamUserUpdatedEventDTO> payloadType() {
     return UamUserUpdatedEventDTO.class;
   }
 
   @Override
-  public void handle(
-      UamUserUpdatedEventDTO userUpdatedEventDTO, InboxEventCommand inboxEventCommand) {
-    updateUserUseCase.execute(messagingInboundMapper.toUpdateUserCommand(userUpdatedEventDTO));
+  public void handle(InboxEventCommand<UamUserUpdatedEventDTO> inboxEventCommand) {
+    updateUserUseCase.execute(messagingInboundMapper.toUpdateUserCommand(inboxEventCommand.data()));
   }
 }

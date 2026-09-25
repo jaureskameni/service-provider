@@ -26,28 +26,29 @@ class UpdateUserInboundEventHandlerTest {
 
   @Test
   void shouldReturnCorrectEventType() {
-    assertThat(updateUserInboundEventHandler.getEventType())
+    assertThat(updateUserInboundEventHandler.handledEventType())
         .isEqualTo(UamDomainEventType.USER_UPDATED.getValue());
   }
 
   @Test
   void shouldReturnCorrectDataType() {
-    assertThat(updateUserInboundEventHandler.getDataType()).isEqualTo(UamUserUpdatedEventDTO.class);
+    assertThat(updateUserInboundEventHandler.payloadType()).isEqualTo(UamUserUpdatedEventDTO.class);
   }
 
   @Test
   void shouldHandleUserUpdatedEvent() {
     // Given
     UamUserUpdatedEventDTO userUpdatedEventDTO = new UamUserUpdatedEventDTO();
-    InboxEventCommand inboxEventCommand = mock(InboxEventCommand.class);
+    InboxEventCommand<UamUserUpdatedEventDTO> inboxEventCommand = mock(InboxEventCommand.class);
     UpdateUserUseCase.UpdateUserCommand command =
         new UpdateUserUseCase.UpdateUserCommand(
             UUID.randomUUID(), "Smith", "Jane", "jane@doe.com", "237", "699");
 
     when(messagingInboundMapper.toUpdateUserCommand(userUpdatedEventDTO)).thenReturn(command);
+    when(inboxEventCommand.data()).thenReturn(userUpdatedEventDTO);
 
     // When
-    updateUserInboundEventHandler.handle(userUpdatedEventDTO, inboxEventCommand);
+    updateUserInboundEventHandler.handle(inboxEventCommand);
 
     // Then
     verify(updateUserUseCase).execute(command);

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-50:1" author="kameni.nguematcha">
+		<modifyDataType tableName="t_service_provider"
+			columnName="c_phone_number" newDataType="varchar(20)" />
+	</changeSet>
+
+	<changeSet id="SP-50:2" author="kameni.nguematcha">
+		<preConditions onFail="HALT">
+			<foreignKeyConstraintExists
+				foreignKeyName="fk_service_provider_user" />
+		</preConditions>
+		<dropForeignKeyConstraint
+			baseTableName="t_service_provider"
+			constraintName="fk_service_provider_user" />
+		<addForeignKeyConstraint
+			baseTableName="t_service_provider" baseColumnNames="c_user_id"
+			constraintName="fk_service_provider_user"
+			referencedTableName="t_user" referencedColumnNames="c_id"
+			onDelete="CASCADE" onUpdate="CASCADE" />
+	</changeSet>
+
+	<changeSet id="SP-50:3" author="kameni.nguematcha">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<indexExists tableName="t_favorite_provider"
+					indexName="idx_favorite_provider_user_created_at" />
+			</not>
+		</preConditions>
+		<createIndex tableName="t_favorite_provider"
+			indexName="idx_favorite_provider_user_created_at">
+			<column name="c_user_id" />
+			<column name="c_created_at" descending="true" />
+		</createIndex>
+	</changeSet>
+</databaseChangeLog>

@@ -3,6 +3,10 @@ server:
   port: 8085
   shutdown: "graceful"
 spring:
+  cache:
+    type: "caffeine"
+    caffeine:
+      spec: "maximumSize=100,expireAfterWrite=10m"
   application:
     name: "service-provider"
   security:

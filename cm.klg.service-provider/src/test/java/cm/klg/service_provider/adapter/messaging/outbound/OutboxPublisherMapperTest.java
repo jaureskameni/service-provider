@@ -15,9 +15,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-class OutboxWriterMapperTest {
+class OutboxPublisherMapperTest {
 
-  private final OutboxWriterMapper objectUnderTest = new OutboxWriterMapperImpl();
+  private final OutboxPublisherMapper objectUnderTest = new OutboxPublisherMapperImpl();
 
   @Test
   void toServiceProviderApprovedEventDTO_shouldMapAllFieldsCorrectly() {
