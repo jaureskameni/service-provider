@@ -35,30 +35,16 @@ public interface FavoriteProviderSpringRepository extends JpaRepository<Favorite
       value =
           """
           SELECT s
-          FROM ServiceProviderJpa s
-          WHERE EXISTS (
-              SELECT 1
-              FROM FavoriteProviderJpa f
-              WHERE f.providerId = s.id
-                AND f.userId = :userId
-          )
-          ORDER BY (
-              SELECT f.createdAt
-              FROM FavoriteProviderJpa f
-              WHERE f.providerId = s.id
-                AND f.userId = :userId
-          ) DESC
+          FROM FavoriteProviderJpa f
+          JOIN ServiceProviderJpa s ON s.id = f.providerId
+          WHERE f.userId = :userId
+          ORDER BY f.createdAt DESC, s.id DESC
           """,
       countQuery =
           """
-          SELECT COUNT(s)
-          FROM ServiceProviderJpa s
-          WHERE EXISTS (
-              SELECT 1
-              FROM FavoriteProviderJpa f
-              WHERE f.providerId = s.id
-                AND f.userId = :userId
-          )
+          SELECT COUNT(f)
+          FROM FavoriteProviderJpa f
+          WHERE f.userId = :userId
           """)
   Page<ServiceProviderJpa> findFavoriteProvidersByUserId(
       @Param("userId") UUID userId, Pageable pageable);

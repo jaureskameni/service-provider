@@ -36,6 +36,8 @@ dependencies {
 
     // Spring Boot (Versions gérées par le BOM)
     implementation(libs.springBootStarterDataJpa)
+    implementation(libs.springBootStarterCache)
+    implementation(libs.caffeine)
     implementation(libs.springBootStarterOauth2ResourceServer)
     implementation(libs.springBootStarterSecurity)
     implementation(libs.springBootStarterWeb)

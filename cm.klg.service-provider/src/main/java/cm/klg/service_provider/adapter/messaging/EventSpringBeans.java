@@ -1,9 +1,9 @@
 package cm.klg.service_provider.adapter.messaging;
 
-import cm.klg.service_provider.adapter.messaging.outbound.OutboxWriterDomainEventPublisher;
-import cm.klg.service_provider.adapter.messaging.outbound.OutboxWriterMapper;
+import cm.klg.service_provider.adapter.messaging.outbound.OutboxEventPublisher;
+import cm.klg.service_provider.adapter.messaging.outbound.OutboxPublisherMapper;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
-import com.emb.application.outbound.OutboxWriter;
+import com.emb.application.outbound.EventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,7 +12,7 @@ public class EventSpringBeans {
 
   @Bean
   public DomainEventPublisher domainEventPublisher(
-      OutboxWriter outboxWriter, OutboxWriterMapper outboxWriterMapper) {
-    return new OutboxWriterDomainEventPublisher(outboxWriter, outboxWriterMapper);
+      EventPublisher eventPublisher, OutboxPublisherMapper outboxPublisherMapper) {
+    return new OutboxEventPublisher(eventPublisher, outboxPublisherMapper);
   }
 }

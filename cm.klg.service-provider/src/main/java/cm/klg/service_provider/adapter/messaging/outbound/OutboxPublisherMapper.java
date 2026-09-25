@@ -26,7 +26,7 @@ import org.mapstruct.ReportingPolicy;
     componentModel = "spring",
     injectionStrategy = InjectionStrategy.CONSTRUCTOR,
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface OutboxWriterMapper {
+public interface OutboxPublisherMapper {
 
   @BeanMapping(ignoreByDefault = true)
   @Mapping(target = "serviceProviderId", source = "serviceProviderId.value")

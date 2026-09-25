@@ -30,20 +30,21 @@ class ServiceRequestAcceptedInboundEventHandlerTest {
 
   @Test
   void shouldReturnCorrectEventType() {
-    assertThat(handler.getEventType())
+    assertThat(handler.handledEventType())
         .isEqualTo(SRDomainEventType.SERVICE_REQUEST_ACCEPTED.getValue());
   }
 
   @Test
   void shouldReturnCorrectDataType() {
-    assertThat(handler.getDataType()).isEqualTo(SRServiceRequestAcceptedEventDTO.class);
+    assertThat(handler.payloadType()).isEqualTo(SRServiceRequestAcceptedEventDTO.class);
   }
 
   @Test
   void shouldHandleServiceRequestAcceptedEvent() {
     // Given
     SRServiceRequestAcceptedEventDTO eventDTO = new SRServiceRequestAcceptedEventDTO();
-    InboxEventCommand inboxEventCommand = mock(InboxEventCommand.class);
+    InboxEventCommand<SRServiceRequestAcceptedEventDTO> inboxEventCommand =
+        mock(InboxEventCommand.class);
     CreateNewProviderClientUseCase.Command command =
         new CreateNewProviderClientUseCase.Command(
             new ServiceProviderId(UUID.randomUUID()),
@@ -51,9 +52,10 @@ class ServiceRequestAcceptedInboundEventHandlerTest {
             new CreatedAt(LocalDateTime.now()));
 
     when(messagingInboundMapper.toCreateProviderClientCommand(eventDTO)).thenReturn(command);
+    when(inboxEventCommand.data()).thenReturn(eventDTO);
 
     // When
-    handler.handle(eventDTO, inboxEventCommand);
+    handler.handle(inboxEventCommand);
 
     // Then
     verify(createNewProviderClientUseCase).execute(command);

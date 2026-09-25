@@ -4,26 +4,26 @@ import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamDomain
 import cm.klg.generated.service.provider.adapter.messaging.inbound.dto.UamUserDeletedEventDTO;
 import cm.klg.service_provider.application.usecase.DeleteUserUseCase;
 import cm.klg.service_provider.domain.UserId;
-import com.emb.application.handler.InboxEventHandler;
+import com.emb.application.handler.InboundEventHandler;
 import com.emb.domain.inboxevent.InboxEventCommand;
 import java.util.Objects;
 
 public record DeleteUserInboundEventHandler(
     DeleteUserUseCase deleteUserUseCase, MessagingInboundMapper messagingInboundMapper)
-    implements InboxEventHandler<UamUserDeletedEventDTO> {
+    implements InboundEventHandler<UamUserDeletedEventDTO> {
   @Override
-  public String getEventType() {
+  public String handledEventType() {
     return UamDomainEventType.USER_DELETED.getValue();
   }
 
   @Override
-  public Class<UamUserDeletedEventDTO> getDataType() {
+  public Class<UamUserDeletedEventDTO> payloadType() {
     return UamUserDeletedEventDTO.class;
   }
 
   @Override
-  public void handle(
-      UamUserDeletedEventDTO userDeletedEventDTO, InboxEventCommand inboxEventCommand) {
-    deleteUserUseCase.execute(UserId.from(Objects.requireNonNull(userDeletedEventDTO.getId())));
+  public void handle(InboxEventCommand<UamUserDeletedEventDTO> inboxEventCommand) {
+    deleteUserUseCase.execute(
+        UserId.from(Objects.requireNonNull(inboxEventCommand.data().getId())));
   }
 }

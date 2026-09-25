@@ -14,8 +14,8 @@ import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderApprovedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderCreatedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderRejectedEvent;
-import com.emb.application.outbound.OutboxWriter;
-import com.emb.domain.outboxevent.OutboxEventCommand;
+import com.emb.application.outbound.EventPublisher;
+import com.emb.domain.outboxevent.EventCommand;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,11 +25,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class OutboxWriterDomainEventPublisherTest {
+class OutboxEventPublisherTest {
 
-  @Mock private OutboxWriter outboxWriter;
-  @Mock private OutboxWriterMapper outboxWriterMapper;
-  @InjectMocks private OutboxWriterDomainEventPublisher objectUnderTest;
+  @Mock private EventPublisher eventPublisher;
+  @Mock private OutboxPublisherMapper outboxPublisherMapper;
+  @InjectMocks private OutboxEventPublisher objectUnderTest;
 
   @Test
   void serviceProviderApprovedEvent_shouldPublishOutboxEvent() {
@@ -39,16 +39,16 @@ class OutboxWriterDomainEventPublisherTest {
     when(event.serviceProviderId()).thenReturn(new ServiceProviderId(spId));
 
     ServiceProviderApprovedEventDTO dto = new ServiceProviderApprovedEventDTO();
-    when(outboxWriterMapper.toServiceProviderApprovedEventDTO(event)).thenReturn(dto);
+    when(outboxPublisherMapper.toServiceProviderApprovedEventDTO(event)).thenReturn(dto);
 
     // When
     objectUnderTest.serviceProviderApprovedEvent(event);
 
     // Then
-    ArgumentCaptor<OutboxEventCommand> captor = ArgumentCaptor.forClass(OutboxEventCommand.class);
-    verify(outboxWriter).publish(captor.capture());
+    ArgumentCaptor<EventCommand> captor = ArgumentCaptor.forClass(EventCommand.class);
+    verify(eventPublisher).publish(captor.capture());
 
-    OutboxEventCommand capturedCommand = captor.getValue();
+    EventCommand capturedCommand = captor.getValue();
     assertThat(capturedCommand.topic()).isEqualTo(DESTINATION_SERVICE_PROVIDER_OUT);
     assertThat(capturedCommand.type()).isEqualTo(DomainEventType.SERVICE_PROVIDER_APPROVED.name());
     assertThat(capturedCommand.key()).isEqualTo(spId.toString());
@@ -63,16 +63,16 @@ class OutboxWriterDomainEventPublisherTest {
     when(event.serviceProviderId()).thenReturn(new ServiceProviderId(spId));
 
     ServiceProviderCreatedEventDTO dto = new ServiceProviderCreatedEventDTO();
-    when(outboxWriterMapper.toServiceProviderCreatedEventDTO(event)).thenReturn(dto);
+    when(outboxPublisherMapper.toServiceProviderCreatedEventDTO(event)).thenReturn(dto);
 
     // When
     objectUnderTest.serviceProviderCreatedEvent(event);
 
     // Then
-    ArgumentCaptor<OutboxEventCommand> captor = ArgumentCaptor.forClass(OutboxEventCommand.class);
-    verify(outboxWriter).publish(captor.capture());
+    ArgumentCaptor<EventCommand> captor = ArgumentCaptor.forClass(EventCommand.class);
+    verify(eventPublisher).publish(captor.capture());
 
-    OutboxEventCommand capturedCommand = captor.getValue();
+    EventCommand capturedCommand = captor.getValue();
     assertThat(capturedCommand.topic()).isEqualTo(DESTINATION_SERVICE_PROVIDER_OUT);
     assertThat(capturedCommand.type()).isEqualTo(DomainEventType.SERVICE_PROVIDER_CREATED.name());
     assertThat(capturedCommand.key()).isEqualTo(spId.toString());
@@ -87,16 +87,16 @@ class OutboxWriterDomainEventPublisherTest {
     when(event.serviceProviderId()).thenReturn(new ServiceProviderId(spId));
 
     ServiceProviderRejectedEventDTO dto = new ServiceProviderRejectedEventDTO();
-    when(outboxWriterMapper.toServiceProviderRejectedEventDTO(event)).thenReturn(dto);
+    when(outboxPublisherMapper.toServiceProviderRejectedEventDTO(event)).thenReturn(dto);
 
     // When
     objectUnderTest.serviceProviderRejectedEvent(event);
 
     // Then
-    ArgumentCaptor<OutboxEventCommand> captor = ArgumentCaptor.forClass(OutboxEventCommand.class);
-    verify(outboxWriter).publish(captor.capture());
+    ArgumentCaptor<EventCommand> captor = ArgumentCaptor.forClass(EventCommand.class);
+    verify(eventPublisher).publish(captor.capture());
 
-    OutboxEventCommand capturedCommand = captor.getValue();
+    EventCommand capturedCommand = captor.getValue();
     assertThat(capturedCommand.topic()).isEqualTo(DESTINATION_SERVICE_PROVIDER_OUT);
     assertThat(capturedCommand.type()).isEqualTo(DomainEventType.SERVICE_PROVIDER_REJECTED.name());
     assertThat(capturedCommand.key()).isEqualTo(spId.toString());

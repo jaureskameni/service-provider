@@ -27,13 +27,13 @@ class DeleteUserInboundEventHandlerTest {
 
   @Test
   void shouldReturnCorrectEventType() {
-    assertThat(deleteUserInboundEventHandler.getEventType())
+    assertThat(deleteUserInboundEventHandler.handledEventType())
         .isEqualTo(UamDomainEventType.USER_DELETED.getValue());
   }
 
   @Test
   void shouldReturnCorrectDataType() {
-    assertThat(deleteUserInboundEventHandler.getDataType()).isEqualTo(UamUserDeletedEventDTO.class);
+    assertThat(deleteUserInboundEventHandler.payloadType()).isEqualTo(UamUserDeletedEventDTO.class);
   }
 
   @Test
@@ -42,10 +42,11 @@ class DeleteUserInboundEventHandlerTest {
     UUID userId = UUID.randomUUID();
     UamUserDeletedEventDTO userDeletedEventDTO = mock(UamUserDeletedEventDTO.class);
     when(userDeletedEventDTO.getId()).thenReturn(userId);
-    InboxEventCommand inboxEventCommand = mock(InboxEventCommand.class);
+    InboxEventCommand<UamUserDeletedEventDTO> inboxEventCommand = mock(InboxEventCommand.class);
+    when(inboxEventCommand.data()).thenReturn(userDeletedEventDTO);
 
     // When
-    deleteUserInboundEventHandler.handle(userDeletedEventDTO, inboxEventCommand);
+    deleteUserInboundEventHandler.handle(inboxEventCommand);
 
     // Then
     verify(deleteUserUseCase).execute(UserId.from(userId));

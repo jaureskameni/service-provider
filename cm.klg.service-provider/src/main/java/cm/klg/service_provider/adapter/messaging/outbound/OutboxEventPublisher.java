@@ -12,44 +12,38 @@ import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPort
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderProfileUpdatedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderRejectedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderServiceAddedEvent;
-import com.emb.application.outbound.OutboxWriter;
-import com.emb.domain.outboxevent.OutboxEventCommand;
+import com.emb.application.outbound.EventPublisher;
+import com.emb.domain.outboxevent.EventCommand;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 
 @RequiredArgsConstructor
-public class OutboxWriterDomainEventPublisher implements DomainEventPublisher {
-  private final OutboxWriter outboxWriter;
-  private final OutboxWriterMapper outboxWriterMapper;
+public class OutboxEventPublisher implements DomainEventPublisher {
+  private final EventPublisher outboxEventSender;
+  private final OutboxPublisherMapper outboxPublisherMapper;
 
   @Override
   public void serviceProviderApprovedEvent(@NonNull ServiceProviderApprovedEvent event) {
-    outboxWriter.publish(
-        new OutboxEventCommand(
-            DESTINATION_SERVICE_PROVIDER_OUT,
-            DomainEventType.SERVICE_PROVIDER_APPROVED.name(),
-            event.serviceProviderId().value().toString(),
-            outboxWriterMapper.toServiceProviderApprovedEventDTO(event)));
+    publish(
+        DomainEventType.SERVICE_PROVIDER_APPROVED,
+        event.serviceProviderId().value().toString(),
+        outboxPublisherMapper.toServiceProviderApprovedEventDTO(event));
   }
 
   @Override
   public void serviceProviderCreatedEvent(@NonNull ServiceProviderCreatedEvent event) {
-    outboxWriter.publish(
-        new OutboxEventCommand(
-            DESTINATION_SERVICE_PROVIDER_OUT,
-            DomainEventType.SERVICE_PROVIDER_CREATED.name(),
-            event.serviceProviderId().value().toString(),
-            outboxWriterMapper.toServiceProviderCreatedEventDTO(event)));
+    publish(
+        DomainEventType.SERVICE_PROVIDER_CREATED,
+        event.serviceProviderId().value().toString(),
+        outboxPublisherMapper.toServiceProviderCreatedEventDTO(event));
   }
 
   @Override
   public void serviceProviderRejectedEvent(@NonNull ServiceProviderRejectedEvent event) {
-    outboxWriter.publish(
-        new OutboxEventCommand(
-            DESTINATION_SERVICE_PROVIDER_OUT,
-            DomainEventType.SERVICE_PROVIDER_REJECTED.name(),
-            event.serviceProviderId().value().toString(),
-            outboxWriterMapper.toServiceProviderRejectedEventDTO(event)));
+    publish(
+        DomainEventType.SERVICE_PROVIDER_REJECTED,
+        event.serviceProviderId().value().toString(),
+        outboxPublisherMapper.toServiceProviderRejectedEventDTO(event));
   }
 
   @Override
@@ -57,7 +51,7 @@ public class OutboxWriterDomainEventPublisher implements DomainEventPublisher {
     publish(
         DomainEventType.SERVICE_PROVIDER_SERVICE_ADDED,
         event.serviceProviderId().value().toString(),
-        outboxWriterMapper.toServiceProviderServiceAddedEventDTO(event));
+        outboxPublisherMapper.toServiceProviderServiceAddedEventDTO(event));
   }
 
   @Override
@@ -66,7 +60,7 @@ public class OutboxWriterDomainEventPublisher implements DomainEventPublisher {
     publish(
         DomainEventType.SERVICE_PROVIDER_PORTFOLIO_ITEM_ADDED,
         event.serviceProviderId().value().toString(),
-        outboxWriterMapper.toServiceProviderPortfolioItemAddedEventDTO(event));
+        outboxPublisherMapper.toServiceProviderPortfolioItemAddedEventDTO(event));
   }
 
   @Override
@@ -75,7 +69,7 @@ public class OutboxWriterDomainEventPublisher implements DomainEventPublisher {
     publish(
         DomainEventType.SERVICE_PROVIDER_PORTFOLIO_ITEM_UPDATED,
         event.serviceProviderId().value().toString(),
-        outboxWriterMapper.toServiceProviderPortfolioItemUpdatedEventDTO(event));
+        outboxPublisherMapper.toServiceProviderPortfolioItemUpdatedEventDTO(event));
   }
 
   @Override
@@ -84,7 +78,7 @@ public class OutboxWriterDomainEventPublisher implements DomainEventPublisher {
     publish(
         DomainEventType.SERVICE_PROVIDER_PORTFOLIO_ITEM_DELETED,
         event.serviceProviderId().value().toString(),
-        outboxWriterMapper.toServiceProviderPortfolioItemDeletedEventDTO(event));
+        outboxPublisherMapper.toServiceProviderPortfolioItemDeletedEventDTO(event));
   }
 
   @Override
@@ -93,11 +87,11 @@ public class OutboxWriterDomainEventPublisher implements DomainEventPublisher {
     publish(
         DomainEventType.SERVICE_PROVIDER_PROFILE_UPDATED,
         event.serviceProviderId().value().toString(),
-        outboxWriterMapper.toServiceProviderProfileUpdatedEventDTO(event));
+        outboxPublisherMapper.toServiceProviderProfileUpdatedEventDTO(event));
   }
 
   private void publish(DomainEventType type, String key, Object data) {
-    outboxWriter.publish(
-        new OutboxEventCommand(DESTINATION_SERVICE_PROVIDER_OUT, type.name(), key, data));
+    outboxEventSender.publish(
+        new EventCommand(DESTINATION_SERVICE_PROVIDER_OUT, type.name(), key, data));
   }
 }
