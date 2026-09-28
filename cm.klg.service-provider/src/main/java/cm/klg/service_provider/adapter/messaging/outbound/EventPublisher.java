@@ -12,14 +12,13 @@ import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPort
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderProfileUpdatedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderRejectedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderServiceAddedEvent;
-import com.emb.application.outbound.EventPublisher;
 import com.emb.domain.outboxevent.EventCommand;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 
 @RequiredArgsConstructor
-public class OutboxEventPublisher implements DomainEventPublisher {
-  private final EventPublisher outboxEventSender;
+public class EventPublisher implements DomainEventPublisher {
+  private final com.emb.application.outbound.EventPublisher outboxEventSender;
   private final OutboxPublisherMapper outboxPublisherMapper;
 
   @Override

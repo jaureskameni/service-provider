@@ -11,18 +11,19 @@
 	</changeSet>
 
 	<changeSet id="SP-50:2" author="kameni.nguematcha">
-		<preConditions onFail="HALT">
-			<foreignKeyConstraintExists
-				foreignKeyName="fk_service_provider_user" />
-		</preConditions>
-		<dropForeignKeyConstraint
-			baseTableName="t_service_provider"
-			constraintName="fk_service_provider_user" />
-		<addForeignKeyConstraint
-			baseTableName="t_service_provider" baseColumnNames="c_user_id"
-			constraintName="fk_service_provider_user"
-			referencedTableName="t_user" referencedColumnNames="c_id"
-			onDelete="CASCADE" onUpdate="CASCADE" />
+		<sql splitStatements="true" stripComments="true">
+			ALTER TABLE
+			public.t_service_provider
+			DROP CONSTRAINT IF EXISTS
+			fk_service_provider_user;
+			ALTER TABLE
+			public.t_service_provider
+			ADD
+			CONSTRAINT fk_service_provider_user
+			FOREIGN KEY (c_user_id) REFERENCES
+			public.t_user (c_id)
+			ON DELETE CASCADE ON UPDATE CASCADE;
+		</sql>
 	</changeSet>
 
 	<changeSet id="SP-50:3" author="kameni.nguematcha">
