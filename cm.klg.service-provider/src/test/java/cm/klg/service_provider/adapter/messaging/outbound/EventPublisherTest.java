@@ -14,7 +14,6 @@ import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderApprovedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderCreatedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderRejectedEvent;
-import com.emb.application.outbound.EventPublisher;
 import com.emb.domain.outboxevent.EventCommand;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -25,11 +24,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class OutboxEventPublisherTest {
+class EventPublisherTest {
 
-  @Mock private EventPublisher eventPublisher;
+  @Mock private com.emb.application.outbound.EventPublisher eventPublisher;
   @Mock private OutboxPublisherMapper outboxPublisherMapper;
-  @InjectMocks private OutboxEventPublisher objectUnderTest;
+  @InjectMocks private EventPublisher objectUnderTest;
 
   @Test
   void serviceProviderApprovedEvent_shouldPublishOutboxEvent() {
