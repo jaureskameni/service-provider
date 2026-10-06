@@ -12,26 +12,34 @@ import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.AddServiceProviderToFavoritesUseCase;
+import cm.klg.service_provider.application.usecase.ApproveProfileImageUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewProviderClientUseCase;
 import cm.klg.service_provider.application.usecase.CreateNewUserUseCase;
 import cm.klg.service_provider.application.usecase.DeletePortfolioItemUseCase;
+import cm.klg.service_provider.application.usecase.DeleteProviderServiceUseCase;
 import cm.klg.service_provider.application.usecase.DeleteUserUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
 import cm.klg.service_provider.application.usecase.GetMyFavoriteServiceProvidersUseCase;
+import cm.klg.service_provider.application.usecase.GetMyServiceProviderIdentityUseCase;
+import cm.klg.service_provider.application.usecase.GetMyServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetProfileImageReviewUseCase;
+import cm.klg.service_provider.application.usecase.GetProfileImageReviewsUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
-import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderVerificationUseCase;
+import cm.klg.service_provider.application.usecase.RejectProfileImageUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.RemoveServiceProviderFromFavoritesUseCase;
+import cm.klg.service_provider.application.usecase.ResubmitRejectedServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.UpdateApprovedServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
-import cm.klg.service_provider.application.usecase.UpdateServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.usecase.UpdateUserUseCase;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -56,11 +64,10 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   @Bean
   public BecomeServiceProviderUseCase becomeServiceProviderUseCase(
       ServiceProviderRepository serviceProviderRepository,
-      DomainEventPublisher domainEventPublisher,
       UserRepository userRepository,
       ServiceTypeRepository serviceTypeRepository) {
     return new BecomeServiceProviderUseCase(
-        serviceProviderRepository, userRepository, serviceTypeRepository, domainEventPublisher);
+        serviceProviderRepository, userRepository, serviceTypeRepository);
   }
 
   @Bean
@@ -102,18 +109,15 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public AddPortfolioItemUseCase addPortfolioItemUseCase(
-      ServiceProviderRepository serviceProviderRepository,
-      DomainEventPublisher domainEventPublisher) {
-    return new AddPortfolioItemUseCase(serviceProviderRepository, domainEventPublisher);
+      ServiceProviderRepository serviceProviderRepository) {
+    return new AddPortfolioItemUseCase(serviceProviderRepository);
   }
 
   @Bean
   public AddNewServiceUseCase addNewServiceUseCase(
       ServiceProviderRepository serviceProviderRepository,
-      ServiceTypeRepository serviceTypeRepository,
-      DomainEventPublisher domainEventPublisher) {
-    return new AddNewServiceUseCase(
-        serviceProviderRepository, serviceTypeRepository, domainEventPublisher);
+      ServiceTypeRepository serviceTypeRepository) {
+    return new AddNewServiceUseCase(serviceProviderRepository, serviceTypeRepository);
   }
 
   @Bean
@@ -144,16 +148,63 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   }
 
   @Bean
-  public GetServiceProviderProfileUseCase getPublicServiceProviderProfileUseCase(
-      ServiceProviderRepository serviceProviderRepository) {
-    return new GetServiceProviderProfileUseCase(serviceProviderRepository);
+  public GetMyServiceProviderUseCase getMyServiceProviderUseCase(
+      ServiceProviderRepository repository) {
+    return new GetMyServiceProviderUseCase(repository);
   }
 
   @Bean
-  public UpdateServiceProviderProfileUseCase updateServiceProviderProfileUseCase(
-      ServiceProviderRepository serviceProviderRepository,
-      DomainEventPublisher domainEventPublisher) {
-    return new UpdateServiceProviderProfileUseCase(serviceProviderRepository, domainEventPublisher);
+  public GetMyServiceProviderIdentityUseCase getMyServiceProviderIdentityUseCase(
+      ServiceProviderRepository repository) {
+    return new GetMyServiceProviderIdentityUseCase(repository);
+  }
+
+  @Bean
+  public GetServiceProviderVerificationUseCase getServiceProviderVerificationUseCase(
+      ServiceProviderRepository repository) {
+    return new GetServiceProviderVerificationUseCase(repository);
+  }
+
+  @Bean
+  public GetProfileImageReviewsUseCase getProfileImageReviewsUseCase(
+      ServiceProviderRepository repository) {
+    return new GetProfileImageReviewsUseCase(repository);
+  }
+
+  @Bean
+  public GetProfileImageReviewUseCase getProfileImageReviewUseCase(
+      ServiceProviderRepository serviceProviderRepository) {
+    return new GetProfileImageReviewUseCase(serviceProviderRepository);
+  }
+
+  @Bean
+  public ResubmitRejectedServiceProviderUseCase resubmitRejectedServiceProviderUseCase(
+      ServiceProviderRepository providerRepository, UserRepository userRepository) {
+    return new ResubmitRejectedServiceProviderUseCase(providerRepository, userRepository);
+  }
+
+  @Bean
+  public UpdateApprovedServiceProviderUseCase updateApprovedServiceProviderUseCase(
+      ServiceProviderRepository providerRepository, UserRepository userRepository) {
+    return new UpdateApprovedServiceProviderUseCase(providerRepository, userRepository);
+  }
+
+  @Bean
+  public ApproveProfileImageUseCase approveProfileImageUseCase(
+      ServiceProviderRepository repository, DomainEventPublisher events) {
+    return new ApproveProfileImageUseCase(repository, events);
+  }
+
+  @Bean
+  public RejectProfileImageUseCase rejectProfileImageUseCase(
+      ServiceProviderRepository repository, DomainEventPublisher events) {
+    return new RejectProfileImageUseCase(repository, events);
+  }
+
+  @Bean
+  public DeleteProviderServiceUseCase deleteProviderServiceUseCase(
+      ServiceProviderRepository repository) {
+    return new DeleteProviderServiceUseCase(repository);
   }
 
   @Bean
@@ -170,16 +221,14 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public UpdatePortfolioItemUseCase updatePortfolioItemUseCase(
-      ServiceProviderRepository serviceProviderRepository,
-      DomainEventPublisher domainEventPublisher) {
-    return new UpdatePortfolioItemUseCase(serviceProviderRepository, domainEventPublisher);
+      ServiceProviderRepository serviceProviderRepository) {
+    return new UpdatePortfolioItemUseCase(serviceProviderRepository);
   }
 
   @Bean
   public DeletePortfolioItemUseCase deletePortfolioItemUseCase(
-      ServiceProviderRepository serviceProviderRepository,
-      DomainEventPublisher domainEventPublisher) {
-    return new DeletePortfolioItemUseCase(serviceProviderRepository, domainEventPublisher);
+      ServiceProviderRepository serviceProviderRepository) {
+    return new DeletePortfolioItemUseCase(serviceProviderRepository);
   }
 
   @Bean

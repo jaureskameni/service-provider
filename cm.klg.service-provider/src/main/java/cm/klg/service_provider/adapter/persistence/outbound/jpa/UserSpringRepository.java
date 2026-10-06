@@ -28,5 +28,13 @@ public interface UserSpringRepository extends JpaRepository<UserJpa, UUID> {
       @Param("phoneNumber") String phoneNumber,
       @Param("createdAt") LocalDateTime createdAt);
 
+  @Query(
+      value =
+          "SELECT EXISTS (SELECT 1 FROM t_user WHERE c_phone_number = :phoneNumber AND c_id <>"
+              + " :id)",
+      nativeQuery = true)
+  boolean existsByPhoneNumberExceptId(
+      @Param("phoneNumber") String phoneNumber, @Param("id") UUID id);
+
   List<UserJpa> findAllByIdIn(List<UUID> uuids);
 }

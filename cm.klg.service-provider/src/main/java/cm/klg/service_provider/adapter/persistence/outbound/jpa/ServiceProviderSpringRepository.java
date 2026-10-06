@@ -15,43 +15,21 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
 
   boolean existsByPhoneNumber(PhoneNumberJpa phoneNumberJpa);
 
-  boolean existsByPhoneNumberAndIdNot(PhoneNumberJpa phoneNumberJpa, UUID id);
+  boolean existsByPhoneNumberAndUserIdNot(PhoneNumberJpa phoneNumberJpa, UUID userId);
 
   @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
+          + " LEFT JOIN FETCH s.identityVerification"
           + " WHERE s.id = :serviceProviderId")
   Optional<ServiceProviderJpa> findAggregateById(
       @Param("serviceProviderId") UUID serviceProviderId);
 
   @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
+          + " LEFT JOIN FETCH s.identityVerification"
           + " WHERE s.id = :serviceProviderId")
   Optional<ServiceProviderJpa> findAggregateWithPortfolioById(
       @Param("serviceProviderId") UUID serviceProviderId);
-
-  @Query(
-      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " WHERE s.id = :serviceProviderId AND s.status = :status")
-  Optional<ServiceProviderJpa> findAggregateByIdAndStatus(
-      @Param("serviceProviderId") UUID serviceProviderId, @Param("status") String status);
-
-  @Query(
-      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
-          + " WHERE s.id = :serviceProviderId AND s.status = :status")
-  Optional<ServiceProviderJpa> findAggregateWithPortfolioByIdAndStatus(
-      @Param("serviceProviderId") UUID serviceProviderId, @Param("status") String status);
-
-  @Query(
-      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
-          + " WHERE s.userId = :userId AND s.status = :status")
-  Optional<ServiceProviderJpa> findAggregateByUserId(
-      @Param("userId") UUID userId, @Param("status") String status);
-
-  @Query(
-      "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.portfolioItems"
-          + " WHERE s.userId = :userId AND s.status = :status")
-  Optional<ServiceProviderJpa> findAggregateWithPortfolioByUserId(
-      @Param("userId") UUID userId, @Param("status") String status);
 
   @Query(
       "SELECT DISTINCT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.userServices"
@@ -117,9 +95,6 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
       @Param("status") String status,
       Pageable pageable);
 
-  @Query("SELECT s FROM ServiceProviderJpa s WHERE s.id IN :ids")
-  List<ServiceProviderJpa> findAllAggregatesByIdIn(@Param("ids") List<UUID> ids);
-
   @Query(
 """
     SELECT pi
@@ -130,23 +105,28 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
   List<PortfolioItemJpa> findPortfolioItemsByUserId(@Param("userId") UUID userId);
 
   @Query(
-      """
-          SELECT pi
-          FROM PortfolioItemJpa pi
-          JOIN pi.serviceProvider sp
-          WHERE sp.id = :providerId
-            AND sp.status = 'APPROVED'
-      """)
-  List<PortfolioItemJpa> findPortfolioItemsByApprovedProviderId(
-      @Param("providerId") UUID providerId);
-
-  @Query("SELECT s FROM ServiceProviderJpa s WHERE s.id = :serviceProviderId")
-  Optional<ServiceProviderJpa> findById(@Param("serviceProviderId") UUID serviceProviderId);
-
-  @Query(
       "SELECT s FROM ServiceProviderJpa s WHERE s.id = :serviceProviderId AND s.status = :status")
   Optional<ServiceProviderJpa> findByIdAndStatus(
       @Param("serviceProviderId") UUID serviceProviderId, @Param("status") String status);
+
+  @Query(
+      "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.identityVerification"
+          + " WHERE s.id = :serviceProviderId")
+  Optional<ServiceProviderJpa> findForVerificationById(
+      @Param("serviceProviderId") UUID serviceProviderId);
+
+  @Query(
+      "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.identityVerification"
+          + " WHERE s.userId = :userId")
+  Optional<ServiceProviderJpa> findIdentityVerificationByUserId(@Param("userId") UUID userId);
+
+  @Query(
+      "SELECT s FROM ServiceProviderJpa s LEFT JOIN FETCH s.identityVerification"
+          + " WHERE s.id = :serviceProviderId")
+  Optional<ServiceProviderJpa> findForProfileImageReviewById(
+      @Param("serviceProviderId") UUID serviceProviderId);
+
+  Optional<ServiceProviderJpa> findByUserId(UUID userId);
 
   @Query(
 """
@@ -167,4 +147,21 @@ public interface ServiceProviderSpringRepository extends JpaRepository<ServicePr
       @Param("serviceProviderId") UUID serviceProviderId);
 
   boolean existsByIdAndStatus(UUID id, String status);
+
+  @Query(
+      value =
+          "SELECT new cm.klg.service_provider.adapter.persistence.outbound.jpa."
+              + "ProfileImageReviewView(s.id, s.userId, u.id, u.firstname, u.lastname,"
+              + " u.emailAddress, u.createdAt, s.phoneNumber.countryCode,"
+              + " s.phoneNumber.number, s.city, s.district, s.quarter, s.status,"
+              + " s.profileImageId, s.pendingProfileImageId, s.profileImageReviewStatus,"
+              + " s.updatedAt)"
+              + " FROM ServiceProviderJpa s JOIN UserJpa u ON u.id = s.userId"
+              + " WHERE s.profileImageReviewStatus = :status"
+              + " ORDER BY s.updatedAt DESC",
+      countQuery =
+          "SELECT COUNT(s) FROM ServiceProviderJpa s JOIN UserJpa u ON u.id = s.userId"
+              + " WHERE s.profileImageReviewStatus = :status")
+  Page<ProfileImageReviewView> findProfileImageReviewQueue(
+      @Param("status") String status, Pageable pageable);
 }

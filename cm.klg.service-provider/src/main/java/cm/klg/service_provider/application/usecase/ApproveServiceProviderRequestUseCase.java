@@ -5,6 +5,7 @@ import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderEventFactory;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.user.User;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class ApproveServiceProviderRequestUseCase {
     providerUser.promoteToProvider();
     userRepository.update(providerUser);
 
-    domainEventPublisher.serviceProviderApprovedEvent(serviceProvider.toApprovedEvent());
+    domainEventPublisher.serviceProviderApprovedEvent(
+        ServiceProviderEventFactory.serviceProviderApproved(serviceProvider));
   }
 }

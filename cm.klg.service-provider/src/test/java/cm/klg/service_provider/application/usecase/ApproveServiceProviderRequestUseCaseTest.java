@@ -9,6 +9,10 @@ import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.UserRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.CniRectoMediaId;
+import cm.klg.service_provider.domain.service_provider.CniVersoMediaId;
+import cm.klg.service_provider.domain.service_provider.IdentityDocuments;
+import cm.klg.service_provider.domain.service_provider.ProfileImageMediaId;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
@@ -50,6 +54,9 @@ class ApproveServiceProviderRequestUseCaseTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
 
     User user = org.mockito.Mockito.mock(User.class);

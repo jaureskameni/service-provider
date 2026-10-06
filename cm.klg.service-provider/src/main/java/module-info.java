@@ -74,6 +74,7 @@ module cm.klg.service_provider.main {
   exports cm.klg.service_provider.application.outbound;
   exports cm.klg.service_provider.domain;
   exports cm.klg.service_provider.domain.service_provider;
+  exports cm.klg.service_provider.domain.service_provider.event;
   exports cm.klg.service_provider.domain.service_type;
   exports cm.klg.service_provider.adapter.rest.inbound;
   exports cm.klg.service_provider.adapter.persistence.outbound.jpa;

@@ -1,46 +1,77 @@
 package cm.klg.service_provider.adapter.rest.inbound;
 
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreateProviderServiceDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.IdentityVerificationStatusDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.MyServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ProfileImageReviewIdentityVerificationDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ProfileImageReviewPageDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ProfileImageReviewProviderDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ProfileImageReviewQueueItemDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ProfileImageReviewStatusDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ProfileImageReviewSubmissionDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectedServiceProviderIdentityDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ResubmitServiceProviderApplicationDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceCatalogItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderProfileImageReviewDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPublicProfileDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
-import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
-import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UpdateServiceProviderProfileRequestDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderVerificationDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UpdateApprovedServiceProviderProfileDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserProfileDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
+import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.InitialProviderService;
+import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.ProviderRegistrationProfile;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetMyFavoriteServiceProvidersUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase.Response;
+import cm.klg.service_provider.application.usecase.ResubmitRejectedServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.UpdateApprovedServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
-import cm.klg.service_provider.application.usecase.UpdateServiceProviderProfileUseCase;
 import cm.klg.service_provider.application.views.PortfolioView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.IdentityVerificationView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ProfileImageReviewSummaryView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.RejectedServiceProviderIdentityView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderVerificationView;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView2;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView3;
+import cm.klg.service_provider.application.views.ServiceProviderViews.UserView;
 import cm.klg.service_provider.application.views.ServiceTypeViews;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.AboutProvider;
+import cm.klg.service_provider.domain.service_provider.CniRectoMediaId;
+import cm.klg.service_provider.domain.service_provider.CniVersoMediaId;
+import cm.klg.service_provider.domain.service_provider.IdentityDocuments;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
+import cm.klg.service_provider.domain.service_provider.ProfileImageMediaId;
+import cm.klg.service_provider.domain.service_provider.ProviderContact;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
+import cm.klg.service_provider.domain.service_provider.ProviderProfile;
 import cm.klg.service_provider.domain.service_provider.RejectionReason;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
+import cm.klg.service_provider.domain.service_provider.UserDocument;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
+import cm.klg.service_provider.domain.service_provider.YearOfExperience;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,10 +80,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(
@@ -61,42 +90,85 @@ import org.mapstruct.ReportingPolicy;
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RestMapper {
 
-  @BeanMapping(ignoreByDefault = true)
-  @Mapping(target = "userId.value", source = "currentUserId")
-  @Mapping(target = "location.cityId.value", source = "serviceProviderRegisterDTO.city")
-  @Mapping(target = "location.districtId.value", source = "serviceProviderRegisterDTO.district")
-  @Mapping(target = "location.quarterId.value", source = "serviceProviderRegisterDTO.quarter")
-  @Mapping(target = "about.value", source = "serviceProviderRegisterDTO.about")
-  @Mapping(target = "document.value", source = "serviceProviderRegisterDTO.serviceType.document")
-  @Mapping(target = "serviceTypeId.value", source = "serviceProviderRegisterDTO.serviceType.id")
-  @Mapping(
-      target = "yearOfExperience.value",
-      source = "serviceProviderRegisterDTO.serviceType.yearOfExperience")
-  @Mapping(
-      target = "phoneNumber.countryCode",
-      source = "serviceProviderRegisterDTO.phoneNumber.countryCode")
-  @Mapping(target = "phoneNumber.number", source = "serviceProviderRegisterDTO.phoneNumber.number")
-  BecomeServiceProviderCommand toBecomeServiceProviderCommand(
-      ServiceProviderRegisterDTO serviceProviderRegisterDTO, UUID currentUserId);
+  default BecomeServiceProviderCommand toBecomeServiceProviderCommand(
+      ServiceProviderRegisterDTO dto, UUID currentUserId) {
+    return new BecomeServiceProviderCommand(
+        UserId.from(currentUserId),
+        new ProviderRegistrationProfile(
+            new ProviderLocation(
+                UserCityId.from(dto.getCity()),
+                UserDistrictId.from(dto.getDistrict()),
+                dto.getQuarter() != null ? UserQuarterId.from(dto.getQuarter()) : null),
+            PhoneNumber.from(
+                dto.getPhoneNumber().getCountryCode(), dto.getPhoneNumber().getNumber()),
+            dto.getAbout() != null ? AboutProvider.from(dto.getAbout()) : null,
+            new IdentityDocuments(
+                CniRectoMediaId.from(dto.getCniRectoId()),
+                CniVersoMediaId.from(dto.getCniVersoId())),
+            ProfileImageMediaId.from(dto.getProfileImageId())),
+        new InitialProviderService(
+            new ServiceTypeId(dto.getServiceType().getId()),
+            YearOfExperience.from(dto.getServiceType().getYearOfExperience()),
+            UserDocument.from(dto.getServiceType().getDocument())));
+  }
 
-  @BeanMapping(ignoreByDefault = true)
-  @Mapping(target = "userId.value", source = "currentUserId")
-  @Mapping(target = "serviceTypeId.value", source = "serviceTypeDTO.id")
-  @Mapping(target = "yearOfExperience.value", source = "serviceTypeDTO.yearOfExperience")
-  @Mapping(target = "userDocument.value", source = "serviceTypeDTO.document")
-  AddNewServiceUseCase.AddNewServiceCommand toAddNewServiceCommand(
-      ServiceTypeDTO serviceTypeDTO, UUID currentUserId);
+  default ResubmitRejectedServiceProviderUseCase.Command toResubmitRejectedServiceProviderCommand(
+      ResubmitServiceProviderApplicationDTO dto, UUID currentUserId) {
+    var identityDocuments =
+        dto.getCniRectoId() != null && dto.getCniVersoId() != null
+            ? new IdentityDocuments(
+                CniRectoMediaId.from(dto.getCniRectoId()),
+                CniVersoMediaId.from(dto.getCniVersoId()))
+            : null;
+    return new ResubmitRejectedServiceProviderUseCase.Command(
+        UserId.from(currentUserId),
+        toProviderProfile(
+            dto.getCity(),
+            dto.getDistrict(),
+            dto.getQuarter(),
+            dto.getAbout(),
+            dto.getPhoneNumber()),
+        identityDocuments,
+        ProfileImageMediaId.from(dto.getProfileImageId()));
+  }
 
-  @BeanMapping(ignoreByDefault = true)
-  @Mapping(target = "userId.value", source = "currentUserId")
-  @Mapping(target = "location.cityId.value", source = "request.city")
-  @Mapping(target = "location.districtId.value", source = "request.district")
-  @Mapping(target = "location.quarterId.value", source = "request.quarter")
-  @Mapping(target = "phoneNumber.countryCode", source = "request.phoneNumber.countryCode")
-  @Mapping(target = "phoneNumber.number", source = "request.phoneNumber.number")
-  @Mapping(target = "about.value", source = "request.about")
-  UpdateServiceProviderProfileUseCase.Command toUpdateServiceProviderProfileCommand(
-      UpdateServiceProviderProfileRequestDTO request, UUID currentUserId);
+  default UpdateApprovedServiceProviderUseCase.Command toUpdateApprovedServiceProviderCommand(
+      UpdateApprovedServiceProviderProfileDTO dto, UUID currentUserId) {
+    return new UpdateApprovedServiceProviderUseCase.Command(
+        UserId.from(currentUserId),
+        toProviderProfile(
+            dto.getCity(),
+            dto.getDistrict(),
+            dto.getQuarter(),
+            dto.getAbout(),
+            dto.getPhoneNumber()),
+        ProfileImageMediaId.from(dto.getProfileImageId()));
+  }
+
+  private ProviderProfile toProviderProfile(
+      UUID city,
+      UUID district,
+      @Nullable UUID quarter,
+      @Nullable String about,
+      PhoneNumberDTO phoneNumber) {
+    return new ProviderProfile(
+        new ProviderContact(
+            new ProviderLocation(
+                UserCityId.from(city),
+                UserDistrictId.from(district),
+                quarter != null ? UserQuarterId.from(quarter) : null),
+            PhoneNumber.from(phoneNumber.getCountryCode(), phoneNumber.getNumber())),
+        about != null ? AboutProvider.from(about) : null);
+  }
+
+  default AddNewServiceUseCase.AddNewServiceCommand toAddNewServiceCommand(
+      CreateProviderServiceDTO dto, UUID currentUserId) {
+    return new AddNewServiceUseCase.AddNewServiceCommand(
+        UserId.from(currentUserId),
+        new ServiceTypeId(dto.getServiceTypeId()),
+        YearOfExperience.from(dto.getYearOfExperience()),
+        UserDocument.from(dto.getDocument()));
+  }
 
   ServiceCatalogItemDTO toServiceCatalogItemDTO(ServiceTypeViews.ServiceTypeView serviceTypeView);
 
@@ -109,8 +181,156 @@ public interface RestMapper {
 
   ServiceProviderStatus toServiceProviderStatus(ServiceProviderStatusDTO status);
 
-  default RejectionReason toRejectionReason(RejectionReasonDTO rejectionReasonDTO) {
-    return new RejectionReason(rejectionReasonDTO.getReason());
+  default RejectionReason toRejectionReason(String rejectionReason) {
+    return RejectionReason.valueOf(rejectionReason);
+  }
+
+  default MyServiceProviderDTO toMyServiceProviderDTO(ServiceProviderView2 provider) {
+    return new MyServiceProviderDTO()
+        .id(provider.id())
+        .user(toUserProfileDTO(provider.user()))
+        .status(ServiceProviderStatusDTO.fromValue(provider.status()))
+        .rejectionReason(
+            provider.rejectionReason() != null
+                ? RejectionReasonDTO.fromValue(provider.rejectionReason())
+                : null)
+        .canEdit(!ServiceProviderStatus.PENDING.name().equals(provider.status()))
+        .city(provider.cityId())
+        .district(provider.districtId())
+        .quarter(provider.quarterId())
+        .about(provider.about())
+        .phoneNumber(toPhoneNumberDTO(provider.phoneNumber()))
+        .profileImageId(provider.profileImageId())
+        .pendingProfileImageId(provider.pendingProfileImageId())
+        .profileImageReviewStatus(
+            ProfileImageReviewStatusDTO.fromValue(provider.profileImageReviewStatus().name()))
+        .identityVerificationStatus(
+            IdentityVerificationStatusDTO.fromValue(provider.identityVerificationStatus().name()))
+        .userServices(toUserServiceDTOs(provider.services()));
+  }
+
+  default RejectedServiceProviderIdentityDTO toRejectedServiceProviderIdentityDTO(
+      RejectedServiceProviderIdentityView identity) {
+    return new RejectedServiceProviderIdentityDTO()
+        .providerId(identity.providerId())
+        .cniRectoId(identity.cniRectoId())
+        .cniVersoId(identity.cniVersoId())
+        .profileImageId(identity.profileImageId())
+        .status(RejectedServiceProviderIdentityDTO.StatusEnum.REJECTED)
+        .rejectionReason(RejectionReasonDTO.fromValue(identity.rejectionReason().name()));
+  }
+
+  default ServiceProviderVerificationDTO toServiceProviderVerificationDTO(
+      ServiceProviderVerificationView provider) {
+    return new ServiceProviderVerificationDTO()
+        .id(provider.id())
+        .userId(provider.userId())
+        .user(toUserProfileDTO(provider.user()))
+        .city(provider.cityId())
+        .district(provider.districtId())
+        .quarter(provider.quarterId())
+        .approvedBy(provider.approvedBy())
+        .rejectedBy(provider.rejectedBy())
+        .rejectionReason(provider.rejectionReason())
+        .about(provider.about())
+        .phoneNumber(toPhoneNumberDTO(provider.phoneNumber()))
+        .status(ServiceProviderStatusDTO.fromValue(provider.status()))
+        .profileImageId(provider.profileImageId())
+        .pendingProfileImageId(provider.pendingProfileImageId())
+        .profileImageReviewStatus(
+            ProfileImageReviewStatusDTO.fromValue(provider.profileImageReviewStatus().name()))
+        .identityVerification(
+            provider.identityVerification() != null
+                ? toProfileImageReviewIdentityVerificationDTO(provider.identityVerification())
+                : null)
+        .createdAt(provider.createdAt())
+        .updatedAt(provider.updatedAt())
+        .services(toUserServiceDTOs(provider.services()))
+        .portfolios(provider.portfolios().stream().map(this::toPortfolioItemDTO).toList());
+  }
+
+  default ProfileImageReviewPageDTO toProfileImageReviewPageDTO(
+      List<ProfileImageReviewSummaryView> providers, long totalElements) {
+    return new ProfileImageReviewPageDTO()
+        .totalElements(totalElements)
+        .serviceProviders(providers.stream().map(this::toProfileImageReviewQueueItemDTO).toList());
+  }
+
+  default UserProfileDTO toUserProfileDTO(UserView user) {
+    return toUserProfileDTO(user, true);
+  }
+
+  default UserProfileDTO toUserProfileDTO(UserView user, boolean includeContactEmail) {
+    return new UserProfileDTO()
+        .id(user.id())
+        .firstname(user.firstname())
+        .lastname(user.lastname())
+        .email(includeContactEmail ? user.email() : null)
+        .createdAt(user.createdAt());
+  }
+
+  default ProfileImageReviewQueueItemDTO toProfileImageReviewQueueItemDTO(
+      ProfileImageReviewSummaryView provider) {
+    return new ProfileImageReviewQueueItemDTO()
+        .serviceProviderId(provider.serviceProviderId())
+        .userId(provider.userId())
+        .user(toUserProfileDTO(provider.user()))
+        .phoneNumber(toPhoneNumberDTO(provider.phoneNumber()))
+        .city(provider.cityId())
+        .district(provider.districtId())
+        .quarter(provider.quarterId())
+        .status(ServiceProviderStatusDTO.fromValue(provider.status().name()))
+        .currentProfileImageId(provider.currentProfileImageId())
+        .pendingProfileImageId(provider.pendingProfileImageId())
+        .profileImageReviewStatus(
+            ProfileImageReviewStatusDTO.fromValue(provider.profileImageReviewStatus().name()))
+        .updatedAt(provider.submittedAt());
+  }
+
+  default ServiceProviderProfileImageReviewDTO toServiceProviderProfileImageReviewDTO(
+      ServiceProviderView3 review) {
+    return new ServiceProviderProfileImageReviewDTO()
+        .serviceProvider(
+            new ProfileImageReviewProviderDTO()
+                .id(review.id())
+                .userId(review.userId())
+                .user(toUserProfileDTO(review.user()))
+                .phoneNumber(toPhoneNumberDTO(review.phoneNumber()))
+                .city(review.cityId())
+                .district(review.districtId())
+                .quarter(review.quarterId())
+                .about(review.about())
+                .status(ServiceProviderStatusDTO.fromValue(review.status().name()))
+                .currentProfileImageId(review.profileImageId())
+                .userServices(toUserServiceDTOs(review.services()))
+                .createdAt(review.createdAt())
+                .updatedAt(review.updatedAt()))
+        .profileImageReview(
+            new ProfileImageReviewSubmissionDTO()
+                .status(
+                    ProfileImageReviewStatusDTO.fromValue(review.profileImageReviewStatus().name()))
+                .pendingProfileImageId(review.pendingProfileImageId())
+                .rejectionReason(
+                    review.profileImageRejectionReason() != null
+                        ? RejectionReasonDTO.fromValue(review.profileImageRejectionReason().name())
+                        : null)
+                .submittedAt(review.submittedAt()))
+        .identityVerification(
+            toProfileImageReviewIdentityVerificationDTO(review.identityVerification()));
+  }
+
+  default ProfileImageReviewIdentityVerificationDTO toProfileImageReviewIdentityVerificationDTO(
+      IdentityVerificationView verification) {
+    return new ProfileImageReviewIdentityVerificationDTO()
+        .status(IdentityVerificationStatusDTO.fromValue(verification.status().name()))
+        .cniRectoId(verification.cniRectoId())
+        .cniVersoId(verification.cniVersoId())
+        .rejectionReason(
+            verification.rejectionReason() != null
+                ? RejectionReasonDTO.fromValue(verification.rejectionReason().name())
+                : null)
+        .verifiedAt(verification.verifiedAt())
+        .verifiedBy(verification.verifiedBy());
   }
 
   default GetAllServiceProviderUseCase.Command toGetAllServiceProviderCommand(
@@ -144,7 +364,9 @@ public interface RestMapper {
     return new ServiceProviderPaginateDTO()
         .count(pageData.count())
         .serviceProvider(
-            pageData.serviceProviderViews().stream().map(this::toServiceProviderDTO).toList());
+            pageData.serviceProviderViews().stream()
+                .map(provider -> toServiceProviderDTO(provider, true))
+                .toList());
   }
 
   default ServiceProviderPaginateDTO toServiceProviderPaginateDTO(
@@ -174,43 +396,39 @@ public interface RestMapper {
   }
 
   default ServiceProviderDTO toServiceProviderDTO(ServiceProviderView1 v) {
+    return toServiceProviderDTO(v, false);
+  }
+
+  default ServiceProviderDTO toServiceProviderDTO(
+      ServiceProviderView1 v, boolean includeContactInfo) {
     return toServiceProviderDTOFromCommon(
-        new UserInfo(v.id(), v.userId(), v.firstname(), v.lastname()),
+        new UserInfo(v.id(), v.userId(), v.user()),
         new ProviderLocation(
             UserCityId.from(v.cityId()),
             UserDistrictId.from(v.districtId()),
             v.quarterId() != null ? UserQuarterId.from(v.quarterId()) : null),
-        new ProviderMetadata(v.about(), v.phoneNumber(), v.createdAt(), v.updatedAt()));
+        new ProviderMetadata(
+            v.about(), v.phoneNumber(), v.createdAt(), v.updatedAt(), v.profileImageId()),
+        includeContactInfo);
   }
 
   private ServiceProviderDTO toServiceProviderDTOFromCommon(
-      UserInfo userInfo, ProviderLocation location, ProviderMetadata metadata) {
+      UserInfo userInfo,
+      ProviderLocation location,
+      ProviderMetadata metadata,
+      boolean includeContactInfo) {
     return new ServiceProviderDTO()
         .id(userInfo.id())
         .userId(userInfo.userId())
-        .firstname(userInfo.firstname())
-        .lastname(userInfo.lastname())
+        .user(toUserProfileDTO(userInfo.user(), includeContactInfo))
         .city(location.cityId().value())
         .district(location.districtId().value())
         .quarter(location.quarterId() != null ? location.quarterId().value() : null)
         .about(metadata.about() != null ? metadata.about() : null)
         .createdAt(metadata.createdAt())
         .updatedAt(metadata.updatedAt())
-        .phoneNumber(toPhoneNumberDTO(metadata.phoneNumber()));
-  }
-
-  default ServiceProviderDTO toServiceProviderProfileDTO(ServiceProviderView1 serviceProviderView) {
-    return toServiceProviderDTO(serviceProviderView);
-  }
-
-  default ServiceProviderDTO toServiceProviderDTO(ServiceProviderView2 v) {
-    return toServiceProviderDTOFromCommon(
-        new UserInfo(v.id(), v.userId(), v.firstname(), v.lastname()),
-        new ProviderLocation(
-            UserCityId.from(v.cityId()),
-            UserDistrictId.from(v.districtId()),
-            v.quarterId() != null ? UserQuarterId.from(v.quarterId()) : null),
-        new ProviderMetadata(v.about(), v.phoneNumber(), v.createdAt(), v.updatedAt()));
+        .phoneNumber(includeContactInfo ? toPhoneNumberDTO(metadata.phoneNumber()) : null)
+        .profileImageId(metadata.profileImageId());
   }
 
   @Nullable
@@ -275,25 +493,20 @@ public interface RestMapper {
 
   default ServiceProviderPublicProfileDTO toServiceProviderPublicProfileDTO(Response result) {
     var v = result.serviceProviderView2();
-    PhoneNumber phoneNumber = v.phoneNumber();
-    if (!result.isClient()) {
-      phoneNumber = null;
-    }
     return new ServiceProviderPublicProfileDTO()
         .id(v.id())
         .userId(v.userId())
-        .firstname(v.firstname())
-        .lastname(v.lastname())
+        .user(toUserProfileDTO(v.user(), false))
         .city(v.cityId())
         .district(v.districtId())
         .quarter(v.quarterId())
         .about(v.about())
         .createdAt(v.createdAt())
         .updatedAt(v.updatedAt())
-        .phoneNumber(toPhoneNumberDTO(phoneNumber))
-        .userIsProviderClient(result.isClient())
+        .phoneNumber(null)
+        .userIsProviderClient(false)
         .userHasFavorited(result.isFavorite())
-        .serviceProviderStatus(ServiceProviderStatusDTO.fromValue(v.status()))
+        .profileImageId(v.profileImageId())
         .userServices(v.services().stream().map(this::toUserServiceDTO).toList())
         .portfolio(v.portfolios().stream().map(this::toPortfolioItemDTO).toList());
   }
@@ -302,7 +515,8 @@ public interface RestMapper {
       @Nullable String about,
       PhoneNumber phoneNumber,
       @Nullable LocalDateTime createdAt,
-      @Nullable LocalDateTime updatedAt) {}
+      @Nullable LocalDateTime updatedAt,
+      UUID profileImageId) {}
 
-  record UserInfo(UUID id, UUID userId, String firstname, String lastname) {}
+  record UserInfo(UUID id, UUID userId, UserView user) {}
 }

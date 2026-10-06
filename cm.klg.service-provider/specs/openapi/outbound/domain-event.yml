@@ -14,42 +14,21 @@ components:
       type: "string"
       enum:
       - "SERVICE_PROVIDER_APPROVED"
-      - "SERVICE_PROVIDER_CREATED"
       - "SERVICE_PROVIDER_REJECTED"
-      - "SERVICE_PROVIDER_SERVICE_ADDED"
-      - "SERVICE_PROVIDER_PORTFOLIO_ITEM_ADDED"
-      - "SERVICE_PROVIDER_PORTFOLIO_ITEM_UPDATED"
-      - "SERVICE_PROVIDER_PORTFOLIO_ITEM_DELETED"
-      - "SERVICE_PROVIDER_PROFILE_UPDATED"
-    ServiceProviderCreatedEventDTO:
-      type: "object"
-      properties:
-        serviceProviderId:
-          type: "string"
-          format: "uuid"
-        userId:
-          type: "string"
-          format: "uuid"
-        createdAt:
-          type: "string"
-          format: "date-time"
-    ServiceProviderRejectedEventDTO:
-      type: "object"
-      properties:
-        serviceProviderId:
-          type: "string"
-          format: "uuid"
-        userId:
-          type: "string"
-          format: "uuid"
-        rejectedBy:
-          type: "string"
-          format: "uuid"
-        reason:
-          type: "string"
-        rejectedAt:
-          type: "string"
-          format: "date-time"
+      - "SERVICE_PROVIDER_PROFILE_IMAGE_APPROVED"
+      - "SERVICE_PROVIDER_PROFILE_IMAGE_REJECTED"
+    RejectionReason:
+      type: "string"
+      enum:
+      - "NAME_MISMATCH"
+      - "CNI_EXPIRED"
+      - "CNI_UNREADABLE"
+      - "CNI_INVALID"
+      - "FACE_MISMATCH"
+      - "FACE_UNCLEAR"
+      - "PHOTO_UNCLEAR"
+      - "DOCUMENT_TAMPERED"
+      - "PROFILE_IMAGE_UNCLEAR"
     ServiceProviderApprovedEventDTO:
       type: "object"
       properties:
@@ -65,7 +44,7 @@ components:
         approvedAt:
           type: "string"
           format: "date-time"
-    ServiceProviderServiceAddedEventDTO:
+    ServiceProviderRejectedEventDTO:
       type: "object"
       properties:
         serviceProviderId:
@@ -74,18 +53,15 @@ components:
         userId:
           type: "string"
           format: "uuid"
-        serviceTypeId:
+        rejectedBy:
           type: "string"
           format: "uuid"
-        yearOfExperience:
-          type: "integer"
-        documentId:
-          type: "string"
-          format: "uuid"
-        addedAt:
+        reason:
+          $ref: "#/components/schemas/RejectionReason"
+        rejectedAt:
           type: "string"
           format: "date-time"
-    ServiceProviderPortfolioItemAddedEventDTO:
+    ServiceProviderProfileImageApprovedEventDTO:
       type: "object"
       properties:
         serviceProviderId:
@@ -94,66 +70,29 @@ components:
         userId:
           type: "string"
           format: "uuid"
-        portfolioItemId:
+        approvedBy:
           type: "string"
           format: "uuid"
-    ServiceProviderPortfolioItemUpdatedEventDTO:
-      type: "object"
-      properties:
-        serviceProviderId:
+        profileImageMediaId:
           type: "string"
           format: "uuid"
-        userId:
-          type: "string"
-          format: "uuid"
-        portfolioItemId:
-          type: "string"
-          format: "uuid"
-    ServiceProviderPortfolioItemDeletedEventDTO:
-      type: "object"
-      properties:
-        serviceProviderId:
-          type: "string"
-          format: "uuid"
-        userId:
-          type: "string"
-          format: "uuid"
-        portfolioItemId:
-          type: "string"
-          format: "uuid"
-    ServiceProviderProfileUpdatedEventDTO:
-      type: "object"
-      properties:
-        serviceProviderId:
-          type: "string"
-          format: "uuid"
-        userId:
-          type: "string"
-          format: "uuid"
-        cityId:
-          type: "string"
-          format: "uuid"
-        districtId:
-          type: "string"
-          format: "uuid"
-        quarterId:
-          type: "string"
-          format: "uuid"
-        phoneNumber:
-          $ref: "#/components/schemas/PhoneNumberDTO"
-        about:
-          type: "string"
-        updatedAt:
+        approvedAt:
           type: "string"
           format: "date-time"
-    PhoneNumberDTO:
+    ServiceProviderProfileImageRejectedEventDTO:
       type: "object"
       properties:
-        countryCode:
+        serviceProviderId:
           type: "string"
-          description: "the international code for the country"
-          example: "237 for Cameroon"
-        number:
+          format: "uuid"
+        userId:
           type: "string"
-          description: "the phone number"
-          example: "653492410"
+          format: "uuid"
+        rejectedBy:
+          type: "string"
+          format: "uuid"
+        reason:
+          $ref: "#/components/schemas/RejectionReason"
+        rejectedAt:
+          type: "string"
+          format: "date-time"

@@ -1,15 +1,23 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
+import static cm.klg.service_provider.domain.service_provider.ProfileImageReviewStatus.*;
+
 import cm.klg.common.base.entity.PhoneNumberJpa;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.views.PortfolioView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ProfileImageReviewSummaryView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderIdentityView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderVerificationView;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView2;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView3;
+import cm.klg.service_provider.application.views.ServiceProviderViews.UserView;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.common.PageData;
 import cm.klg.service_provider.domain.common.PaginationFetchRequest;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderStatusException;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderAlreadyExistsException;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
@@ -65,10 +73,10 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
-  public boolean existsByPhoneNumberExceptProviderId(
-      @NonNull PhoneNumber phoneNumber, @NonNull ServiceProviderId providerId) {
-    return serviceProviderSpringRepository.existsByPhoneNumberAndIdNot(
-        new PhoneNumberJpa(phoneNumber.countryCode(), phoneNumber.number()), providerId.value());
+  public boolean existsByPhoneNumberExceptUserId(
+      @NonNull PhoneNumber phoneNumber, @NonNull UserId userId) {
+    return serviceProviderSpringRepository.existsByPhoneNumberAndUserIdNot(
+        new PhoneNumberJpa(phoneNumber.countryCode(), phoneNumber.number()), userId.value());
   }
 
   @Override
@@ -143,6 +151,54 @@ public record ServiceProviderJpaRepository(
     return loadAsView2(serviceProviderId, ServiceProviderStatus.APPROVED);
   }
 
+  @Override
+  public ServiceProviderView2 loadAsView2ByUserId(@NonNull UserId userId) {
+    ServiceProviderJpa serviceProviderJpa =
+        serviceProviderSpringRepository
+            .findByUserId(userId.value())
+            .orElseThrow(ServiceProviderNotFoundException::new);
+    return toView2(serviceProviderJpa);
+  }
+
+  @Override
+  public ServiceProviderIdentityView loadIdentityVerificationByUserId(@NonNull UserId userId) {
+    ServiceProviderJpa serviceProviderJpa =
+        serviceProviderSpringRepository
+            .findIdentityVerificationByUserId(userId.value())
+            .orElseThrow(ServiceProviderNotFoundException::new);
+    return jpaMapper.toServiceProviderIdentityView(serviceProviderJpa);
+  }
+
+  @Override
+  public ServiceProviderVerificationView loadForVerification(
+      @NonNull ServiceProviderId serviceProviderId) {
+    ServiceProviderJpa serviceProviderJpa =
+        serviceProviderSpringRepository
+            .findForVerificationById(serviceProviderId.value())
+            .orElseThrow(ServiceProviderNotFoundException::new);
+    return toVerificationView(serviceProviderJpa);
+  }
+
+  @Override
+  public ServiceProviderView3 loadPendingProfileImageReviewAsView3(
+      @NonNull ServiceProviderId serviceProviderId) {
+    ServiceProviderJpa serviceProviderJpa =
+        serviceProviderSpringRepository
+            .findForProfileImageReviewById(serviceProviderId.value())
+            .orElseThrow(ServiceProviderNotFoundException::new);
+    if (!ServiceProviderStatus.APPROVED.name().equals(serviceProviderJpa.getStatus())
+        || !PENDING_REVIEW.name().equals(serviceProviderJpa.getProfileImageReviewStatus())) {
+      throw new InvalidServiceProviderStatusException();
+    }
+
+    UserJpa userJpa =
+        userSpringRepository
+            .findById(serviceProviderJpa.getUserId())
+            .orElseThrow(ServiceProviderNotFoundException::new);
+    List<UserServiceView> services = loadUserServiceViews(serviceProviderJpa.getId());
+    return jpaMapper.toServiceProviderView3(serviceProviderJpa, userJpa, services);
+  }
+
   private ServiceProviderView2 loadAsView2(
       ServiceProviderId serviceProviderId, @Nullable ServiceProviderStatus status) {
     ServiceProviderJpa serviceProviderJpa =
@@ -152,28 +208,36 @@ public record ServiceProviderJpaRepository(
                     serviceProviderId.value(), status.name()))
             .orElseThrow(ServiceProviderNotFoundException::new);
 
+    return toView2(serviceProviderJpa);
+  }
+
+  private ServiceProviderView2 toView2(ServiceProviderJpa serviceProviderJpa) {
     UserJpa userJpa =
         userSpringRepository
             .findById(serviceProviderJpa.getUserId())
             .orElseThrow(ServiceProviderNotFoundException::new);
 
-    List<UserServiceJpa> userServices =
-        serviceProviderSpringRepository.findUserServicesByServiceProviderId(
-            serviceProviderId.value());
+    List<UserServiceView> services = loadUserServiceViews(serviceProviderJpa.getId());
 
     List<PortfolioItemJpa> portfolioItems =
         serviceProviderSpringRepository.findPortfolioItemsByServiceProviderId(
-            serviceProviderId.value());
+            serviceProviderJpa.getId());
 
-    return jpaMapper.toServiceProviderView2(
-        serviceProviderJpa, userJpa, userServices, portfolioItems);
+    return jpaMapper.toServiceProviderView2(serviceProviderJpa, userJpa, services, portfolioItems);
   }
 
-  @Override
-  public ServiceProviderView1 loadAsView1(UserId userId) throws ServiceProviderNotFoundException {
-    return findAggregateByUserId(userId.value())
-        .map(this::toView1)
-        .orElseThrow(ServiceProviderNotFoundException::new);
+  private ServiceProviderVerificationView toVerificationView(
+      ServiceProviderJpa serviceProviderJpa) {
+    UserJpa userJpa =
+        userSpringRepository
+            .findById(serviceProviderJpa.getUserId())
+            .orElseThrow(ServiceProviderNotFoundException::new);
+    List<UserServiceView> services = loadUserServiceViews(serviceProviderJpa.getId());
+    List<PortfolioItemJpa> portfolioItems =
+        serviceProviderSpringRepository.findPortfolioItemsByServiceProviderId(
+            serviceProviderJpa.getId());
+    return jpaMapper.toServiceProviderVerificationView(
+        serviceProviderJpa, userJpa, services, portfolioItems);
   }
 
   @Override
@@ -213,6 +277,39 @@ public record ServiceProviderJpaRepository(
   @Override
   public List<UserServiceView> loadAllMyServices(@NonNull UserId userId) {
     return loadUserServiceViews(loadByUserId(userId).getId().value());
+  }
+
+  @Override
+  public PageData<ProfileImageReviewSummaryView> loadPendingProfileImageReviews(
+      @NonNull PaginationFetchRequest pagination) {
+    Page<ProfileImageReviewView> page =
+        serviceProviderSpringRepository.findProfileImageReviewQueue(
+            PENDING_REVIEW.name(), PageRequest.of(pagination.pageIndex(), pagination.limit()));
+    return new PageData<>(
+        page.getTotalElements(),
+        page.getContent().stream().map(this::toProfileImageReviewSummaryView).toList());
+  }
+
+  private ProfileImageReviewSummaryView toProfileImageReviewSummaryView(
+      ProfileImageReviewView view) {
+    return new ProfileImageReviewSummaryView(
+        view.serviceProviderId(),
+        view.userId(),
+        new UserView(
+            view.userRecordId(),
+            view.firstname(),
+            view.lastname(),
+            view.emailAddress(),
+            view.userCreatedAt()),
+        PhoneNumber.from(view.phoneCountryCode(), view.phoneNumber()),
+        view.cityId(),
+        view.districtId(),
+        view.quarterId(),
+        ServiceProviderStatus.valueOf(view.providerStatus()),
+        view.currentProfileImageId(),
+        view.pendingProfileImageId(),
+        valueOf(view.profileImageReviewStatus()),
+        view.submittedAt());
   }
 
   private Optional<ServiceProviderJpa> findAggregateById(UUID serviceProviderId) {
@@ -260,11 +357,6 @@ public record ServiceProviderJpaRepository(
         providerJpasContent.stream()
             .map(sp -> jpaMapper.toServiceProviderView1(sp, usersById.get(sp.getUserId())))
             .toList());
-  }
-
-  private ServiceProviderView1 toView1(ServiceProviderJpa serviceProviderJpa) {
-    UserJpa userJpa = userSpringRepository.findById(serviceProviderJpa.getUserId()).orElseThrow();
-    return jpaMapper.toServiceProviderView1(serviceProviderJpa, userJpa);
   }
 
   private List<UserServiceView> loadUserServiceViews(UUID serviceProviderId) {

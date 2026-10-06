@@ -2,18 +2,28 @@ package cm.klg.service_provider.domain.service_provider;
 
 import cm.klg.common.base.domain.CreatedAt;
 import java.time.LocalDateTime;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PortfolioItem {
   private final PortfolioItemId id;
   private PortfolioItemTitle title;
   private PortfolioItemDescription description;
   private PortfolioItemMediaId mediaId;
   private CreatedAt createdAt;
+
+  PortfolioItem(
+      PortfolioItemId id,
+      PortfolioItemTitle title,
+      PortfolioItemDescription description,
+      PortfolioItemMediaId mediaId,
+      CreatedAt createdAt) {
+    this.id = id;
+    this.title = title;
+    this.description = description;
+    this.mediaId = mediaId;
+    this.createdAt = createdAt;
+  }
 
   public static PortfolioItem of(
       PortfolioItemTitle title,

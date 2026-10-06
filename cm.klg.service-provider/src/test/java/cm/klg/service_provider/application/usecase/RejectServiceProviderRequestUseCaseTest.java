@@ -8,6 +8,10 @@ import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.CniRectoMediaId;
+import cm.klg.service_provider.domain.service_provider.CniVersoMediaId;
+import cm.klg.service_provider.domain.service_provider.IdentityDocuments;
+import cm.klg.service_provider.domain.service_provider.ProfileImageMediaId;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.RejectionReason;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
@@ -39,7 +43,7 @@ class RejectServiceProviderRequestUseCaseTest {
     // Given
     UserId adminId = new UserId(UUID.randomUUID());
     ServiceProviderId serviceProviderId = new ServiceProviderId(UUID.randomUUID());
-    RejectionReason reason = new RejectionReason("Invalid documents");
+    RejectionReason reason = RejectionReason.CNI_INVALID;
     ServiceProvider serviceProvider =
         ServiceProvider.of(
             new UserId(UUID.randomUUID()),
@@ -49,6 +53,9 @@ class RejectServiceProviderRequestUseCaseTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
 
     when(serviceProviderRepository.load(serviceProviderId)).thenReturn(serviceProvider);
@@ -58,7 +65,7 @@ class RejectServiceProviderRequestUseCaseTest {
 
     // Then
     assertThat(serviceProvider.getStatus()).isEqualTo(ServiceProviderStatus.REJECTED);
-    assertThat(serviceProvider.getRejectionReason()).isEqualTo(reason);
+    assertThat(serviceProvider.getIdentityVerification().getRejectionReason()).isEqualTo(reason);
     verify(serviceProviderRepository).load(serviceProviderId);
     verify(serviceProviderRepository).update(serviceProvider);
     ArgumentCaptor<ServiceProviderRejectedEvent> eventCaptor =

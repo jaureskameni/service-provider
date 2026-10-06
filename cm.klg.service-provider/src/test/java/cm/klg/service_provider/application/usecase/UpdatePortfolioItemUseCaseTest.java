@@ -11,17 +11,26 @@ import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.CniRectoMediaId;
+import cm.klg.service_provider.domain.service_provider.CniVersoMediaId;
+import cm.klg.service_provider.domain.service_provider.IdentityDocuments;
 import cm.klg.service_provider.domain.service_provider.PortfolioItem;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemNotFoundException;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
+import cm.klg.service_provider.domain.service_provider.ProfileImageMediaId;
+import cm.klg.service_provider.domain.service_provider.ProfileImageReview;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
+import cm.klg.service_provider.domain.service_provider.ProviderImages;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
+import cm.klg.service_provider.domain.service_provider.ProviderProfile;
 import cm.klg.service_provider.domain.service_provider.ProviderReview;
 import cm.klg.service_provider.domain.service_provider.ServiceCollections;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderNotFoundException;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderState;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
@@ -98,7 +107,7 @@ class UpdatePortfolioItemUseCaseTest {
   }
 
   @Test
-  void execute_shouldThrowServiceProviderNotFoundException_whenPortfolioItemNotFoundTest() {
+  void execute_shouldThrowPortfolioItemNotFoundException_whenPortfolioItemNotFoundTest() {
     // Given
     var userId = UserId.from(UUID.randomUUID());
     var portfolioItemId = new PortfolioItemId(UUID.randomUUID());
@@ -115,7 +124,7 @@ class UpdatePortfolioItemUseCaseTest {
 
     // When & Then
     assertThatThrownBy(() -> objectUnderTest.execute(command))
-        .isInstanceOf(ServiceProviderNotFoundException.class);
+        .isInstanceOf(PortfolioItemNotFoundException.class);
     verify(serviceProviderRepository).loadByUserId(userId);
   }
 
@@ -161,15 +170,21 @@ class UpdatePortfolioItemUseCaseTest {
     return ServiceProvider.reconstitute(
         cm.klg.service_provider.domain.service_provider.ServiceProviderId.generate(),
         userId,
-        new cm.klg.service_provider.domain.service_provider.ProviderContact(
-            new ProviderLocation(
-                new UserCityId(UUID.randomUUID()),
-                new UserDistrictId(UUID.randomUUID()),
-                new UserQuarterId(UUID.randomUUID())),
-            cm.klg.service_provider.domain.PhoneNumber.from("+237", "678901234")),
-        new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
-        new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
-        null,
-        new ServiceCollections(List.of(), portfolioItems));
+        ServiceProviderState.from(
+            new ProviderProfile(
+                new cm.klg.service_provider.domain.service_provider.ProviderContact(
+                    new ProviderLocation(
+                        new UserCityId(UUID.randomUUID()),
+                        new UserDistrictId(UUID.randomUUID()),
+                        new UserQuarterId(UUID.randomUUID())),
+                    cm.klg.service_provider.domain.PhoneNumber.from("+237", "678901234")),
+                null),
+            new ProviderReview(ServiceProviderStatus.APPROVED, null, null, null),
+            new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProviderImages.from(
+                ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+            new ServiceCollections(List.of(), portfolioItems)));
   }
 }
