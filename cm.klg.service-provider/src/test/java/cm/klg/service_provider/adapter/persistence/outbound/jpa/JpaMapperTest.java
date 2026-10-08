@@ -12,19 +12,27 @@ import cm.klg.service_provider.domain.favorite.FavoriteProviderId;
 import cm.klg.service_provider.domain.provider_client.ProviderClient;
 import cm.klg.service_provider.domain.provider_client.ProviderClientId;
 import cm.klg.service_provider.domain.service_provider.AboutProvider;
+import cm.klg.service_provider.domain.service_provider.CniRectoMediaId;
+import cm.klg.service_provider.domain.service_provider.CniVersoMediaId;
+import cm.klg.service_provider.domain.service_provider.IdentityDocuments;
 import cm.klg.service_provider.domain.service_provider.PortfolioItem;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
+import cm.klg.service_provider.domain.service_provider.ProfileImageMediaId;
+import cm.klg.service_provider.domain.service_provider.ProfileImageReview;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
 import cm.klg.service_provider.domain.service_provider.ProviderContact;
+import cm.klg.service_provider.domain.service_provider.ProviderImages;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
+import cm.klg.service_provider.domain.service_provider.ProviderProfile;
 import cm.klg.service_provider.domain.service_provider.ProviderReview;
 import cm.klg.service_provider.domain.service_provider.RejectionReason;
 import cm.klg.service_provider.domain.service_provider.ServiceCollections;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderState;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
@@ -149,6 +157,9 @@ class JpaMapperTest {
                   new UserQuarterId(quarterId)),
               new PhoneNumber("+237", "678901234"),
               null,
+              IdentityDocuments.of(
+                  CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+              ProfileImageMediaId.from(UUID.randomUUID()),
               List.of());
 
       ServiceProviderJpa jpa = objectUnderTest.toServiceProviderJpa(serviceProvider);
@@ -167,17 +178,24 @@ class JpaMapperTest {
           ServiceProvider.reconstitute(
               ServiceProviderId.generate(),
               new UserId(userId),
-              new ProviderContact(
-                  new ProviderLocation(
-                      new UserCityId(UUID.randomUUID()),
-                      new UserDistrictId(UUID.randomUUID()),
-                      new UserQuarterId(UUID.randomUUID())),
-                  new PhoneNumber("+237", "698765432")),
-              new ProviderReview(
-                  ServiceProviderStatus.APPROVED, new UserId(approvedBy), null, null),
-              new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
-              new AboutProvider("I am a plumber"),
-              new ServiceCollections(List.of(), List.of()));
+              ServiceProviderState.from(
+                  new ProviderProfile(
+                      new ProviderContact(
+                          new ProviderLocation(
+                              new UserCityId(UUID.randomUUID()),
+                              new UserDistrictId(UUID.randomUUID()),
+                              new UserQuarterId(UUID.randomUUID())),
+                          new PhoneNumber("+237", "698765432")),
+                      new AboutProvider("I am a plumber")),
+                  new ProviderReview(
+                      ServiceProviderStatus.APPROVED, new UserId(approvedBy), null, null),
+                  new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+                  IdentityDocuments.of(
+                      CniRectoMediaId.from(UUID.randomUUID()),
+                      CniVersoMediaId.from(UUID.randomUUID())),
+                  ProviderImages.from(
+                      ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+                  new ServiceCollections(List.of(), List.of())));
 
       ServiceProviderJpa jpa = objectUnderTest.toServiceProviderJpa(serviceProvider);
 
@@ -193,29 +211,25 @@ class JpaMapperTest {
     void toServiceProviderJpa_shouldMapRejectionReasonAndRejectedBy() {
       UUID rejectedBy = UUID.randomUUID();
       ServiceProvider serviceProvider =
-          ServiceProvider.reconstitute(
-              ServiceProviderId.generate(),
+          ServiceProvider.of(
               new UserId(UUID.randomUUID()),
-              new ProviderContact(
-                  new ProviderLocation(
-                      new UserCityId(UUID.randomUUID()),
-                      new UserDistrictId(UUID.randomUUID()),
-                      new UserQuarterId(UUID.randomUUID())),
-                  new PhoneNumber("+237", "698765432")),
-              new ProviderReview(
-                  ServiceProviderStatus.REJECTED,
-                  null,
-                  new UserId(rejectedBy),
-                  new RejectionReason("Invalid documents")),
-              new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+              new ProviderLocation(
+                  new UserCityId(UUID.randomUUID()),
+                  new UserDistrictId(UUID.randomUUID()),
+                  new UserQuarterId(UUID.randomUUID())),
+              new PhoneNumber("+237", "698765432"),
               null,
-              new ServiceCollections(List.of(), List.of()));
+              IdentityDocuments.of(
+                  CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+              ProfileImageMediaId.from(UUID.randomUUID()),
+              List.of());
+      serviceProvider.reject(new UserId(rejectedBy), RejectionReason.CNI_INVALID);
 
       ServiceProviderJpa jpa = objectUnderTest.toServiceProviderJpa(serviceProvider);
 
       assertThat(jpa.getStatus()).isEqualTo("REJECTED");
       assertThat(jpa.getRejectedBy()).isEqualTo(rejectedBy);
-      assertThat(jpa.getRejectionReason()).isEqualTo("Invalid documents");
+      assertThat(jpa.getRejectionReason()).isEqualTo("CNI_INVALID");
     }
 
     @Test
@@ -227,28 +241,35 @@ class JpaMapperTest {
           ServiceProvider.reconstitute(
               spId,
               new UserId(UUID.randomUUID()),
-              new ProviderContact(
-                  new ProviderLocation(
-                      new UserCityId(UUID.randomUUID()),
-                      new UserDistrictId(UUID.randomUUID()),
-                      new UserQuarterId(UUID.randomUUID())),
-                  new PhoneNumber("+237", "678901234")),
-              new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
-              new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
-              null,
-              new ServiceCollections(
-                  List.of(
-                      UserService.of(
-                          spId,
-                          serviceTypeId1,
-                          new YearOfExperience(3),
-                          new UserDocument(UUID.randomUUID())),
-                      UserService.of(
-                          spId,
-                          serviceTypeId2,
-                          new YearOfExperience(5),
-                          new UserDocument(UUID.randomUUID()))),
-                  List.of()));
+              ServiceProviderState.from(
+                  new ProviderProfile(
+                      new ProviderContact(
+                          new ProviderLocation(
+                              new UserCityId(UUID.randomUUID()),
+                              new UserDistrictId(UUID.randomUUID()),
+                              new UserQuarterId(UUID.randomUUID())),
+                          new PhoneNumber("+237", "678901234")),
+                      null),
+                  new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
+                  new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+                  IdentityDocuments.of(
+                      CniRectoMediaId.from(UUID.randomUUID()),
+                      CniVersoMediaId.from(UUID.randomUUID())),
+                  ProviderImages.from(
+                      ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+                  new ServiceCollections(
+                      List.of(
+                          UserService.of(
+                              spId,
+                              serviceTypeId1,
+                              new YearOfExperience(3),
+                              new UserDocument(UUID.randomUUID())),
+                          UserService.of(
+                              spId,
+                              serviceTypeId2,
+                              new YearOfExperience(5),
+                              new UserDocument(UUID.randomUUID()))),
+                      List.of())));
 
       ServiceProviderJpa jpa = objectUnderTest.toServiceProviderJpa(serviceProvider);
 
@@ -278,16 +299,23 @@ class JpaMapperTest {
           ServiceProvider.reconstitute(
               spId,
               new UserId(UUID.randomUUID()),
-              new ProviderContact(
-                  new ProviderLocation(
-                      new UserCityId(UUID.randomUUID()),
-                      new UserDistrictId(UUID.randomUUID()),
-                      new UserQuarterId(UUID.randomUUID())),
-                  new PhoneNumber("+237", "678901234")),
-              new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
-              new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
-              null,
-              new ServiceCollections(List.of(), List.of(item1, item2)));
+              ServiceProviderState.from(
+                  new ProviderProfile(
+                      new ProviderContact(
+                          new ProviderLocation(
+                              new UserCityId(UUID.randomUUID()),
+                              new UserDistrictId(UUID.randomUUID()),
+                              new UserQuarterId(UUID.randomUUID())),
+                          new PhoneNumber("+237", "678901234")),
+                      null),
+                  new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
+                  new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+                  IdentityDocuments.of(
+                      CniRectoMediaId.from(UUID.randomUUID()),
+                      CniVersoMediaId.from(UUID.randomUUID())),
+                  ProviderImages.from(
+                      ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+                  new ServiceCollections(List.of(), List.of(item1, item2))));
 
       ServiceProviderJpa jpa = objectUnderTest.toServiceProviderJpa(serviceProvider);
 
@@ -309,6 +337,9 @@ class JpaMapperTest {
                   new UserQuarterId(UUID.randomUUID())),
               new PhoneNumber("+237", "678901234"),
               null,
+              IdentityDocuments.of(
+                  CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+              ProfileImageMediaId.from(UUID.randomUUID()),
               List.of());
 
       ServiceProviderJpa jpa = objectUnderTest.toServiceProviderJpa(serviceProvider);
@@ -336,14 +367,19 @@ class JpaMapperTest {
       jpa.setStatus("PENDING");
       jpa.setCreatedAt(LocalDateTime.now());
       jpa.setAbout("About me");
-      jpa.setRejectionReason("Reason");
+      var identityVerification = new IdentityVerificationJpa();
+      identityVerification.setId(UUID.randomUUID());
+      identityVerification.setStatus("REJECTED");
+      identityVerification.setRejectionReason("NAME_MISMATCH");
+      jpa.setIdentityVerification(identityVerification);
       jpa.setPhoneNumber(new PhoneNumberJpa("+237", "678901234"));
 
       ServiceProvider domain = objectUnderTest.toServiceProviderDomain(jpa);
 
       assertThat(domain).isNotNull();
       assertThat(domain.getAbout().value()).isEqualTo("About me");
-      assertThat(domain.getRejectionReason().value()).isEqualTo("Reason");
+      assertThat(domain.getIdentityVerification().getRejectionReason())
+          .isEqualTo(RejectionReason.NAME_MISMATCH);
       assertThat(domain.getLocation())
           .satisfies(
               location -> {
@@ -392,7 +428,11 @@ class JpaMapperTest {
       jpa.setQuarter(UUID.randomUUID());
       jpa.setStatus("REJECTED");
       jpa.setRejectedBy(rejectedBy);
-      jpa.setRejectionReason("Invalid documents");
+      var identityVerification = new IdentityVerificationJpa();
+      identityVerification.setId(UUID.randomUUID());
+      identityVerification.setStatus("REJECTED");
+      identityVerification.setRejectionReason("CNI_INVALID");
+      jpa.setIdentityVerification(identityVerification);
       jpa.setPhoneNumber(new PhoneNumberJpa("+237", "678901234"));
       jpa.setCreatedAt(LocalDateTime.now());
       jpa.setUpdatedAt(LocalDateTime.now());
@@ -401,7 +441,8 @@ class JpaMapperTest {
 
       assertThat(domain.getStatus()).isEqualTo(ServiceProviderStatus.REJECTED);
       assertThat(domain.getRejectedBy().value()).isEqualTo(rejectedBy);
-      assertThat(domain.getRejectionReason().value()).isEqualTo("Invalid documents");
+      assertThat(domain.getIdentityVerification().getRejectionReason())
+          .isEqualTo(RejectionReason.CNI_INVALID);
       assertThat(domain.getUpdatedAt()).isNotNull();
     }
 
@@ -510,7 +551,7 @@ class JpaMapperTest {
       assertThat(domain.getAbout()).isNull();
       assertThat(domain.getApprovedBy()).isNull();
       assertThat(domain.getRejectedBy()).isNull();
-      assertThat(domain.getRejectionReason()).isNull();
+      assertThat(domain.getIdentityVerification().getRejectionReason()).isNull();
       assertThat(domain.getUpdatedAt()).isNull();
       assertThat(domain.getUserServices()).isEmpty();
       assertThat(domain.getPortfolioItems()).isEmpty();
@@ -774,7 +815,7 @@ class JpaMapperTest {
 
       assertThat(target.getUserServices()).isSameAs(managedCollection);
       assertThat(target.getUserServices()).contains(existingChild);
-      assertThat(existingChild.getYearOfExperience()).isEqualTo(1);
+      assertThat(existingChild.getYearOfExperience()).isEqualTo(8);
       assertThat(target.getUserServices())
           .extracting(userService -> userService.getId().getServiceTypeId())
           .containsExactlyInAnyOrder(existingServiceTypeId, newServiceTypeId);
@@ -815,16 +856,23 @@ class JpaMapperTest {
           ServiceProvider.reconstitute(
               new ServiceProviderId(spId),
               new UserId(UUID.randomUUID()),
-              new ProviderContact(
-                  new ProviderLocation(
-                      new UserCityId(UUID.randomUUID()),
-                      new UserDistrictId(UUID.randomUUID()),
-                      new UserQuarterId(UUID.randomUUID())),
-                  new PhoneNumber("+237", "678901234")),
-              new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
-              new ProviderAudit(CreatedAt.from(now), null),
-              null,
-              new ServiceCollections(List.of(), List.of(existingItem, newItem)));
+              ServiceProviderState.from(
+                  new ProviderProfile(
+                      new ProviderContact(
+                          new ProviderLocation(
+                              new UserCityId(UUID.randomUUID()),
+                              new UserDistrictId(UUID.randomUUID()),
+                              new UserQuarterId(UUID.randomUUID())),
+                          new PhoneNumber("+237", "678901234")),
+                      null),
+                  new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
+                  new ProviderAudit(CreatedAt.from(now), null),
+                  IdentityDocuments.of(
+                      CniRectoMediaId.from(UUID.randomUUID()),
+                      CniVersoMediaId.from(UUID.randomUUID())),
+                  ProviderImages.from(
+                      ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+                  new ServiceCollections(List.of(), List.of(existingItem, newItem))));
 
       ServiceProviderJpa target = new ServiceProviderJpa();
       target.setId(spId);
@@ -852,17 +900,24 @@ class JpaMapperTest {
           ServiceProvider.reconstitute(
               new ServiceProviderId(spId),
               new UserId(UUID.randomUUID()),
-              new ProviderContact(
-                  new ProviderLocation(
-                      new UserCityId(UUID.randomUUID()),
-                      new UserDistrictId(UUID.randomUUID()),
-                      new UserQuarterId(UUID.randomUUID())),
-                  new PhoneNumber("+237", "123456789")),
-              new ProviderReview(
-                  ServiceProviderStatus.APPROVED, new UserId(UUID.randomUUID()), null, null),
-              new ProviderAudit(now, now),
-              new AboutProvider("Updated about"),
-              new ServiceCollections(List.of(), List.of()));
+              ServiceProviderState.from(
+                  new ProviderProfile(
+                      new ProviderContact(
+                          new ProviderLocation(
+                              new UserCityId(UUID.randomUUID()),
+                              new UserDistrictId(UUID.randomUUID()),
+                              new UserQuarterId(UUID.randomUUID())),
+                          new PhoneNumber("+237", "123456789")),
+                      new AboutProvider("Updated about")),
+                  new ProviderReview(
+                      ServiceProviderStatus.APPROVED, new UserId(UUID.randomUUID()), null, null),
+                  new ProviderAudit(now, now),
+                  IdentityDocuments.of(
+                      CniRectoMediaId.from(UUID.randomUUID()),
+                      CniVersoMediaId.from(UUID.randomUUID())),
+                  ProviderImages.from(
+                      ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+                  new ServiceCollections(List.of(), List.of())));
 
       ServiceProviderJpa target = new ServiceProviderJpa();
       target.setId(spId);
@@ -884,24 +939,31 @@ class JpaMapperTest {
           ServiceProvider.reconstitute(
               new ServiceProviderId(spId),
               new UserId(UUID.randomUUID()),
-              new ProviderContact(
-                  new ProviderLocation(
-                      new UserCityId(UUID.randomUUID()),
-                      new UserDistrictId(UUID.randomUUID()),
-                      new UserQuarterId(UUID.randomUUID())),
-                  new PhoneNumber("+237", "678901234")),
-              new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
-              new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
-              null,
-              new ServiceCollections(
-                  List.of(
-                      UserService.reconstitute(
-                          new ServiceProviderId(spId),
-                          new ServiceTypeId(stId),
-                          new YearOfExperience(5),
-                          new UserDocument(UUID.randomUUID()),
-                          CreatedAt.from(LocalDateTime.now()))),
-                  List.of()));
+              ServiceProviderState.from(
+                  new ProviderProfile(
+                      new ProviderContact(
+                          new ProviderLocation(
+                              new UserCityId(UUID.randomUUID()),
+                              new UserDistrictId(UUID.randomUUID()),
+                              new UserQuarterId(UUID.randomUUID())),
+                          new PhoneNumber("+237", "678901234")),
+                      null),
+                  new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
+                  new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+                  IdentityDocuments.of(
+                      CniRectoMediaId.from(UUID.randomUUID()),
+                      CniVersoMediaId.from(UUID.randomUUID())),
+                  ProviderImages.from(
+                      ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+                  new ServiceCollections(
+                      List.of(
+                          UserService.reconstitute(
+                              new ServiceProviderId(spId),
+                              new ServiceTypeId(stId),
+                              new YearOfExperience(5),
+                              new UserDocument(UUID.randomUUID()),
+                              CreatedAt.from(LocalDateTime.now()))),
+                      List.of())));
 
       ServiceProviderJpa target = new ServiceProviderJpa();
       target.setId(spId);
@@ -921,6 +983,65 @@ class JpaMapperTest {
 
   @Nested
   class ServiceProviderViewMapping {
+
+    @Test
+    void toServiceProviderView_shouldOmitIdentityVerificationWhenProviderIsApproved() {
+      var providerJpa = new ServiceProviderJpa();
+      providerJpa.setId(UUID.randomUUID());
+      providerJpa.setUserId(UUID.randomUUID());
+      providerJpa.setPhoneNumber(new PhoneNumberJpa("+237", "678901234"));
+      providerJpa.setStatus(ServiceProviderStatus.APPROVED.name());
+      providerJpa.setCreatedAt(LocalDateTime.now());
+
+      var verificationJpa = new IdentityVerificationJpa();
+      verificationJpa.setId(UUID.randomUUID());
+      verificationJpa.setStatus("APPROVED");
+      verificationJpa.setCniRectoId(UUID.randomUUID());
+      verificationJpa.setCniVersoId(UUID.randomUUID());
+      providerJpa.setIdentityVerification(verificationJpa);
+
+      var userJpa = new UserJpa();
+      userJpa.setId(providerJpa.getUserId());
+      userJpa.setLastname("Doe");
+      userJpa.setCreatedAt(providerJpa.getCreatedAt());
+
+      var result =
+          objectUnderTest.toServiceProviderView2(providerJpa, userJpa, List.of(), List.of());
+
+      assertThat(result.identityVerification()).isNull();
+    }
+
+    @Test
+    void toServiceProviderView_shouldIncludeIdentityVerificationForRejectedProvider() {
+      var providerJpa = new ServiceProviderJpa();
+      providerJpa.setId(UUID.randomUUID());
+      providerJpa.setUserId(UUID.randomUUID());
+      providerJpa.setPhoneNumber(new PhoneNumberJpa("+237", "678901234"));
+      providerJpa.setStatus(ServiceProviderStatus.REJECTED.name());
+      providerJpa.setCreatedAt(LocalDateTime.now());
+
+      var rectoId = UUID.randomUUID();
+      var versoId = UUID.randomUUID();
+      var verificationJpa = new IdentityVerificationJpa();
+      verificationJpa.setId(UUID.randomUUID());
+      verificationJpa.setStatus("REJECTED");
+      verificationJpa.setCniRectoId(rectoId);
+      verificationJpa.setCniVersoId(versoId);
+      verificationJpa.setRejectionReason("FACE_MISMATCH");
+      providerJpa.setIdentityVerification(verificationJpa);
+
+      var userJpa = new UserJpa();
+      userJpa.setId(providerJpa.getUserId());
+      userJpa.setLastname("Doe");
+      userJpa.setCreatedAt(providerJpa.getCreatedAt());
+
+      var result =
+          objectUnderTest.toServiceProviderView2(providerJpa, userJpa, List.of(), List.of());
+
+      assertThat(result.identityVerification()).isNotNull();
+      assertThat(result.identityVerification().cniRectoId()).isEqualTo(rectoId);
+      assertThat(result.identityVerification().cniVersoId()).isEqualTo(versoId);
+    }
 
     @Test
     void toServiceProviderView_shouldMapAllFieldsCorrectly() {
@@ -963,8 +1084,8 @@ class JpaMapperTest {
 
       assertThat(view.id()).isEqualTo(spId);
       assertThat(view.userId()).isEqualTo(userId);
-      assertThat(view.firstname()).isEqualTo("John");
-      assertThat(view.lastname()).isEqualTo("Doe");
+      assertThat(view.user().firstname()).isEqualTo("John");
+      assertThat(view.user().lastname()).isEqualTo("Doe");
       assertThat(view.phoneNumber().number()).isEqualTo("678901234");
       assertThat(view.status()).isEqualTo("APPROVED");
       assertThat(view.createdAt()).isEqualTo(now);
@@ -973,6 +1094,17 @@ class JpaMapperTest {
       assertThat(serviceView.serviceType().name()).isEqualTo("Plumber");
       assertThat(serviceView.yearOfExperience()).isEqualTo(5);
       assertThat(serviceView.document()).isEqualTo(docId);
+
+      var view2 =
+          objectUnderTest.toServiceProviderView2(
+              spJpa,
+              userJpa,
+              objectUnderTest.toUserServiceViews(List.of(usJpa), List.of(stJpa)),
+              List.of());
+      assertThat(view2.services()).hasSize(1);
+      assertThat(view2.services().get(0).serviceType().id()).isEqualTo(stId);
+      assertThat(view2.services().get(0).serviceType().name()).isEqualTo("Plumber");
+      assertThat(view2.services().get(0).serviceType().category()).isEqualTo("MAINTENANCE");
     }
 
     @Test
@@ -992,7 +1124,7 @@ class JpaMapperTest {
       spJpa.setStatus("REJECTED");
       spJpa.setApprovedBy(approvedBy);
       spJpa.setRejectedBy(rejectedBy);
-      spJpa.setRejectionReason("Invalid");
+      spJpa.setRejectionReason("CNI_INVALID");
       spJpa.setCreatedAt(now);
       spJpa.setUpdatedAt(now);
       spJpa.setAbout("About");
@@ -1006,7 +1138,7 @@ class JpaMapperTest {
 
       assertThat(view.approvedBy()).isEqualTo(approvedBy);
       assertThat(view.rejectedBy()).isEqualTo(rejectedBy);
-      assertThat(view.rejectionReason()).isEqualTo("Invalid");
+      assertThat(view.rejectionReason()).isEqualTo("CNI_INVALID");
       assertThat(view.about()).isEqualTo("About");
       assertThat(view.updatedAt()).isEqualTo(now);
       assertThat(view.districtId()).isEqualTo(districtId);
@@ -1042,28 +1174,35 @@ class JpaMapperTest {
           ServiceProvider.reconstitute(
               spId,
               new UserId(UUID.randomUUID()),
-              new ProviderContact(
-                  new ProviderLocation(
-                      new UserCityId(UUID.randomUUID()),
-                      new UserDistrictId(UUID.randomUUID()),
-                      new UserQuarterId(UUID.randomUUID())),
-                  new PhoneNumber("+237", "678901234")),
-              new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
-              new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
-              null,
-              new ServiceCollections(
-                  List.of(
-                      UserService.of(
-                          spId,
-                          new ServiceTypeId(UUID.randomUUID()),
-                          new YearOfExperience(3),
-                          new UserDocument(UUID.randomUUID())),
-                      UserService.of(
-                          spId,
-                          new ServiceTypeId(UUID.randomUUID()),
-                          new YearOfExperience(5),
-                          new UserDocument(UUID.randomUUID()))),
-                  List.of()));
+              ServiceProviderState.from(
+                  new ProviderProfile(
+                      new ProviderContact(
+                          new ProviderLocation(
+                              new UserCityId(UUID.randomUUID()),
+                              new UserDistrictId(UUID.randomUUID()),
+                              new UserQuarterId(UUID.randomUUID())),
+                          new PhoneNumber("+237", "678901234")),
+                      null),
+                  new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
+                  new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+                  IdentityDocuments.of(
+                      CniRectoMediaId.from(UUID.randomUUID()),
+                      CniVersoMediaId.from(UUID.randomUUID())),
+                  ProviderImages.from(
+                      ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+                  new ServiceCollections(
+                      List.of(
+                          UserService.of(
+                              spId,
+                              new ServiceTypeId(UUID.randomUUID()),
+                              new YearOfExperience(3),
+                              new UserDocument(UUID.randomUUID())),
+                          UserService.of(
+                              spId,
+                              new ServiceTypeId(UUID.randomUUID()),
+                              new YearOfExperience(5),
+                              new UserDocument(UUID.randomUUID()))),
+                      List.of())));
       ServiceProviderJpa target = new ServiceProviderJpa();
       target.setId(spId.value());
 
@@ -1078,15 +1217,21 @@ class JpaMapperTest {
     return ServiceProvider.reconstitute(
         new ServiceProviderId(serviceProviderId),
         new UserId(UUID.randomUUID()),
-        new ProviderContact(
-            new ProviderLocation(
-                new UserCityId(UUID.randomUUID()),
-                new UserDistrictId(UUID.randomUUID()),
-                new UserQuarterId(UUID.randomUUID())),
-            new PhoneNumber("+237", "678901234")),
-        new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
-        new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
-        null,
-        new ServiceCollections(List.of(), List.of()));
+        ServiceProviderState.from(
+            new ProviderProfile(
+                new ProviderContact(
+                    new ProviderLocation(
+                        new UserCityId(UUID.randomUUID()),
+                        new UserDistrictId(UUID.randomUUID()),
+                        new UserQuarterId(UUID.randomUUID())),
+                    new PhoneNumber("+237", "678901234")),
+                null),
+            new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
+            new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProviderImages.from(
+                ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+            new ServiceCollections(List.of(), List.of())));
   }
 }

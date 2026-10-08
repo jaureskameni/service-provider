@@ -7,36 +7,49 @@ import cm.klg.common.base.adapter.inbound.rest.WithAuthenticationSupport;
 import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.api.ServiceProviderApi;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreateProviderServiceDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.MyServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemDTO;
-import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectionReasonDTO;
-import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ProfileImageReviewPageDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.RejectedServiceProviderIdentityDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ResubmitServiceProviderApplicationDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPaginateDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderProfileImageReviewDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderPublicProfileDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderStatusDTO;
-import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
-import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UpdateServiceProviderProfileRequestDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderVerificationDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UpdateApprovedServiceProviderProfileDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO;
 import cm.klg.service_provider.application.usecase.AddNewServiceUseCase;
 import cm.klg.service_provider.application.usecase.AddPortfolioItemUseCase;
+import cm.klg.service_provider.application.usecase.ApproveProfileImageUseCase;
 import cm.klg.service_provider.application.usecase.ApproveServiceProviderRequestUseCase;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.DeletePortfolioItemUseCase;
+import cm.klg.service_provider.application.usecase.DeleteProviderServiceUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetMyServiceProviderIdentityUseCase;
+import cm.klg.service_provider.application.usecase.GetMyServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetProfileImageReviewUseCase;
+import cm.klg.service_provider.application.usecase.GetProfileImageReviewsUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
-import cm.klg.service_provider.application.usecase.GetServiceProviderProfileUseCase;
+import cm.klg.service_provider.application.usecase.GetServiceProviderVerificationUseCase;
+import cm.klg.service_provider.application.usecase.RejectProfileImageUseCase;
 import cm.klg.service_provider.application.usecase.RejectServiceProviderRequestUseCase;
+import cm.klg.service_provider.application.usecase.ResubmitRejectedServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.SearchServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.UpdateApprovedServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.UpdatePortfolioItemUseCase;
-import cm.klg.service_provider.application.usecase.UpdateServiceProviderProfileUseCase;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +64,6 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final BecomeServiceProviderUseCase becomeServiceProviderUseCase;
   private final GetAllServiceProviderUseCase getAllServiceProviderUseCase;
   private final GetServiceProviderByIdUseCase getServiceProviderByIdUseCase;
-  private final GetServiceProviderProfileUseCase getServiceProviderProfileUseCase;
   private final ApproveServiceProviderRequestUseCase approveServiceProviderRequestUseCase;
   private final RejectServiceProviderRequestUseCase rejectServiceProviderRequestUseCase;
   private final AddNewServiceUseCase addNewServiceUseCase;
@@ -63,10 +75,19 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final DeletePortfolioItemUseCase deletePortfolioItemUseCase;
   private final GetAllMyServicesUseCase getAllMyServicesUseCase;
   private final GetProviderServicesUseCase getProviderServicesUseCase;
-  private final UpdateServiceProviderProfileUseCase updateServiceProviderProfileUseCase;
+  private final GetMyServiceProviderUseCase getMyServiceProviderUseCase;
+  private final GetMyServiceProviderIdentityUseCase getMyServiceProviderIdentityUseCase;
+  private final GetServiceProviderVerificationUseCase getServiceProviderVerificationUseCase;
+  private final GetProfileImageReviewsUseCase getProfileImageReviewsUseCase;
+  private final GetProfileImageReviewUseCase getProfileImageReviewUseCase;
+  private final ResubmitRejectedServiceProviderUseCase resubmitRejectedServiceProviderUseCase;
+  private final UpdateApprovedServiceProviderUseCase updateApprovedServiceProviderUseCase;
+  private final ApproveProfileImageUseCase approveProfileImageUseCase;
+  private final RejectProfileImageUseCase rejectProfileImageUseCase;
+  private final DeleteProviderServiceUseCase deleteProviderServiceUseCase;
 
   @Override
-  public ResponseEntity<Void> addNewService(ServiceTypeDTO serviceTypeDTO) {
+  public ResponseEntity<Void> addNewService(CreateProviderServiceDTO serviceTypeDTO) {
     useCaseExecutor.runCommand(
         () ->
             addNewServiceUseCase.execute(
@@ -116,13 +137,13 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
 
   @Override
   public ResponseEntity<Void> rejectServiceProvider(
-      UUID serviceProviderId, RejectionReasonDTO rejectionReasonDTO) {
+      UUID serviceProviderId, String rejectionReason) {
     useCaseExecutor.runCommand(
         () ->
             rejectServiceProviderRequestUseCase.execute(
                 new UserId(getCurrentUserId()),
                 new ServiceProviderId(serviceProviderId),
-                restMapper.toRejectionReason(rejectionReasonDTO)));
+                restMapper.toRejectionReason(rejectionReason)));
     return ResponseEntity.noContent().build();
   }
 
@@ -199,21 +220,99 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   }
 
   @Override
-  public ResponseEntity<ServiceProviderDTO> getServiceProviderProfile() {
-    var result =
+  public ResponseEntity<MyServiceProviderDTO> getMyServiceProvider() {
+    var providerView =
         useCaseExecutor.executeQuery(
-            () -> getServiceProviderProfileUseCase.execute(UserId.from(getCurrentUserId())));
-    return ResponseEntity.status(OK).body(restMapper.toServiceProviderProfileDTO(result));
+            () -> getMyServiceProviderUseCase.execute(UserId.from(getCurrentUserId())));
+    return ResponseEntity.ok(restMapper.toMyServiceProviderDTO(providerView));
   }
 
   @Override
-  public ResponseEntity<Void> updateServiceProviderProfile(
-      UpdateServiceProviderProfileRequestDTO updateServiceProviderProfileRequestDTO) {
+  public ResponseEntity<RejectedServiceProviderIdentityDTO> myServiceProviderIdentity() {
+    var identity =
+        useCaseExecutor.executeQuery(
+            () -> getMyServiceProviderIdentityUseCase.execute(UserId.from(getCurrentUserId())));
+    return ResponseEntity.ok(restMapper.toRejectedServiceProviderIdentityDTO(identity));
+  }
+
+  @Override
+  public ResponseEntity<ServiceProviderVerificationDTO> getServiceProviderVerification(
+      UUID serviceProviderId) {
+    var providerView =
+        useCaseExecutor.executeQuery(
+            () ->
+                getServiceProviderVerificationUseCase.execute(
+                    ServiceProviderId.from(serviceProviderId)));
+    return ResponseEntity.ok(restMapper.toServiceProviderVerificationDTO(providerView));
+  }
+
+  @Override
+  public ResponseEntity<Void> updateRejectedServiceProvider(
+      ResubmitServiceProviderApplicationDTO dto) {
     useCaseExecutor.runCommand(
         () ->
-            updateServiceProviderProfileUseCase.execute(
-                restMapper.toUpdateServiceProviderProfileCommand(
-                    updateServiceProviderProfileRequestDTO, getCurrentUserId())));
+            resubmitRejectedServiceProviderUseCase.execute(
+                restMapper.toResubmitRejectedServiceProviderCommand(dto, getCurrentUserId())));
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> updateApprovedServiceProvider(
+      UpdateApprovedServiceProviderProfileDTO dto) {
+    useCaseExecutor.runCommand(
+        () ->
+            updateApprovedServiceProviderUseCase.execute(
+                restMapper.toUpdateApprovedServiceProviderCommand(dto, getCurrentUserId())));
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<ProfileImageReviewPageDTO> getProfileImageReviews(
+      Integer page, Integer limit) {
+    var result =
+        useCaseExecutor.executeQuery(
+            () ->
+                getProfileImageReviewsUseCase.execute(
+                    page != null ? page : 0, limit != null ? limit : 20));
+    return ResponseEntity.ok(
+        restMapper.toProfileImageReviewPageDTO(result.elements(), result.total()));
+  }
+
+  @Override
+  public ResponseEntity<ServiceProviderProfileImageReviewDTO> getProfileImageReview(
+      UUID serviceProviderId) {
+    var review =
+        useCaseExecutor.executeQuery(
+            () -> getProfileImageReviewUseCase.execute(ServiceProviderId.from(serviceProviderId)));
+    return ResponseEntity.ok(restMapper.toServiceProviderProfileImageReviewDTO(review));
+  }
+
+  @Override
+  public ResponseEntity<Void> approveProfileImage(UUID serviceProviderId) {
+    useCaseExecutor.runCommand(
+        () ->
+            approveProfileImageUseCase.execute(
+                UserId.from(getCurrentUserId()), ServiceProviderId.from(serviceProviderId)));
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> rejectProfileImage(UUID serviceProviderId, String rejectionReason) {
+    useCaseExecutor.runCommand(
+        () ->
+            rejectProfileImageUseCase.execute(
+                UserId.from(getCurrentUserId()),
+                ServiceProviderId.from(serviceProviderId),
+                restMapper.toRejectionReason(rejectionReason)));
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> deleteMyService(UUID serviceTypeId) {
+    useCaseExecutor.runCommand(
+        () ->
+            deleteProviderServiceUseCase.execute(
+                UserId.from(getCurrentUserId()), new ServiceTypeId(serviceTypeId)));
     return ResponseEntity.noContent().build();
   }
 

@@ -1,6 +1,6 @@
 package cm.klg.service_provider.domain;
 
-import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderPaginationDataException;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderPhoneNumberException;
 import java.util.Objects;
 
 public record PhoneNumber(String countryCode, String number) {
@@ -14,13 +14,13 @@ public record PhoneNumber(String countryCode, String number) {
     String normalizedNumber = number.trim();
 
     if (normalizedCountryCode.isEmpty() || normalizedNumber.isEmpty()) {
-      throw new InvalidServiceProviderPaginationDataException();
+      throw new InvalidServiceProviderPhoneNumberException();
     }
     if (!normalizedCountryCode.matches("^\\+[1-9]\\d{0,3}$")) {
-      throw new InvalidServiceProviderPaginationDataException();
+      throw new InvalidServiceProviderPhoneNumberException();
     }
     if (!normalizedNumber.matches("^\\d{6,15}$")) {
-      throw new InvalidServiceProviderPaginationDataException();
+      throw new InvalidServiceProviderPhoneNumberException();
     }
 
     countryCode = normalizedCountryCode;

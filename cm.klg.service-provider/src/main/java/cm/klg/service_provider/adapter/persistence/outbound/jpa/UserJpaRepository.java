@@ -1,7 +1,9 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
+import cm.klg.common.base.entity.PhoneNumberJpa;
 import cm.klg.common.base.entity.PhoneNumberJpaConverter;
 import cm.klg.service_provider.application.outbound.UserRepository;
+import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.user.User;
 import cm.klg.service_provider.domain.user.UserNotFoundException;
@@ -60,6 +62,15 @@ public class UserJpaRepository implements UserRepository {
   @Override
   public boolean existsByUserId(@NonNull UserId userId) {
     return userSpringRepository.existsById(userId.value());
+  }
+
+  @Override
+  public boolean existsByPhoneNumberExceptUserId(
+      @NonNull PhoneNumber phoneNumber, @NonNull UserId userId) {
+    return userSpringRepository.existsByPhoneNumberExceptId(
+        PHONE_NUMBER_CONVERTER.convertToDatabaseColumn(
+            new PhoneNumberJpa(phoneNumber.countryCode(), phoneNumber.number())),
+        userId.value());
   }
 
   @Override

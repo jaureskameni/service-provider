@@ -5,8 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ProfileImageReviewQueueItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceCatalogItemDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderProfileImageReviewDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderRegisterDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderVerificationDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceTypeDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.UserServiceDTO;
 import cm.klg.service_provider.application.usecase.BecomeServiceProviderUseCase.BecomeServiceProviderCommand;
@@ -17,11 +20,14 @@ import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeVie
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.IdentityVerificationStatus;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
+import cm.klg.service_provider.domain.service_provider.ProfileImageReviewStatus;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +40,80 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RestMapperTest {
 
   private final RestMapper objectUnderTest = new RestMapperImpl();
+
+  @Test
+  void serviceProviderVerificationDTO_omitsIdentityWhenItIsNull() throws Exception {
+    var dto = new ServiceProviderVerificationDTO().identityVerification(null);
+
+    var json = new ObjectMapper().readTree(new ObjectMapper().writeValueAsString(dto));
+
+    assertThat(json.has("identityVerification")).isFalse();
+  }
+
+  @Test
+  void toServiceProviderProfileImageReviewDTO_includesPrivateDocumentsInDedicatedAdminView() {
+    var frontId = UUID.randomUUID();
+    var backId = UUID.randomUUID();
+    var now = LocalDateTime.now();
+    var verification =
+        new IdentityVerificationView(
+            UUID.randomUUID(),
+            frontId,
+            backId,
+            IdentityVerificationStatus.APPROVED,
+            null,
+            null,
+            null);
+
+    var review =
+        new ServiceProviderView3(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new UserView(UUID.randomUUID(), "Ari", "Nana", null, now),
+            PhoneNumber.from("+237", "678901234"),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            null,
+            null,
+            ServiceProviderStatus.APPROVED,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            ProfileImageReviewStatus.PENDING_REVIEW,
+            null,
+            now,
+            verification,
+            now,
+            null,
+            List.of());
+    ServiceProviderProfileImageReviewDTO result =
+        objectUnderTest.toServiceProviderProfileImageReviewDTO(review);
+
+    assertThat(result.getServiceProvider().getUser().getFirstname()).isEqualTo("Ari");
+    assertThat(result.getServiceProvider().getCurrentProfileImageId()).isNotNull();
+    assertThat(result.getProfileImageReview().getPendingProfileImageId()).isNotNull();
+    assertThat(result.getIdentityVerification().getCniRectoId()).isEqualTo(frontId);
+    assertThat(result.getIdentityVerification().getCniVersoId()).isEqualTo(backId);
+
+    var summary =
+        new ProfileImageReviewSummaryView(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            new UserView(UUID.randomUUID(), "Ari", "Nana", null, now),
+            PhoneNumber.from("+237", "678901234"),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            null,
+            ServiceProviderStatus.APPROVED,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            ProfileImageReviewStatus.PENDING_REVIEW,
+            now);
+    ProfileImageReviewQueueItemDTO queueItem =
+        objectUnderTest.toProfileImageReviewQueueItemDTO(summary);
+    assertThat(queueItem.getServiceProviderId()).isEqualTo(summary.serviceProviderId());
+    assertThat(queueItem.getCurrentProfileImageId()).isEqualTo(summary.currentProfileImageId());
+    assertThat(queueItem.getPendingProfileImageId()).isEqualTo(summary.pendingProfileImageId());
+  }
 
   @Test
   void toBecomeServiceProviderCommand_shouldMapAllFieldsCorrectly() {
@@ -58,7 +138,10 @@ class RestMapperTest {
                 new ServiceTypeDTO()
                     .id(serviceTypeId)
                     .yearOfExperience(yearOfExperience)
-                    .document(documentId));
+                    .document(documentId))
+            .cniRectoId(UUID.randomUUID())
+            .cniVersoId(UUID.randomUUID())
+            .profileImageId(UUID.randomUUID());
 
     // When
     BecomeServiceProviderCommand command =
@@ -67,14 +150,15 @@ class RestMapperTest {
     // Then
     assertThat(command).isNotNull();
     assertThat(command.userId().value()).isEqualTo(currentUserId);
-    assertThat(command.location().cityId().value()).isEqualTo(cityId);
-    assertThat(command.location().districtId().value()).isEqualTo(districtId);
-    assertThat(command.location().quarterId().value()).isEqualTo(quarterId);
-    assertThat(command.phoneNumber().countryCode()).isEqualTo(countryCode);
-    assertThat(command.phoneNumber().number()).isEqualTo(phoneNumber);
-    assertThat(command.serviceTypeId().value()).isEqualTo(serviceTypeId);
-    assertThat(command.yearOfExperience().value()).isEqualTo(yearOfExperience);
-    assertThat(command.document().value()).isEqualTo(documentId);
+    assertThat(command.profile().location().cityId().value()).isEqualTo(cityId);
+    assertThat(command.profile().location().districtId().value()).isEqualTo(districtId);
+    assertThat(command.profile().location().quarterId().value()).isEqualTo(quarterId);
+    assertThat(command.profile().phoneNumber().countryCode()).isEqualTo(countryCode);
+    assertThat(command.profile().phoneNumber().number()).isEqualTo(phoneNumber);
+    assertThat(command.profile().profileImageId().value()).isNotNull();
+    assertThat(command.initialService().serviceTypeId().value()).isEqualTo(serviceTypeId);
+    assertThat(command.initialService().yearOfExperience().value()).isEqualTo(yearOfExperience);
+    assertThat(command.initialService().document().value()).isEqualTo(documentId);
   }
 
   @Test
@@ -118,69 +202,13 @@ class RestMapperTest {
   }
 
   @Test
-  void toServiceProviderDTO_shouldMapAllFieldsCorrectly() {
-    // Given
-    UUID serviceProviderId = UUID.randomUUID();
-    UUID userId = UUID.randomUUID();
-    UUID cityId = UUID.randomUUID();
-    UUID districtId = UUID.randomUUID();
-    UUID quarterId = UUID.randomUUID();
-    UUID documentId = UUID.randomUUID();
-    LocalDateTime createdAt = LocalDateTime.now();
-    LocalDateTime updatedAt = createdAt.plusDays(1);
-
-    ServiceTypeView serviceTypeView =
-        new ServiceTypeView(UUID.randomUUID(), "Plumber", "MAINTENANCE", true);
-
-    UserServiceView userServiceView =
-        new UserServiceView(serviceTypeView, 5, documentId, createdAt);
-
-    var serviceProviderView =
-        new ServiceProviderView2(
-            serviceProviderId,
-            userId,
-            "John",
-            "Doe",
-            cityId,
-            districtId,
-            quarterId,
-            null,
-            null,
-            null,
-            null,
-            PhoneNumber.from("+237", "678901234"),
-            "APPROVED",
-            createdAt,
-            updatedAt,
-            List.of(userServiceView),
-            List.of());
-
-    // When
-    var result = objectUnderTest.toServiceProviderDTO(serviceProviderView);
-
-    // Then
-    assertThat(result.getId()).isEqualTo(serviceProviderId);
-    assertThat(result.getUserId()).isEqualTo(userId);
-    assertThat(result.getFirstname()).isEqualTo("John");
-    assertThat(result.getLastname()).isEqualTo("Doe");
-    assertThat(result.getCity()).isEqualTo(cityId);
-    assertThat(result.getDistrict()).isEqualTo(districtId);
-    assertThat(result.getQuarter()).isEqualTo(quarterId);
-    assertThat(result.getPhoneNumber().getCountryCode()).isEqualTo("+237");
-    assertThat(result.getPhoneNumber().getNumber()).isEqualTo("678901234");
-    assertThat(result.getCreatedAt()).isEqualTo(createdAt);
-    assertThat(result.getUpdatedAt()).isEqualTo(updatedAt);
-  }
-
-  @Test
-  void toPublicServiceProviderProfileDTO_shouldIncludePhoneNumber_whenUserIsClient() {
+  void toPublicServiceProviderProfileDTO_shouldNotIncludePhoneNumber() {
     // Given
     var profile =
         new ServiceProviderView1(
             UUID.randomUUID(),
             UUID.randomUUID(),
-            "John",
-            "Doe",
+            new UserView(UUID.randomUUID(), "John", "Doe", "john@example.com", LocalDateTime.now()),
             UUID.randomUUID(),
             UUID.randomUUID(),
             null,
@@ -190,15 +218,15 @@ class RestMapperTest {
             null,
             PhoneNumber.from("+237", "678901234"),
             "APPROVED",
+            null,
             LocalDateTime.now(),
             null);
 
     // When
-    var result = objectUnderTest.toServiceProviderProfileDTO(profile);
+    var result = objectUnderTest.toServiceProviderDTO(profile);
 
     // Then
-    assertThat(result.getPhoneNumber()).isNotNull();
-    assertThat(result.getPhoneNumber().getNumber()).isEqualTo("678901234");
+    assertThat(result.getPhoneNumber()).isNull();
   }
 
   @Test

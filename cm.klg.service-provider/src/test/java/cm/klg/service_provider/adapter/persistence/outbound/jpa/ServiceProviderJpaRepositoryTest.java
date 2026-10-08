@@ -1,19 +1,34 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 import cm.klg.service_provider.application.views.PortfolioView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderIdentityView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderVerificationView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView3;
+import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.common.PaginationFetchRequest;
+import cm.klg.service_provider.domain.service_provider.CniRectoMediaId;
+import cm.klg.service_provider.domain.service_provider.CniVersoMediaId;
+import cm.klg.service_provider.domain.service_provider.IdentityDocuments;
+import cm.klg.service_provider.domain.service_provider.InvalidServiceProviderStatusException;
+import cm.klg.service_provider.domain.service_provider.ProfileImageMediaId;
+import cm.klg.service_provider.domain.service_provider.ProfileImageReview;
+import cm.klg.service_provider.domain.service_provider.ProfileImageReviewStatus;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
 import cm.klg.service_provider.domain.service_provider.ProviderContact;
+import cm.klg.service_provider.domain.service_provider.ProviderImages;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
+import cm.klg.service_provider.domain.service_provider.ProviderProfile;
 import cm.klg.service_provider.domain.service_provider.ProviderReview;
 import cm.klg.service_provider.domain.service_provider.ServiceCollections;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderState;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
@@ -127,6 +142,102 @@ class ServiceProviderJpaRepositoryTest {
   }
 
   @Test
+  void loadPendingProfileImageReviewAsView3_shouldMapProviderAndUser() {
+    var providerId = ServiceProviderId.generate();
+    var userId = UUID.randomUUID();
+    var providerJpa = new ServiceProviderJpa();
+    providerJpa.setId(providerId.value());
+    providerJpa.setUserId(userId);
+    providerJpa.setStatus(ServiceProviderStatus.APPROVED.name());
+    providerJpa.setProfileImageReviewStatus(ProfileImageReviewStatus.PENDING_REVIEW.name());
+    var userJpa = new UserJpa();
+    userJpa.setId(userId);
+    var expectedView = mock(ServiceProviderView3.class);
+    var services = List.<UserServiceView>of();
+
+    when(serviceProviderSpringRepository.findForProfileImageReviewById(providerId.value()))
+        .thenReturn(Optional.of(providerJpa));
+    when(userSpringRepository.findById(userId)).thenReturn(Optional.of(userJpa));
+    when(serviceProviderSpringRepository.findUserServicesByServiceProviderId(providerId.value()))
+        .thenReturn(List.of());
+    when(serviceTypeSpringRepository.findAllById(List.of())).thenReturn(List.of());
+    when(jpaMapper.toUserServiceViews(List.of(), List.of())).thenReturn(services);
+    when(jpaMapper.toServiceProviderView3(providerJpa, userJpa, services)).thenReturn(expectedView);
+
+    var result = objectUnderTest.loadPendingProfileImageReviewAsView3(providerId);
+
+    assertThat(result).isSameAs(expectedView);
+    verify(serviceProviderSpringRepository).findForProfileImageReviewById(providerId.value());
+    verify(jpaMapper).toServiceProviderView3(providerJpa, userJpa, services);
+  }
+
+  @Test
+  void loadPendingProfileImageReviewAsView3_shouldRejectNonPendingReview() {
+    var providerId = ServiceProviderId.generate();
+    var providerJpa = new ServiceProviderJpa();
+    providerJpa.setId(providerId.value());
+    providerJpa.setStatus(ServiceProviderStatus.APPROVED.name());
+    providerJpa.setProfileImageReviewStatus(ProfileImageReviewStatus.NONE.name());
+    when(serviceProviderSpringRepository.findForProfileImageReviewById(providerId.value()))
+        .thenReturn(Optional.of(providerJpa));
+
+    assertThatThrownBy(() -> objectUnderTest.loadPendingProfileImageReviewAsView3(providerId))
+        .isInstanceOf(InvalidServiceProviderStatusException.class);
+
+    verifyNoInteractions(userSpringRepository, jpaMapper);
+  }
+
+  @Test
+  void loadForVerification_shouldLoadProviderAndIdentityRelations() {
+    var providerId = ServiceProviderId.generate();
+    var userId = UUID.randomUUID();
+    var providerJpa = new ServiceProviderJpa();
+    providerJpa.setId(providerId.value());
+    providerJpa.setUserId(userId);
+    var userJpa = new UserJpa();
+    userJpa.setId(userId);
+    var services = List.<UserServiceView>of();
+    var expectedView = mock(ServiceProviderVerificationView.class);
+
+    when(serviceProviderSpringRepository.findForVerificationById(providerId.value()))
+        .thenReturn(Optional.of(providerJpa));
+    when(userSpringRepository.findById(userId)).thenReturn(Optional.of(userJpa));
+    when(serviceProviderSpringRepository.findUserServicesByServiceProviderId(providerId.value()))
+        .thenReturn(List.of());
+    when(serviceTypeSpringRepository.findAllById(List.of())).thenReturn(List.of());
+    when(jpaMapper.toUserServiceViews(List.of(), List.of())).thenReturn(services);
+    when(serviceProviderSpringRepository.findPortfolioItemsByServiceProviderId(providerId.value()))
+        .thenReturn(List.of());
+    when(jpaMapper.toServiceProviderVerificationView(providerJpa, userJpa, services, List.of()))
+        .thenReturn(expectedView);
+
+    var result = objectUnderTest.loadForVerification(providerId);
+
+    assertThat(result).isSameAs(expectedView);
+    verify(serviceProviderSpringRepository).findForVerificationById(providerId.value());
+    verify(jpaMapper).toServiceProviderVerificationView(providerJpa, userJpa, services, List.of());
+  }
+
+  @Test
+  void loadIdentityVerificationByUserId_shouldReturnMappedIdentityView() {
+    // Given
+    var userId = UserId.from(UUID.randomUUID());
+    var providerJpa = mock(ServiceProviderJpa.class);
+    var serviceProviderIdentityView = mock(ServiceProviderIdentityView.class);
+
+    when(serviceProviderSpringRepository.findIdentityVerificationByUserId(userId.value()))
+        .thenReturn(Optional.of(providerJpa));
+    when(jpaMapper.toServiceProviderIdentityView(providerJpa))
+        .thenReturn(serviceProviderIdentityView);
+
+    // When
+    ServiceProviderIdentityView result = objectUnderTest.loadIdentityVerificationByUserId(userId);
+
+    // Then
+    assertThat(result).isEqualTo(serviceProviderIdentityView);
+  }
+
+  @Test
   void loadAllPortfolio_shouldReturnMyPortfolioViews_whenItemsExist() {
     var userId = UserId.from(UUID.randomUUID());
     var spJpa = new ServiceProviderJpa();
@@ -201,16 +312,24 @@ class ServiceProviderJpaRepositoryTest {
         ServiceProvider.reconstitute(
             id,
             new UserId(UUID.randomUUID()),
-            new ProviderContact(
-                new ProviderLocation(
-                    new UserCityId(UUID.randomUUID()),
-                    new UserDistrictId(UUID.randomUUID()),
-                    new UserQuarterId(UUID.randomUUID())),
-                new PhoneNumber("+237", "678901234")),
-            new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
-            new ProviderAudit(cm.klg.common.base.domain.CreatedAt.from(LocalDateTime.now()), null),
-            null,
-            new ServiceCollections(new ArrayList<>(), new ArrayList<>()));
+            ServiceProviderState.from(
+                new ProviderProfile(
+                    new ProviderContact(
+                        new ProviderLocation(
+                            new UserCityId(UUID.randomUUID()),
+                            new UserDistrictId(UUID.randomUUID()),
+                            new UserQuarterId(UUID.randomUUID())),
+                        new PhoneNumber("+237", "678901234")),
+                    null),
+                new ProviderReview(ServiceProviderStatus.PENDING, null, null, null),
+                new ProviderAudit(
+                    cm.klg.common.base.domain.CreatedAt.from(LocalDateTime.now()), null),
+                IdentityDocuments.of(
+                    CniRectoMediaId.from(UUID.randomUUID()),
+                    CniVersoMediaId.from(UUID.randomUUID())),
+                ProviderImages.from(
+                    ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+                new ServiceCollections(new ArrayList<>(), new ArrayList<>())));
     serviceProvider.addUserService(
         new ServiceTypeId(UUID.randomUUID()),
         new YearOfExperience(1),

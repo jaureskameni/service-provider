@@ -2,7 +2,11 @@ package cm.klg.service_provider.application.outbound;
 
 import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceProviderViews;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ProfileImageReviewSummaryView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderIdentityView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderVerificationView;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView1;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView3;
 import cm.klg.service_provider.application.views.UserServiceView;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
@@ -26,8 +30,7 @@ public interface ServiceProviderRepository {
 
   boolean existsByPhoneNumber(PhoneNumber phoneNumber);
 
-  boolean existsByPhoneNumberExceptProviderId(
-      PhoneNumber phoneNumber, ServiceProviderId providerId);
+  boolean existsByPhoneNumberExceptUserId(PhoneNumber phoneNumber, UserId userId);
 
   ServiceProvider load(ServiceProviderId serviceProviderId) throws ServiceProviderNotFoundException;
 
@@ -51,7 +54,16 @@ public interface ServiceProviderRepository {
   ServiceProviderViews.ServiceProviderView2 loadApprovedAsView2(ServiceProviderId serviceProviderId)
       throws ServiceProviderNotFoundException;
 
-  ServiceProviderView1 loadAsView1(UserId serviceProviderId)
+  ServiceProviderViews.ServiceProviderView2 loadAsView2ByUserId(UserId userId)
+      throws ServiceProviderNotFoundException;
+
+  ServiceProviderIdentityView loadIdentityVerificationByUserId(UserId userId)
+      throws ServiceProviderNotFoundException;
+
+  ServiceProviderVerificationView loadForVerification(ServiceProviderId serviceProviderId)
+      throws ServiceProviderNotFoundException;
+
+  ServiceProviderView3 loadPendingProfileImageReviewAsView3(ServiceProviderId serviceProviderId)
       throws ServiceProviderNotFoundException;
 
   List<PortfolioView> loadAllMyPortfolio(UserId userId);
@@ -61,4 +73,7 @@ public interface ServiceProviderRepository {
   List<UserServiceView> loadAllApprovedProviderServices(ServiceProviderId providerId);
 
   List<UserServiceView> loadAllMyServices(UserId userId);
+
+  PageData<ProfileImageReviewSummaryView> loadPendingProfileImageReviews(
+      PaginationFetchRequest pagination);
 }

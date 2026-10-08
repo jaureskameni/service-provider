@@ -5,14 +5,6 @@ import static cm.klg.service_provider.domain.service_provider.ServiceProviderSta
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderApprovedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderCreatedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPortfolioItemAddedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPortfolioItemDeletedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPortfolioItemUpdatedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderProfileUpdatedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderRejectedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderServiceAddedEvent;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,34 +22,35 @@ public class ServiceProvider {
   private ServiceProviderStatus status;
   @Nullable private UserId approvedBy;
   @Nullable private UserId rejectedBy;
-  @Nullable private RejectionReason rejectionReason;
   @Nullable private AboutProvider about;
+  private IdentityVerification identityVerification;
+  @Nullable private ProfileImageMediaId profileImageId;
+  @Nullable private ProfileImageMediaId pendingProfileImageId;
+  private ProfileImageReviewStatus profileImageReviewStatus;
+  @Nullable private RejectionReason profileImageRejectionReason;
   private final CreatedAt createdAt;
   @Nullable private CreatedAt updatedAt;
   private final List<UserService> userServices = new ArrayList<>();
   private final List<PortfolioItem> portfolioItems = new ArrayList<>();
 
-  public ServiceProvider(
-      ServiceProviderId id,
-      UserId userId,
-      ProviderContact contact,
-      ProviderReview review,
-      ProviderAudit audit,
-      @Nullable AboutProvider about,
-      ServiceCollections collections) {
+  public ServiceProvider(ServiceProviderId id, UserId userId, ServiceProviderState state) {
     this.id = id;
     this.userId = userId;
-    this.location = contact.location();
-    this.phoneNumber = contact.phoneNumber();
-    this.status = review.status();
-    this.approvedBy = review.approvedBy();
-    this.rejectedBy = review.rejectedBy();
-    this.rejectionReason = review.rejectionReason();
-    this.about = about;
-    this.updatedAt = audit.updatedAt();
-    this.createdAt = audit.createdAt();
-    addAllUserService(collections.userServices());
-    addAllPortfolioItems(collections.portfolioItems());
+    this.location = state.profile().contact().location();
+    this.phoneNumber = state.profile().contact().phoneNumber();
+    this.about = state.profile().about();
+    this.status = state.review().status();
+    this.approvedBy = state.review().approvedBy();
+    this.rejectedBy = state.review().rejectedBy();
+    this.identityVerification = state.identityVerification();
+    this.profileImageId = state.images().current();
+    this.pendingProfileImageId = state.images().pending();
+    this.profileImageReviewStatus = state.images().reviewStatus();
+    this.profileImageRejectionReason = state.images().rejectionReason();
+    this.updatedAt = state.audit().updatedAt();
+    this.createdAt = state.audit().createdAt();
+    addAllUserService(state.collections().userServices());
+    addAllPortfolioItems(state.collections().portfolioItems());
   }
 
   public List<UserService> getUserServices() {
@@ -73,43 +66,48 @@ public class ServiceProvider {
       ProviderLocation location,
       PhoneNumber phoneNumber,
       @Nullable AboutProvider about,
+      IdentityDocuments identityDocuments,
+      ProfileImageMediaId profileImageId,
       List<UserService> userServices) {
     return new ServiceProvider(
         ServiceProviderId.generate(),
         userId,
-        new ProviderContact(location, phoneNumber),
-        new ProviderReview(PENDING, null, null, null),
-        new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
-        about,
-        new ServiceCollections(userServices, new ArrayList<>()));
+        new ServiceProviderState(
+            new ProviderProfile(new ProviderContact(location, phoneNumber), about),
+            new ProviderReview(PENDING, null, null, null),
+            new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+            IdentityVerification.of(
+                CniRectoMediaId.from(identityDocuments.cniRectoId().value()),
+                CniVersoMediaId.from(identityDocuments.cniVersoId().value())),
+            new ProviderImages(profileImageId, null, ProfileImageReviewStatus.NONE, null),
+            new ServiceCollections(userServices, new ArrayList<>())));
   }
 
   public static ServiceProvider reconstitute(
-      ServiceProviderId id,
-      UserId userId,
-      ProviderContact contact,
-      ProviderReview review,
-      ProviderAudit audit,
-      @Nullable AboutProvider about,
-      ServiceCollections collections) {
-    return new ServiceProvider(id, userId, contact, review, audit, about, collections);
+      ServiceProviderId id, UserId userId, ServiceProviderState state) {
+    return new ServiceProvider(id, userId, state);
   }
 
   public void addUserService(
       ServiceTypeId serviceTypeId, YearOfExperience yearOfExperience, UserDocument document) {
     addUserService(UserService.of(this.id, serviceTypeId, yearOfExperience, document));
+    updatedAt();
   }
 
-  public PortfolioItem addPortfolioItem(
+  public void addUserServiceWhenApproved(
+      ServiceTypeId serviceTypeId, YearOfExperience yearOfExperience, UserDocument document) {
+    ensureStatus(ServiceProviderStatus.APPROVED);
+    addUserService(serviceTypeId, yearOfExperience, document);
+  }
+
+  public void addPortfolioItem(
       PortfolioItemTitle title,
       PortfolioItemDescription description,
       PortfolioItemMediaId mediaId) {
-    if (this.status != ServiceProviderStatus.APPROVED) {
-      throw new InvalidServiceProviderStatusException();
-    }
+    ensureStatus(ServiceProviderStatus.APPROVED);
     PortfolioItem portfolioItem = PortfolioItem.of(title, description, mediaId);
     portfolioItems.add(portfolioItem);
-    return portfolioItem;
+    updatedAt();
   }
 
   public void updatePortfolioItem(
@@ -117,32 +115,106 @@ public class ServiceProvider {
       PortfolioItemTitle title,
       PortfolioItemDescription description,
       PortfolioItemMediaId mediaId) {
+    ensureStatus(ServiceProviderStatus.APPROVED);
     portfolioItems.stream()
         .filter(item -> item.getId().equals(portfolioItemId))
         .findFirst()
-        .orElseThrow(ServiceProviderNotFoundException::new)
+        .orElseThrow(PortfolioItemNotFoundException::new)
         .update(title, description, mediaId);
+    updatedAt();
   }
 
   public void deletePortfolioItem(PortfolioItemId portfolioItemId) {
-    if (!portfolioItems.removeIf(item -> item.getId().equals(portfolioItemId))) {
-      throw new ServiceProviderNotFoundException();
+    ensureStatus(ServiceProviderStatus.APPROVED);
+    boolean removed = portfolioItems.removeIf(item -> item.getId().equals(portfolioItemId));
+    if (!removed) {
+      throw new PortfolioItemNotFoundException();
     }
+    updatedAt();
   }
 
-  public void updateProfile(
-      ProviderLocation location, PhoneNumber phoneNumber, @Nullable AboutProvider about) {
-    if (this.status != ServiceProviderStatus.APPROVED) {
-      throw new InvalidServiceProviderStatusException();
+  public void updateApprovedProfile(
+      ProviderLocation location,
+      PhoneNumber phoneNumber,
+      @Nullable AboutProvider about,
+      ProfileImageMediaId requestedProfileImageId) {
+    ensureStatus(ServiceProviderStatus.APPROVED);
+    this.location = location;
+    this.phoneNumber = phoneNumber;
+    this.about = about;
+    updatedAt();
+    submitProfileImageChange(requestedProfileImageId);
+  }
+
+  public void resubmit(
+      ProviderLocation location,
+      PhoneNumber phoneNumber,
+      @Nullable AboutProvider about,
+      @Nullable IdentityDocuments identityDocuments,
+      ProfileImageMediaId profileImageId) {
+    ensureStatus(ServiceProviderStatus.REJECTED);
+    if (identityDocuments == null) {
+      throw new MissingIdentityDocumentsException();
     }
     this.location = location;
     this.phoneNumber = phoneNumber;
     this.about = about;
-    this.updatedAt = CreatedAt.from(LocalDateTime.now());
+    this.identityVerification.resubmit(
+        CniRectoMediaId.from(identityDocuments.cniRectoId().value()),
+        CniVersoMediaId.from(identityDocuments.cniVersoId().value()));
+    this.profileImageId = profileImageId;
+    this.pendingProfileImageId = null;
+    this.profileImageReviewStatus = ProfileImageReviewStatus.NONE;
+    this.profileImageRejectionReason = null;
+    this.status = ServiceProviderStatus.PENDING;
+    this.rejectedBy = null;
+    this.approvedBy = null;
+    updatedAt();
+  }
+
+  public void submitProfileImageChange(ProfileImageMediaId pendingProfileImageId) {
+    this.pendingProfileImageId = pendingProfileImageId;
+    this.profileImageReviewStatus = ProfileImageReviewStatus.PENDING_REVIEW;
+    this.profileImageRejectionReason = null;
+  }
+
+  public void approveProfileImage() {
+    if (this.status != ServiceProviderStatus.APPROVED
+        || this.profileImageReviewStatus != ProfileImageReviewStatus.PENDING_REVIEW
+        || this.pendingProfileImageId == null) {
+      throw new InvalidServiceProviderStatusException();
+    }
+    this.profileImageId = this.pendingProfileImageId;
+    this.pendingProfileImageId = null;
+    this.profileImageReviewStatus = ProfileImageReviewStatus.NONE;
+    this.profileImageRejectionReason = null;
+    updatedAt();
+  }
+
+  public void rejectProfileImage(RejectionReason reason) {
+    if (this.status != ServiceProviderStatus.APPROVED
+        || this.profileImageReviewStatus != ProfileImageReviewStatus.PENDING_REVIEW
+        || this.pendingProfileImageId == null) {
+      throw new InvalidServiceProviderStatusException();
+    }
+    this.pendingProfileImageId = null;
+    this.profileImageReviewStatus = ProfileImageReviewStatus.REJECTED;
+    this.profileImageRejectionReason = reason;
+    updatedAt();
   }
 
   public void addAllUserService(List<UserService> userServices) {
     userServices.forEach(this::addUserService);
+  }
+
+  public void deleteUserService(ServiceTypeId serviceTypeId) {
+    ensureStatus(ServiceProviderStatus.APPROVED);
+    boolean removed =
+        userServices.removeIf(service -> service.getServiceTypeId().equals(serviceTypeId));
+    if (!removed) {
+      throw new UserServiceNotFoundException();
+    }
+    updatedAt();
   }
 
   private void addAllPortfolioItems(List<PortfolioItem> portfolioItems) {
@@ -163,64 +235,32 @@ public class ServiceProvider {
   }
 
   public void approve(UserId userId) {
-    if (!Objects.equals(this.status, ServiceProviderStatus.PENDING)) {
+    if (this.status != ServiceProviderStatus.PENDING) {
       throw new InvalidServiceProviderStatusException();
     }
     this.status = ServiceProviderStatus.APPROVED;
     this.approvedBy = userId;
-    this.updatedAt = CreatedAt.from(LocalDateTime.now());
+    this.identityVerification.approve(userId);
+    updatedAt();
   }
 
   public void reject(UserId userId, RejectionReason reason) {
-    if (!Objects.equals(this.status, ServiceProviderStatus.PENDING)) {
+    if (this.status != ServiceProviderStatus.PENDING) {
       throw new InvalidServiceProviderStatusException();
     }
     this.status = ServiceProviderStatus.REJECTED;
     this.rejectedBy = userId;
-    this.rejectionReason = reason;
+    this.identityVerification.reject(reason);
+    updatedAt();
+  }
+
+  private void ensureStatus(ServiceProviderStatus status) {
+    if (this.status != status) {
+      throw new InvalidServiceProviderStatusException();
+    }
+  }
+
+  private void updatedAt() {
     this.updatedAt = CreatedAt.from(LocalDateTime.now());
-  }
-
-  public ServiceProviderApprovedEvent toApprovedEvent() {
-    return new ServiceProviderApprovedEvent(
-        this.id, this.userId, Objects.requireNonNull(this.approvedBy), LocalDateTime.now());
-  }
-
-  public ServiceProviderCreatedEvent toCreatedEvent() {
-    return new ServiceProviderCreatedEvent(this.id, this.userId, LocalDateTime.now());
-  }
-
-  public ServiceProviderRejectedEvent toRejectedEvent() {
-    return new ServiceProviderRejectedEvent(
-        this.id,
-        this.userId,
-        Objects.requireNonNull(this.rejectedBy),
-        Objects.requireNonNull(this.rejectionReason),
-        LocalDateTime.now());
-  }
-
-  public ServiceProviderServiceAddedEvent toServiceAddedEvent(
-      ServiceTypeId serviceTypeId, YearOfExperience yearOfExperience, UserDocument document) {
-    return new ServiceProviderServiceAddedEvent(
-        this.id, this.userId, serviceTypeId, yearOfExperience, document, LocalDateTime.now());
-  }
-
-  public ServiceProviderPortfolioItemAddedEvent toPortfolioItemAddedEvent(PortfolioItem item) {
-    return new ServiceProviderPortfolioItemAddedEvent(this.id, this.userId, item.getId());
-  }
-
-  public ServiceProviderPortfolioItemUpdatedEvent toPortfolioItemUpdatedEvent(
-      PortfolioItemId itemId) {
-    return new ServiceProviderPortfolioItemUpdatedEvent(this.id, this.userId, itemId);
-  }
-
-  public ServiceProviderPortfolioItemDeletedEvent toPortfolioItemDeletedEvent(
-      PortfolioItemId itemId) {
-    return new ServiceProviderPortfolioItemDeletedEvent(this.id, this.userId, itemId);
-  }
-
-  public ServiceProviderProfileUpdatedEvent toProfileUpdatedEvent() {
-    return new ServiceProviderProfileUpdatedEvent(
-        this.id, this.userId, this.location, this.phoneNumber, this.about, LocalDateTime.now());
   }
 }

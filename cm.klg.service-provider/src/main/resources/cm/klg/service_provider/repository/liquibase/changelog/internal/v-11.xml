@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-54:1" author="kameni.nguematcha">
+		<addColumn tableName="t_service_provider">
+			<column name="c_profile_image_media_id" type="varchar(36)" />
+			<column name="c_pending_profile_image_media_id"
+				type="varchar(36)" />
+			<column name="c_profile_image_review_status"
+				type="varchar(30)" defaultValue="NONE">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_profile_image_rejection_reason"
+				type="varchar(50)" />
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="SP-54:2" author="kameni.nguematcha">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<indexExists tableName="t_service_provider"
+					indexName="idx_sp_profile_image_review_status" />
+			</not>
+		</preConditions>
+		<createIndex tableName="t_service_provider"
+			indexName="idx_sp_profile_image_review_status">
+			<column name="c_profile_image_review_status" />
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="SP-54:3" author="kameni.nguematcha">
+		<createTable tableName="t_identity_verification">
+			<column name="c_id" type="varchar(36)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="c_service_provider_id" type="varchar(36)">
+				<constraints nullable="false" unique="true"
+					uniqueConstraintName="uq_identity_verification_service_provider" />
+			</column>
+			<column name="c_status" type="varchar(30)"
+				defaultValue="PENDING">
+				<constraints nullable="false" />
+			</column>
+			<column name="c_cni_recto_id" type="varchar(36)" />
+			<column name="c_cni_verso_id" type="varchar(36)" />
+			<column name="c_rejection_reason" type="varchar(50)" />
+			<column name="c_verified_at" type="timestamp" />
+			<column name="c_verified_by" type="varchar(36)" />
+		</createTable>
+		<addForeignKeyConstraint
+			baseTableName="t_identity_verification"
+			baseColumnNames="c_service_provider_id"
+			referencedTableName="t_service_provider" referencedColumnNames="c_id"
+			constraintName="fk_identity_verification_service_provider" />
+	</changeSet>
+</databaseChangeLog>

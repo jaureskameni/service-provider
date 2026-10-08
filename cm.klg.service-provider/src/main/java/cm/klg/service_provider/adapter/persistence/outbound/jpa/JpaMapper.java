@@ -3,6 +3,9 @@ package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 import cm.klg.common.base.domain.CreatedAt;
 import cm.klg.service_provider.application.views.PortfolioView;
 import cm.klg.service_provider.application.views.ServiceProviderViews;
+import cm.klg.service_provider.application.views.ServiceProviderViews.IdentityVerificationView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderIdentityView;
+import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderVerificationView;
 import cm.klg.service_provider.application.views.ServiceProviderViews.ServiceProviderView2;
 import cm.klg.service_provider.application.views.ServiceTypeViews.ServiceTypeView;
 import cm.klg.service_provider.application.views.UserServiceView;
@@ -11,25 +14,38 @@ import cm.klg.service_provider.domain.UserId;
 import cm.klg.service_provider.domain.favorite.FavoriteProvider;
 import cm.klg.service_provider.domain.provider_client.ProviderClient;
 import cm.klg.service_provider.domain.service_provider.AboutProvider;
+import cm.klg.service_provider.domain.service_provider.CniRectoMediaId;
+import cm.klg.service_provider.domain.service_provider.CniVersoMediaId;
+import cm.klg.service_provider.domain.service_provider.IdentityVerification;
+import cm.klg.service_provider.domain.service_provider.IdentityVerificationDocuments;
+import cm.klg.service_provider.domain.service_provider.IdentityVerificationId;
+import cm.klg.service_provider.domain.service_provider.IdentityVerificationReview;
+import cm.klg.service_provider.domain.service_provider.IdentityVerificationStatus;
 import cm.klg.service_provider.domain.service_provider.PortfolioItem;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
+import cm.klg.service_provider.domain.service_provider.ProfileImageMediaId;
+import cm.klg.service_provider.domain.service_provider.ProfileImageReviewStatus;
 import cm.klg.service_provider.domain.service_provider.ProviderAudit;
 import cm.klg.service_provider.domain.service_provider.ProviderContact;
+import cm.klg.service_provider.domain.service_provider.ProviderImages;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
+import cm.klg.service_provider.domain.service_provider.ProviderProfile;
 import cm.klg.service_provider.domain.service_provider.ProviderReview;
 import cm.klg.service_provider.domain.service_provider.RejectionReason;
 import cm.klg.service_provider.domain.service_provider.ServiceCollections;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderState;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderStatus;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
 import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserDocument;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_provider.UserService;
+import cm.klg.service_provider.domain.service_provider.VerifiedAt;
 import cm.klg.service_provider.domain.service_provider.YearOfExperience;
 import cm.klg.service_provider.domain.service_type.ServiceType;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
@@ -40,6 +56,7 @@ import cm.klg.service_provider.domain.user.User;
 import cm.klg.service_provider.domain.user.UserProfile;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -76,16 +93,33 @@ public interface JpaMapper {
   @Mapping(target = "quarter", source = "location.quarterId.value")
   @Mapping(target = "approvedBy", source = "approvedBy.value")
   @Mapping(target = "rejectedBy", source = "rejectedBy.value")
-  @Mapping(target = "rejectionReason", source = "rejectionReason.value")
+  @Mapping(target = "rejectionReason", source = "identityVerification.rejectionReason")
   @Mapping(target = "about", source = "about.value")
+  @Mapping(target = "profileImageId", source = "profileImageId.value")
+  @Mapping(target = "pendingProfileImageId", source = "pendingProfileImageId.value")
+  @Mapping(target = "profileImageReviewStatus", source = "profileImageReviewStatus")
+  @Mapping(target = "profileImageRejectionReason", source = "profileImageRejectionReason")
+  @Mapping(target = "identityVerification", source = "identityVerification")
   @Mapping(target = "phoneNumber.number", source = "phoneNumber.number")
   @Mapping(target = "phoneNumber.countryCode", source = "phoneNumber.countryCode")
   @Mapping(target = "createdAt", source = "createdAt.value")
   @Mapping(target = "updatedAt", source = "updatedAt.value")
   ServiceProviderJpa fromServiceProviderDomain(ServiceProvider serviceProvider);
 
+  @Mapping(target = "id", source = "id.value")
+  @Mapping(target = "status", source = "status")
+  @Mapping(target = "cniRectoId", source = "documents.cniRectoId.value")
+  @Mapping(target = "cniVersoId", source = "documents.cniVersoId.value")
+  @Mapping(target = "rejectionReason", source = "rejectionReason")
+  @Mapping(target = "verifiedAt", source = "verifiedAt.value")
+  @Mapping(target = "verifiedBy", source = "verifiedBy.value")
+  IdentityVerificationJpa toIdentityVerificationJpa(IdentityVerification source);
+
   default ServiceProviderJpa toServiceProviderJpa(ServiceProvider serviceProvider) {
     ServiceProviderJpa target = fromServiceProviderDomain(serviceProvider);
+    if (target.getIdentityVerification() != null) {
+      target.getIdentityVerification().setServiceProvider(target);
+    }
     mapUserServicesForInsert(serviceProvider, target);
     mapPortfolioItemsForInsert(serviceProvider, target);
     return target;
@@ -165,18 +199,38 @@ public interface JpaMapper {
 
   default void fromUserServicesDomain(
       ServiceProvider serviceProvider, @MappingTarget ServiceProviderJpa target) {
-    serviceProvider.getUserServices().stream()
-        .filter(
-            userService ->
-                target.getUserServices().stream()
+    target
+        .getUserServices()
+        .removeIf(
+            existing ->
+                serviceProvider.getUserServices().stream()
                     .noneMatch(
-                        userServiceJpa ->
-                            userService
+                        service ->
+                            service
                                 .getServiceTypeId()
                                 .value()
-                                .equals(userServiceJpa.getId().getServiceTypeId())))
-        .forEach(userService -> addUserService(target, userService));
+                                .equals(existing.getId().getServiceTypeId())));
+    serviceProvider
+        .getUserServices()
+        .forEach(
+            userService ->
+                target.getUserServices().stream()
+                    .filter(
+                        existing ->
+                            existing
+                                .getId()
+                                .getServiceTypeId()
+                                .equals(userService.getServiceTypeId().value()))
+                    .findFirst()
+                    .ifPresentOrElse(
+                        existing -> updateUserServiceJpa(existing, userService),
+                        () -> addUserService(target, userService)));
   }
+
+  @BeanMapping(ignoreByDefault = true)
+  @Mapping(target = "yearOfExperience", source = "yearOfExperience.value")
+  @Mapping(target = "userDocument", source = "userDocument.value")
+  void updateUserServiceJpa(@MappingTarget UserServiceJpa target, UserService source);
 
   default void fromPortfolioItemDomain(
       ServiceProvider serviceProvider, @MappingTarget ServiceProviderJpa target) {
@@ -229,38 +283,55 @@ public interface JpaMapper {
     return ServiceProvider.reconstitute(
         new ServiceProviderId(serviceProviderJpa.getId()),
         new UserId(serviceProviderJpa.getUserId()),
-        new ProviderContact(
-            new ProviderLocation(
-                new UserCityId(serviceProviderJpa.getCity()),
-                new UserDistrictId(serviceProviderJpa.getDistrict()),
-                serviceProviderJpa.getQuarter() != null
-                    ? new UserQuarterId(serviceProviderJpa.getQuarter())
+        new ServiceProviderState(
+            new ProviderProfile(
+                new ProviderContact(
+                    new ProviderLocation(
+                        new UserCityId(serviceProviderJpa.getCity()),
+                        new UserDistrictId(serviceProviderJpa.getDistrict()),
+                        serviceProviderJpa.getQuarter() != null
+                            ? new UserQuarterId(serviceProviderJpa.getQuarter())
+                            : null),
+                    new PhoneNumber(
+                        serviceProviderJpa.getPhoneNumber().getCountryCode(),
+                        serviceProviderJpa.getPhoneNumber().getNumber())),
+                serviceProviderJpa.getAbout() != null
+                    ? new AboutProvider(serviceProviderJpa.getAbout())
                     : null),
-            new PhoneNumber(
-                serviceProviderJpa.getPhoneNumber().getCountryCode(),
-                serviceProviderJpa.getPhoneNumber().getNumber())),
-        new ProviderReview(
-            ServiceProviderStatus.valueOf(serviceProviderJpa.getStatus()),
-            serviceProviderJpa.getApprovedBy() != null
-                ? new UserId(serviceProviderJpa.getApprovedBy())
-                : null,
-            serviceProviderJpa.getRejectedBy() != null
-                ? new UserId(serviceProviderJpa.getRejectedBy())
-                : null,
-            serviceProviderJpa.getRejectionReason() != null
-                ? new RejectionReason(serviceProviderJpa.getRejectionReason())
-                : null),
-        new ProviderAudit(
-            new CreatedAt(serviceProviderJpa.getCreatedAt()),
-            serviceProviderJpa.getUpdatedAt() != null
-                ? new CreatedAt(serviceProviderJpa.getUpdatedAt())
-                : null),
-        serviceProviderJpa.getAbout() != null
-            ? new AboutProvider(serviceProviderJpa.getAbout())
-            : null,
-        new ServiceCollections(
-            toUserServiceDomain(serviceProviderJpa.getUserServices()),
-            toPortfolioItemDomain(serviceProviderJpa.getPortfolioItems())));
+            new ProviderReview(
+                ServiceProviderStatus.valueOf(serviceProviderJpa.getStatus()),
+                serviceProviderJpa.getApprovedBy() != null
+                    ? new UserId(serviceProviderJpa.getApprovedBy())
+                    : null,
+                serviceProviderJpa.getRejectedBy() != null
+                    ? new UserId(serviceProviderJpa.getRejectedBy())
+                    : null,
+                serviceProviderJpa.getRejectionReason() != null
+                    ? toRejectionReason(serviceProviderJpa.getRejectionReason())
+                    : null),
+            new ProviderAudit(
+                new CreatedAt(serviceProviderJpa.getCreatedAt()),
+                serviceProviderJpa.getUpdatedAt() != null
+                    ? new CreatedAt(serviceProviderJpa.getUpdatedAt())
+                    : null),
+            toIdentityVerificationDomain(serviceProviderJpa.getIdentityVerification()),
+            new ProviderImages(
+                serviceProviderJpa.getProfileImageId() != null
+                    ? ProfileImageMediaId.from(serviceProviderJpa.getProfileImageId())
+                    : null,
+                serviceProviderJpa.getPendingProfileImageId() != null
+                    ? ProfileImageMediaId.from(serviceProviderJpa.getPendingProfileImageId())
+                    : null,
+                serviceProviderJpa.getProfileImageReviewStatus() != null
+                    ? ProfileImageReviewStatus.valueOf(
+                        serviceProviderJpa.getProfileImageReviewStatus())
+                    : ProfileImageReviewStatus.NONE,
+                serviceProviderJpa.getProfileImageRejectionReason() != null
+                    ? RejectionReason.valueOf(serviceProviderJpa.getProfileImageRejectionReason())
+                    : null),
+            new ServiceCollections(
+                toUserServiceDomain(serviceProviderJpa.getUserServices()),
+                toPortfolioItemDomain(serviceProviderJpa.getPortfolioItems()))));
   }
 
   default List<UserService> toUserServiceDomain(List<UserServiceJpa> userServices) {
@@ -298,8 +369,13 @@ public interface JpaMapper {
   @Mapping(target = "quarter", source = "location.quarterId.value")
   @Mapping(target = "approvedBy", source = "approvedBy.value")
   @Mapping(target = "rejectedBy", source = "rejectedBy.value")
-  @Mapping(target = "rejectionReason", source = "rejectionReason.value")
+  @Mapping(target = "rejectionReason", source = "identityVerification.rejectionReason")
   @Mapping(target = "about", source = "about.value")
+  @Mapping(target = "profileImageId", source = "profileImageId.value")
+  @Mapping(target = "pendingProfileImageId", source = "pendingProfileImageId.value")
+  @Mapping(target = "profileImageReviewStatus", source = "profileImageReviewStatus")
+  @Mapping(target = "profileImageRejectionReason", source = "profileImageRejectionReason")
+  @Mapping(target = "identityVerification", source = "identityVerification")
   @Mapping(target = "phoneNumber.number", source = "phoneNumber.number")
   @Mapping(target = "phoneNumber.countryCode", source = "phoneNumber.countryCode")
   @Mapping(target = "createdAt", source = "createdAt.value")
@@ -310,8 +386,38 @@ public interface JpaMapper {
   default void fromServiceProvider(
       @MappingTarget ServiceProviderJpa serviceProviderJpa, ServiceProvider serviceProvider) {
     toServiceProviderJpa(serviceProviderJpa, serviceProvider);
+    if (serviceProviderJpa.getIdentityVerification() != null) {
+      serviceProviderJpa.getIdentityVerification().setServiceProvider(serviceProviderJpa);
+    }
     fromUserServicesDomain(serviceProvider, serviceProviderJpa);
     fromPortfolioItemDomain(serviceProvider, serviceProviderJpa);
+  }
+
+  default IdentityVerification toIdentityVerificationDomain(IdentityVerificationJpa jpa) {
+    if (jpa == null) {
+      return IdentityVerification.reconstitute(
+          IdentityVerificationId.generate(),
+          new IdentityVerificationDocuments(null, null),
+          IdentityVerificationReview.pending());
+    }
+    return IdentityVerification.reconstitute(
+        IdentityVerificationId.from(jpa.getId()),
+        new IdentityVerificationDocuments(
+            jpa.getCniRectoId() != null ? CniRectoMediaId.from(jpa.getCniRectoId()) : null,
+            jpa.getCniVersoId() != null ? CniVersoMediaId.from(jpa.getCniVersoId()) : null),
+        new IdentityVerificationReview(
+            IdentityVerificationStatus.valueOf(jpa.getStatus()),
+            jpa.getRejectionReason() != null ? toRejectionReason(jpa.getRejectionReason()) : null,
+            jpa.getVerifiedAt() != null ? VerifiedAt.from(jpa.getVerifiedAt()) : null,
+            jpa.getVerifiedBy() != null ? UserId.from(jpa.getVerifiedBy()) : null));
+  }
+
+  default RejectionReason toRejectionReason(String value) {
+    try {
+      return RejectionReason.valueOf(value);
+    } catch (IllegalArgumentException _) {
+      return null;
+    }
   }
 
   default PortfolioView toPortfolioView(PortfolioItemJpa item) {
@@ -345,8 +451,12 @@ public interface JpaMapper {
     return new ServiceProviderView2(
         serviceProviderJpa.getId(),
         serviceProviderJpa.getUserId(),
-        userJpa.getFirstname(),
-        userJpa.getLastname(),
+        new ServiceProviderViews.UserView(
+            userJpa.getId(),
+            userJpa.getFirstname(),
+            userJpa.getLastname(),
+            userJpa.getEmailAddress(),
+            userJpa.getCreatedAt()),
         serviceProviderJpa.getCity(),
         serviceProviderJpa.getDistrict(),
         serviceProviderJpa.getQuarter(),
@@ -358,10 +468,24 @@ public interface JpaMapper {
             serviceProviderJpa.getPhoneNumber().getCountryCode(),
             serviceProviderJpa.getPhoneNumber().getNumber()),
         serviceProviderJpa.getStatus(),
+        serviceProviderJpa.getProfileImageId(),
+        serviceProviderJpa.getPendingProfileImageId(),
+        serviceProviderJpa.getProfileImageReviewStatus() != null
+            ? ProfileImageReviewStatus.valueOf(serviceProviderJpa.getProfileImageReviewStatus())
+            : ProfileImageReviewStatus.NONE,
+        serviceProviderJpa.getIdentityVerification() != null
+                && serviceProviderJpa.getIdentityVerification().getStatus() != null
+            ? IdentityVerificationStatus.valueOf(
+                serviceProviderJpa.getIdentityVerification().getStatus())
+            : IdentityVerificationStatus.valueOf(serviceProviderJpa.getStatus()),
         serviceProviderJpa.getCreatedAt(),
         serviceProviderJpa.getUpdatedAt(),
         services,
-        portfolios);
+        portfolios,
+        ServiceProviderStatus.APPROVED.name().equals(serviceProviderJpa.getStatus())
+                || serviceProviderJpa.getIdentityVerification() == null
+            ? null
+            : toIdentityVerificationView(serviceProviderJpa.getIdentityVerification()));
   }
 
   default ServiceTypeView toServiceTypeView(ServiceTypeJpa serviceTypeJpa) {
@@ -390,27 +514,19 @@ public interface JpaMapper {
   default ServiceProviderView2 toServiceProviderView2(
       ServiceProviderJpa serviceProviderJpa,
       UserJpa userJpa,
-      List<UserServiceJpa> userServices,
+      List<UserServiceView> services,
       List<PortfolioItemJpa> portfolioItems) {
-
-    List<UserServiceView> services =
-        userServices.stream()
-            .map(
-                us ->
-                    new UserServiceView(
-                        new ServiceTypeView(UUID.randomUUID(), "Service Type", "category", true),
-                        us.getYearOfExperience(),
-                        us.getUserDocument(),
-                        us.getCreatedAt()))
-            .toList();
-
     List<PortfolioView> portfolios = portfolioItems.stream().map(this::toPortfolioView).toList();
 
     return new ServiceProviderView2(
         serviceProviderJpa.getId(),
         serviceProviderJpa.getUserId(),
-        userJpa.getFirstname(),
-        userJpa.getLastname(),
+        new ServiceProviderViews.UserView(
+            userJpa.getId(),
+            userJpa.getFirstname(),
+            userJpa.getLastname(),
+            userJpa.getEmailAddress(),
+            userJpa.getCreatedAt()),
         serviceProviderJpa.getCity(),
         serviceProviderJpa.getDistrict(),
         serviceProviderJpa.getQuarter(),
@@ -422,10 +538,116 @@ public interface JpaMapper {
             serviceProviderJpa.getPhoneNumber().getCountryCode(),
             serviceProviderJpa.getPhoneNumber().getNumber()),
         serviceProviderJpa.getStatus(),
+        serviceProviderJpa.getProfileImageId(),
+        serviceProviderJpa.getPendingProfileImageId(),
+        serviceProviderJpa.getProfileImageReviewStatus() != null
+            ? ProfileImageReviewStatus.valueOf(serviceProviderJpa.getProfileImageReviewStatus())
+            : ProfileImageReviewStatus.NONE,
+        serviceProviderJpa.getIdentityVerification() != null
+                && serviceProviderJpa.getIdentityVerification().getStatus() != null
+            ? IdentityVerificationStatus.valueOf(
+                serviceProviderJpa.getIdentityVerification().getStatus())
+            : IdentityVerificationStatus.valueOf(serviceProviderJpa.getStatus()),
         serviceProviderJpa.getCreatedAt(),
         serviceProviderJpa.getUpdatedAt(),
         services,
-        portfolios);
+        portfolios,
+        ServiceProviderStatus.APPROVED.name().equals(serviceProviderJpa.getStatus())
+                || serviceProviderJpa.getIdentityVerification() == null
+            ? null
+            : toIdentityVerificationView(serviceProviderJpa.getIdentityVerification()));
+  }
+
+  default ServiceProviderVerificationView toServiceProviderVerificationView(
+      ServiceProviderJpa serviceProviderJpa,
+      UserJpa userJpa,
+      List<UserServiceView> services,
+      List<PortfolioItemJpa> portfolioItems) {
+    return new ServiceProviderVerificationView(
+        serviceProviderJpa.getId(),
+        serviceProviderJpa.getUserId(),
+        new ServiceProviderViews.UserView(
+            userJpa.getId(),
+            userJpa.getFirstname(),
+            userJpa.getLastname(),
+            userJpa.getEmailAddress(),
+            userJpa.getCreatedAt()),
+        serviceProviderJpa.getCity(),
+        serviceProviderJpa.getDistrict(),
+        serviceProviderJpa.getQuarter(),
+        serviceProviderJpa.getApprovedBy(),
+        serviceProviderJpa.getRejectedBy(),
+        serviceProviderJpa.getRejectionReason(),
+        serviceProviderJpa.getAbout(),
+        PhoneNumber.from(
+            serviceProviderJpa.getPhoneNumber().getCountryCode(),
+            serviceProviderJpa.getPhoneNumber().getNumber()),
+        serviceProviderJpa.getStatus(),
+        serviceProviderJpa.getProfileImageId(),
+        serviceProviderJpa.getPendingProfileImageId(),
+        serviceProviderJpa.getProfileImageReviewStatus() != null
+            ? ProfileImageReviewStatus.valueOf(serviceProviderJpa.getProfileImageReviewStatus())
+            : ProfileImageReviewStatus.NONE,
+        serviceProviderJpa.getCreatedAt(),
+        serviceProviderJpa.getUpdatedAt(),
+        services,
+        portfolioItems.stream().map(this::toPortfolioView).toList(),
+        ServiceProviderStatus.APPROVED.name().equals(serviceProviderJpa.getStatus())
+            ? null
+            : toIdentityVerificationView(serviceProviderJpa.getIdentityVerification()));
+  }
+
+  default ServiceProviderViews.ServiceProviderView3 toServiceProviderView3(
+      ServiceProviderJpa serviceProviderJpa, UserJpa userJpa, List<UserServiceView> services) {
+    return new ServiceProviderViews.ServiceProviderView3(
+        serviceProviderJpa.getId(),
+        serviceProviderJpa.getUserId(),
+        new ServiceProviderViews.UserView(
+            userJpa.getId(),
+            userJpa.getFirstname(),
+            userJpa.getLastname(),
+            userJpa.getEmailAddress(),
+            userJpa.getCreatedAt()),
+        PhoneNumber.from(
+            serviceProviderJpa.getPhoneNumber().getCountryCode(),
+            serviceProviderJpa.getPhoneNumber().getNumber()),
+        serviceProviderJpa.getCity(),
+        serviceProviderJpa.getDistrict(),
+        serviceProviderJpa.getQuarter(),
+        serviceProviderJpa.getAbout(),
+        ServiceProviderStatus.valueOf(serviceProviderJpa.getStatus()),
+        Objects.requireNonNull(serviceProviderJpa.getProfileImageId()),
+        Objects.requireNonNull(serviceProviderJpa.getPendingProfileImageId()),
+        serviceProviderJpa.getProfileImageReviewStatus() != null
+            ? ProfileImageReviewStatus.valueOf(serviceProviderJpa.getProfileImageReviewStatus())
+            : ProfileImageReviewStatus.NONE,
+        serviceProviderJpa.getProfileImageRejectionReason() != null
+            ? RejectionReason.valueOf(serviceProviderJpa.getProfileImageRejectionReason())
+            : null,
+        serviceProviderJpa.getUpdatedAt(),
+        toIdentityVerificationView(serviceProviderJpa.getIdentityVerification()),
+        serviceProviderJpa.getCreatedAt(),
+        serviceProviderJpa.getUpdatedAt(),
+        services);
+  }
+
+  default IdentityVerificationView toIdentityVerificationView(IdentityVerificationJpa jpa) {
+    return new IdentityVerificationView(
+        Objects.requireNonNull(jpa.getId()),
+        jpa.getCniRectoId(),
+        jpa.getCniVersoId(),
+        IdentityVerificationStatus.valueOf(jpa.getStatus()),
+        jpa.getRejectionReason() != null ? toRejectionReason(jpa.getRejectionReason()) : null,
+        jpa.getVerifiedAt(),
+        jpa.getVerifiedBy());
+  }
+
+  default ServiceProviderIdentityView toServiceProviderIdentityView(
+      ServiceProviderJpa serviceProviderJpa) {
+    return new ServiceProviderIdentityView(
+        serviceProviderJpa.getId(),
+        serviceProviderJpa.getProfileImageId(),
+        this.toIdentityVerificationView(serviceProviderJpa.getIdentityVerification()));
   }
 
   default ServiceProviderViews.ServiceProviderView1 toServiceProviderView1(
@@ -433,8 +655,12 @@ public interface JpaMapper {
     return new ServiceProviderViews.ServiceProviderView1(
         serviceProviderJpa.getId(),
         serviceProviderJpa.getUserId(),
-        userJpa.getFirstname(),
-        userJpa.getLastname(),
+        new ServiceProviderViews.UserView(
+            userJpa.getId(),
+            userJpa.getFirstname(),
+            userJpa.getLastname(),
+            userJpa.getEmailAddress(),
+            userJpa.getCreatedAt()),
         serviceProviderJpa.getCity(),
         serviceProviderJpa.getDistrict(),
         serviceProviderJpa.getQuarter(),
@@ -446,6 +672,7 @@ public interface JpaMapper {
             serviceProviderJpa.getPhoneNumber().getCountryCode(),
             serviceProviderJpa.getPhoneNumber().getNumber()),
         serviceProviderJpa.getStatus(),
+        serviceProviderJpa.getProfileImageId(),
         serviceProviderJpa.getCreatedAt(),
         serviceProviderJpa.getUpdatedAt());
   }

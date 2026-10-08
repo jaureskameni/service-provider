@@ -54,6 +54,14 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(HttpMethod.POST, "/service-provider")
                     .authenticated()
+                    .requestMatchers(
+                        HttpMethod.GET, "/me/service-provider", "/me/service-provider/identity")
+                    .authenticated()
+                    .requestMatchers(
+                        HttpMethod.PUT,
+                        "/me/service-provider/application",
+                        "/me/service-provider/profile")
+                    .authenticated()
                     .requestMatchers(HttpMethod.POST, "/service-provider/services")
                     .authenticated()
                     .requestMatchers(HttpMethod.POST, "/service-provider/portfolio")
@@ -66,9 +74,7 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/service-provider/services")
                     .authenticated()
-                    .requestMatchers(HttpMethod.GET, "/service-provider/profile")
-                    .authenticated()
-                    .requestMatchers(HttpMethod.PUT, "/service-provider/profile")
+                    .requestMatchers(HttpMethod.DELETE, "/service-provider/services/*")
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/me/favorites/service-providers")
                     .authenticated()
@@ -78,9 +84,22 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers(HttpMethod.GET, "/service-provider")
                     .hasAuthority(Scopes.SERVICE_PROVIDER_READ_ALL)
+                    .requestMatchers(HttpMethod.GET, "/service-provider/profile-image-reviews")
+                    .hasAuthority(Scopes.SERVICE_PROVIDER_READ_ALL)
+                    .requestMatchers(
+                        HttpMethod.GET, SERVICE_PROVIDER_ID_PATH + "/profile-image-review")
+                    .hasAuthority(Scopes.SERVICE_PROVIDER_READ_ALL)
+                    .requestMatchers(HttpMethod.GET, SERVICE_PROVIDER_ID_PATH + "/verification")
+                    .hasAuthority(Scopes.SERVICE_PROVIDER_VERIFY)
                     .requestMatchers(HttpMethod.PUT, SERVICE_PROVIDER_ID_PATH + "/approve")
                     .hasAuthority(Scopes.SERVICE_PROVIDER_APPROVE)
                     .requestMatchers(HttpMethod.PUT, SERVICE_PROVIDER_ID_PATH + "/reject")
+                    .hasAuthority(Scopes.SERVICE_PROVIDER_REJECT)
+                    .requestMatchers(
+                        HttpMethod.PUT, SERVICE_PROVIDER_ID_PATH + "/profile-image/approve")
+                    .hasAuthority(Scopes.SERVICE_PROVIDER_APPROVE)
+                    .requestMatchers(
+                        HttpMethod.PUT, SERVICE_PROVIDER_ID_PATH + "/profile-image/reject")
                     .hasAuthority(Scopes.SERVICE_PROVIDER_REJECT)
                     .anyRequest()
                     .denyAll())

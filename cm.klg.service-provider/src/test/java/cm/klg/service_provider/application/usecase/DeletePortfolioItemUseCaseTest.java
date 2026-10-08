@@ -14,9 +14,13 @@ import cm.klg.service_provider.domain.service_provider.PortfolioItem;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemDescription;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemId;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemMediaId;
+import cm.klg.service_provider.domain.service_provider.PortfolioItemNotFoundException;
 import cm.klg.service_provider.domain.service_provider.PortfolioItemTitle;
+import cm.klg.service_provider.domain.service_provider.ProviderImages;
+import cm.klg.service_provider.domain.service_provider.ProviderProfile;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderNotFoundException;
+import cm.klg.service_provider.domain.service_provider.ServiceProviderState;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,7 +73,7 @@ class DeletePortfolioItemUseCaseTest {
   }
 
   @Test
-  void execute_shouldThrowServiceProviderNotFoundException_whenPortfolioItemNotFoundTest() {
+  void execute_shouldThrowPortfolioItemNotFoundException_whenPortfolioItemNotFoundTest() {
     // Given
     var userId = UserId.from(UUID.randomUUID());
     var portfolioItemId = new PortfolioItemId(UUID.randomUUID());
@@ -79,7 +83,7 @@ class DeletePortfolioItemUseCaseTest {
 
     // When & Then
     assertThatThrownBy(() -> objectUnderTest.execute(userId, portfolioItemId))
-        .isInstanceOf(ServiceProviderNotFoundException.class);
+        .isInstanceOf(PortfolioItemNotFoundException.class);
     verify(serviceProviderRepository).loadByUserId(userId);
   }
 
@@ -165,23 +169,35 @@ class DeletePortfolioItemUseCaseTest {
     return ServiceProvider.reconstitute(
         cm.klg.service_provider.domain.service_provider.ServiceProviderId.generate(),
         userId,
-        new cm.klg.service_provider.domain.service_provider.ProviderContact(
-            new cm.klg.service_provider.domain.service_provider.ProviderLocation(
-                new cm.klg.service_provider.domain.service_provider.UserCityId(UUID.randomUUID()),
-                new cm.klg.service_provider.domain.service_provider.UserDistrictId(
+        ServiceProviderState.from(
+            new ProviderProfile(
+                new cm.klg.service_provider.domain.service_provider.ProviderContact(
+                    new cm.klg.service_provider.domain.service_provider.ProviderLocation(
+                        new cm.klg.service_provider.domain.service_provider.UserCityId(
+                            UUID.randomUUID()),
+                        new cm.klg.service_provider.domain.service_provider.UserDistrictId(
+                            UUID.randomUUID()),
+                        new cm.klg.service_provider.domain.service_provider.UserQuarterId(
+                            UUID.randomUUID())),
+                    cm.klg.service_provider.domain.PhoneNumber.from("+237", "678901234")),
+                null),
+            new cm.klg.service_provider.domain.service_provider.ProviderReview(
+                cm.klg.service_provider.domain.service_provider.ServiceProviderStatus.APPROVED,
+                null,
+                null,
+                null),
+            new cm.klg.service_provider.domain.service_provider.ProviderAudit(
+                cm.klg.common.base.domain.CreatedAt.from(java.time.LocalDateTime.now()), null),
+            cm.klg.service_provider.domain.service_provider.IdentityDocuments.of(
+                cm.klg.service_provider.domain.service_provider.CniRectoMediaId.from(
                     UUID.randomUUID()),
-                new cm.klg.service_provider.domain.service_provider.UserQuarterId(
+                cm.klg.service_provider.domain.service_provider.CniVersoMediaId.from(
                     UUID.randomUUID())),
-            cm.klg.service_provider.domain.PhoneNumber.from("+237", "678901234")),
-        new cm.klg.service_provider.domain.service_provider.ProviderReview(
-            cm.klg.service_provider.domain.service_provider.ServiceProviderStatus.PENDING,
-            null,
-            null,
-            null),
-        new cm.klg.service_provider.domain.service_provider.ProviderAudit(
-            cm.klg.common.base.domain.CreatedAt.from(java.time.LocalDateTime.now()), null),
-        null,
-        new cm.klg.service_provider.domain.service_provider.ServiceCollections(
-            java.util.List.of(), portfolioItems));
+            ProviderImages.from(
+                cm.klg.service_provider.domain.service_provider.ProfileImageMediaId.from(
+                    UUID.randomUUID()),
+                cm.klg.service_provider.domain.service_provider.ProfileImageReview.none()),
+            new cm.klg.service_provider.domain.service_provider.ServiceCollections(
+                java.util.List.of(), portfolioItems)));
   }
 }

@@ -1,9 +1,13 @@
 package cm.klg.service_provider.domain.service_provider;
 
-import org.jspecify.annotations.Nullable;
-
-public record RejectionReason(@Nullable String value) {
-  public static RejectionReason from(String value) {
-    return new RejectionReason(value);
-  }
+public enum RejectionReason {
+  NAME_MISMATCH,
+  CNI_EXPIRED,
+  CNI_UNREADABLE,
+  CNI_INVALID,
+  FACE_MISMATCH,
+  FACE_UNCLEAR,
+  PHOTO_UNCLEAR,
+  DOCUMENT_TAMPERED,
+  PROFILE_IMAGE_UNCLEAR
 }

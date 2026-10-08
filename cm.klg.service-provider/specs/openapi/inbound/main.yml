@@ -29,7 +29,7 @@ paths:
         "404":
           description: "SERVICE-PROVIDER_404_001 | SERVICE-PROVIDER_404_003"
         "409":
-          description: "SERVICE_PROVIDER-409-001 | SERVICE_PROVIDER-409-002"
+          description: "SERVICE_PROVIDER-409-001 | SERVICE_PROVIDER-409-002 | SERVICE_PROVIDER-409-005"
         "400":
           description: "SERVICE_PROVIDER-400-003 | SERVICE_PROVIDER-400-004"
     get:
@@ -75,7 +75,9 @@ paths:
       - "ServiceProvider"
       summary: "Search providers with location priority"
       description: "Search providers with location priority (Quarter > District >\
-        \ City)"
+        \ City). Phone number and email are omitted from search results; they are\
+        \ available on the provider detail only to an authenticated client of that\
+        \ provider."
       operationId: "searchServiceProviders"
       parameters:
       - name: "serviceTypeId"
@@ -128,7 +130,8 @@ paths:
       tags:
       - "ServiceProvider"
       summary: "Get Service Provider By Id"
-      description: "Get Service Provider By Id"
+      description: "Returns the public profile without the provider's phone number\
+        \ or the user's email. Public endpoints do not return contact details."
       operationId: "GetServiceProviderById"
       parameters:
       - name: "serviceProviderId"
@@ -188,6 +191,7 @@ paths:
           type: "string"
           format: "uuid"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -199,31 +203,31 @@ paths:
           description: "SERVICE-PROVIDER_404_002"
         "409":
           description: "SERVICE_PROVIDER-409-004"
-  /service-provider/profile:
+  /me/service-provider:
     get:
       tags:
       - "ServiceProvider"
-      summary: "Get Service Provider Profile"
-      description: "Get Service Provider Profile"
-      operationId: "getServiceProviderProfile"
+      summary: "Get my service provider application"
+      operationId: "getMyServiceProvider"
       security:
       - bearerAuth: []
       responses:
         "200":
-          description: "Successful operation"
+          description: "Current workflow state (CNI references are never returned)."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ServiceProvider"
+                $ref: "#/components/schemas/MyServiceProvider"
         "404":
-          description: "SERVICE-PROVIDER_404_002"
+          description: "No service provider exists for the authenticated user."
     put:
       tags:
       - "ServiceProvider"
-      summary: "Update Service Provider Profile"
-      description: "Update the authenticated service provider's contact details, location\
-        \ and description."
-      operationId: "updateServiceProviderProfile"
+      summary: "Update a rejected service provider application"
+      description: "Updates the rejected provider profile and identity documents,\
+        \ then returns the same ServiceProvider and IdentityVerification to PENDING.\
+        \ User account details remain managed by UAM."
+      operationId: "updateRejectedServiceProvider"
       security:
       - bearerAuth: []
       requestBody:
@@ -231,16 +235,209 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateServiceProviderProfileRequest"
+              $ref: "#/components/schemas/ResubmitServiceProviderApplication"
       responses:
         "204":
-          description: "Successful operation"
+          description: "Application resubmitted"
         "404":
-          description: "SERVICE-PROVIDER_404_002"
+          description: "SERVICE-PROVIDER_404_001 if the mirrored user is missing;\
+            \ SERVICE-PROVIDER_404_002 if the provider is missing."
+        "409":
+          description: "SERVICE_PROVIDER-409-002 | SERVICE_PROVIDER-409-004 | SERVICE_PROVIDER-409-005"
+        "400":
+          description: "SERVICE_PROVIDER-400-003 | SERVICE_PROVIDER-400-005"
+  /me/service-provider/profile:
+    put:
+      tags:
+      - "ServiceProvider"
+      summary: "Update an approved service provider profile"
+      description: "Updates approved profile fields without changing IdentityVerification.\
+        \ A changed profile photo remains pending admin review. User identity information\
+        \ is managed separately by UAM."
+      operationId: "updateApprovedServiceProvider"
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateApprovedServiceProviderProfile"
+      responses:
+        "204":
+          description: "Profile updated"
+        "404":
+          description: "SERVICE-PROVIDER_404_001"
+        "409":
+          description: "SERVICE_PROVIDER-409-002 | SERVICE_PROVIDER-409-004 | SERVICE_PROVIDER-409-005"
         "400":
           description: "SERVICE_PROVIDER-400-003"
+  /me/service-provider/identity:
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "Get my rejected service provider identity documents"
+      description: "Returns CNI and profile photo references only while identity verification\
+        \ is REJECTED."
+      operationId: "MyServiceProviderIdentity"
+      security:
+      - bearerAuth: []
+      responses:
+        "200":
+          description: "Rejected identity documents for the authenticated provider."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RejectedServiceProviderIdentity"
+        "404":
+          description: "No service provider exists for the authenticated user."
         "409":
-          description: "SERVICE_PROVIDER-409-002 | SERVICE_PROVIDER-409-004"
+          description: "SERVICE_PROVIDER-409-004 when identity verification is not\
+            \ REJECTED."
+  /service-provider/{serviceProviderId}/verification:
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "Get service provider identity verification details"
+      description: "Returns the provider view and private identity verification data.\
+        \ Identity verification data is omitted when the provider application is APPROVED."
+      operationId: "getServiceProviderVerification"
+      security:
+      - oAuth:
+        - "service-provider:verify"
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "200":
+          description: "Service provider verification details."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceProviderVerification"
+        "404":
+          description: "SERVICE-PROVIDER_404_002"
+  /service-provider/profile-image-reviews:
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "List profile images awaiting admin review"
+      description: "Returns a lightweight provider/review summary only. Use the profile-image-review\
+        \ detail endpoint for services and private identity verification data."
+      operationId: "getProfileImageReviews"
+      security:
+      - oAuth:
+        - "service-provider:read:all"
+      parameters:
+      - name: "page"
+        in: "query"
+        schema:
+          type: "integer"
+          minimum: 0
+          default: 0
+      - name: "limit"
+        in: "query"
+        schema:
+          type: "integer"
+          minimum: 10
+          default: 20
+      responses:
+        "200":
+          description: "Pending profile image reviews, including totalElements for\
+            \ the admin counter."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileImageReviewPage"
+        "400":
+          description: "SERVICE_PROVIDER-400-001"
+  /service-provider/{serviceProviderId}/profile-image-review:
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "Get complete private profile photo review details (admin only)"
+      description: "Returns provider profile data, current and pending profile photos,\
+        \ and private CNI media references for manual admin review. CNI data is never\
+        \ returned by public or provider self-service endpoints."
+      operationId: "getProfileImageReview"
+      security:
+      - oAuth:
+        - "service-provider:read:all"
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "200":
+          description: "Profile image review data with private identity documents."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceProviderProfileImageReview"
+        "404":
+          description: "SERVICE-PROVIDER_404_002"
+        "409":
+          description: "SERVICE_PROVIDER-409-004: service provider is not awaiting\
+            \ photo review."
+  /service-provider/{serviceProviderId}/profile-image/approve:
+    put:
+      tags:
+      - "ServiceProvider"
+      operationId: "approveProfileImage"
+      security:
+      - oAuth:
+        - "service-provider:approve"
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "204":
+          description: "Approved"
+        "404":
+          description: "SERVICE-PROVIDER_404_002"
+        "409":
+          description: "SERVICE_PROVIDER-409-004: no pending photo review or invalid\
+            \ status."
+  /service-provider/{serviceProviderId}/profile-image/reject:
+    put:
+      tags:
+      - "ServiceProvider"
+      operationId: "rejectProfileImage"
+      security:
+      - oAuth:
+        - "service-provider:reject"
+      parameters:
+      - name: "serviceProviderId"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+          format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectionReason"
+      responses:
+        "204":
+          description: "Rejected; current public photo remains active."
+        "404":
+          description: "SERVICE-PROVIDER_404_002"
+        "409":
+          description: "SERVICE_PROVIDER-409-004: no pending photo review or invalid\
+            \ status."
   /service-provider/portfolio:
     post:
       tags:
@@ -327,7 +524,7 @@ paths:
         "204":
           description: "Successful operation"
         "404":
-          description: "SERVICE-PROVIDER_404_002"
+          description: "SERVICE-PROVIDER_404_002 | SERVICE-PROVIDER_404_005"
         "409":
           description: "SERVICE_PROVIDER-409-004"
     delete:
@@ -348,7 +545,9 @@ paths:
         "204":
           description: "Successful operation"
         "404":
-          description: "SERVICE-PROVIDER_404_002"
+          description: "SERVICE-PROVIDER_404_002 | SERVICE-PROVIDER_404_005"
+        "409":
+          description: "SERVICE_PROVIDER-409-004"
   /service-provider/services:
     get:
       tags:
@@ -378,7 +577,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ServiceType"
+              $ref: "#/components/schemas/CreateProviderService"
       responses:
         "201":
           description: "Successful operation"
@@ -388,6 +587,31 @@ paths:
           description: "SERVICE_PROVIDER-400-004"
         "409":
           description: "SERVICE_PROVIDER-409-003"
+  /service-provider/services/{serviceTypeId}:
+    delete:
+      tags:
+      - "ServiceProvider"
+      summary: "Remove a provided service type"
+      operationId: "deleteMyService"
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: "serviceTypeId"
+        in: "path"
+        required: true
+        description: "ID of the service type from the service catalog."
+        schema:
+          type: "string"
+          format: "uuid"
+      responses:
+        "204":
+          description: "Deleted"
+        "404":
+          description: "SERVICE-PROVIDER_404_002 if the caller has no provider; SERVICE-PROVIDER_404_004\
+            \ if the provider does not offer this type."
+        "409":
+          description: "SERVICE_PROVIDER-409-004: only approved providers can remove\
+            \ a service."
   /service-provider/{serviceProviderId}/services:
     get:
       tags:
@@ -504,13 +728,18 @@ paths:
                     $ref: "#/components/schemas/ServiceCatalogItem"
 components:
   schemas:
-    UpdateServiceProviderProfileRequest:
+    ResubmitServiceProviderApplication:
+      type: "object"
       required:
       - "phoneNumber"
       - "city"
       - "district"
-      - "quarter"
-      type: "object"
+      - "cniRectoId"
+      - "cniVersoId"
+      - "profileImageId"
+      description: "Only a REJECTED application can be resubmitted. The provider profile\
+        \ and identity verification documents are replaced on the same ServiceProvider.\
+        \ Existing services and portfolio items are preserved."
       properties:
         city:
           type: "string"
@@ -525,11 +754,56 @@ components:
           type: "string"
         phoneNumber:
           $ref: "#/components/schemas/PhoneNumber"
-    RejectionReason:
-      type: "object"
-      properties:
-        reason:
+        cniRectoId:
           type: "string"
+          format: "uuid"
+        cniVersoId:
+          type: "string"
+          format: "uuid"
+        profileImageId:
+          type: "string"
+          format: "uuid"
+          description: "Used for face verification and becomes public after application\
+            \ approval."
+    UpdateApprovedServiceProviderProfile:
+      type: "object"
+      required:
+      - "phoneNumber"
+      - "city"
+      - "district"
+      - "profileImageId"
+      description: "Updates an APPROVED provider without changing identity verification.\
+        \ Provider phone may differ from the user's Keycloak username phone. User\
+        \ account details are managed through UAM."
+      properties:
+        city:
+          type: "string"
+          format: "uuid"
+        district:
+          type: "string"
+          format: "uuid"
+        quarter:
+          type: "string"
+          format: "uuid"
+        about:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        profileImageId:
+          type: "string"
+          format: "uuid"
+    RejectionReason:
+      type: "string"
+      enum:
+      - "NAME_MISMATCH"
+      - "CNI_EXPIRED"
+      - "CNI_UNREADABLE"
+      - "CNI_INVALID"
+      - "FACE_MISMATCH"
+      - "FACE_UNCLEAR"
+      - "PHOTO_UNCLEAR"
+      - "DOCUMENT_TAMPERED"
+      - "PROFILE_IMAGE_UNCLEAR"
     ServiceProviderRegister:
       required:
       - "phoneNumber"
@@ -537,6 +811,9 @@ components:
       - "district"
       - "quarter"
       - "serviceType"
+      - "cniRectoId"
+      - "cniVersoId"
+      - "profileImageId"
       type: "object"
       properties:
         city:
@@ -554,6 +831,348 @@ components:
           $ref: "#/components/schemas/PhoneNumber"
         serviceType:
           $ref: "#/components/schemas/ServiceType"
+        cniRectoId:
+          type: "string"
+          format: "uuid"
+        cniVersoId:
+          type: "string"
+          format: "uuid"
+        profileImageId:
+          type: "string"
+          format: "uuid"
+          description: "This photo is also used for face verification and will be\
+            \ visible on the public profile once approved."
+    MyServiceProvider:
+      type: "object"
+      required:
+      - "id"
+      - "status"
+      - "canEdit"
+      - "profileImageReviewStatus"
+      - "user"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        status:
+          $ref: "#/components/schemas/ServiceProviderStatus"
+        rejectionReason:
+          $ref: "#/components/schemas/RejectionReason"
+        canEdit:
+          type: "boolean"
+        city:
+          type: "string"
+          format: "uuid"
+        district:
+          type: "string"
+          format: "uuid"
+        quarter:
+          type: "string"
+          format: "uuid"
+        about:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        profileImageId:
+          type: "string"
+          format: "uuid"
+        pendingProfileImageId:
+          type: "string"
+          format: "uuid"
+        profileImageReviewStatus:
+          $ref: "#/components/schemas/ProfileImageReviewStatus"
+        identityVerificationStatus:
+          $ref: "#/components/schemas/IdentityVerificationStatus"
+        userServices:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/UserService"
+    ProfileImageReviewIdentityVerification:
+      type: "object"
+      description: "Private identity data for authorized admin review."
+      properties:
+        status:
+          $ref: "#/components/schemas/IdentityVerificationStatus"
+        cniRectoId:
+          type: "string"
+          format: "uuid"
+        cniVersoId:
+          type: "string"
+          format: "uuid"
+        rejectionReason:
+          $ref: "#/components/schemas/RejectionReason"
+        verifiedAt:
+          type: "string"
+          format: "date-time"
+        verifiedBy:
+          type: "string"
+          format: "uuid"
+    IdentityVerificationStatus:
+      type: "string"
+      enum:
+      - "PENDING"
+      - "APPROVED"
+      - "REJECTED"
+    RejectedServiceProviderIdentity:
+      type: "object"
+      required:
+      - "providerId"
+      - "cniRectoId"
+      - "cniVersoId"
+      - "profileImageId"
+      - "status"
+      - "rejectionReason"
+      properties:
+        providerId:
+          type: "string"
+          format: "uuid"
+        cniRectoId:
+          type: "string"
+          format: "uuid"
+        cniVersoId:
+          type: "string"
+          format: "uuid"
+        profileImageId:
+          type: "string"
+          format: "uuid"
+        status:
+          type: "string"
+          enum:
+          - "REJECTED"
+        rejectionReason:
+          $ref: "#/components/schemas/RejectionReason"
+    ServiceProviderVerification:
+      x-class-extra-annotation: "@JsonInclude(JsonInclude.Include.NON_NULL)"
+      type: "object"
+      required:
+      - "id"
+      - "userId"
+      - "user"
+      - "city"
+      - "district"
+      - "phoneNumber"
+      - "status"
+      - "profileImageReviewStatus"
+      - "createdAt"
+      - "services"
+      - "portfolios"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        city:
+          type: "string"
+          format: "uuid"
+        district:
+          type: "string"
+          format: "uuid"
+        quarter:
+          type: "string"
+          format: "uuid"
+        approvedBy:
+          type: "string"
+          format: "uuid"
+        rejectedBy:
+          type: "string"
+          format: "uuid"
+        rejectionReason:
+          type: "string"
+        about:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        status:
+          $ref: "#/components/schemas/ServiceProviderStatus"
+        profileImageId:
+          type: "string"
+          format: "uuid"
+        pendingProfileImageId:
+          type: "string"
+          format: "uuid"
+        profileImageReviewStatus:
+          $ref: "#/components/schemas/ProfileImageReviewStatus"
+        identityVerification:
+          type: "object"
+          allOf:
+          - $ref: "#/components/schemas/ProfileImageReviewIdentityVerification"
+        createdAt:
+          type: "string"
+          format: "date-time"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+        services:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/UserService"
+        portfolios:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PortfolioItem"
+    ProfileImageReviewStatus:
+      type: "string"
+      enum:
+      - "NONE"
+      - "PENDING_REVIEW"
+      - "REJECTED"
+    ProfileImageReviewPage:
+      type: "object"
+      required:
+      - "totalElements"
+      - "serviceProviders"
+      properties:
+        totalElements:
+          type: "integer"
+          format: "int64"
+        serviceProviders:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ProfileImageReviewQueueItem"
+    ProfileImageReviewQueueItem:
+      type: "object"
+      description: "Lightweight summary for the review queue. It contains no service\
+        \ list or identity verification data."
+      required:
+      - "serviceProviderId"
+      - "userId"
+      - "user"
+      - "status"
+      - "currentProfileImageId"
+      - "pendingProfileImageId"
+      - "profileImageReviewStatus"
+      properties:
+        serviceProviderId:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        city:
+          type: "string"
+          format: "uuid"
+        district:
+          type: "string"
+          format: "uuid"
+        quarter:
+          type: "string"
+          format: "uuid"
+        status:
+          $ref: "#/components/schemas/ServiceProviderStatus"
+        currentProfileImageId:
+          type: "string"
+          format: "uuid"
+        pendingProfileImageId:
+          type: "string"
+          format: "uuid"
+        profileImageReviewStatus:
+          $ref: "#/components/schemas/ProfileImageReviewStatus"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+    ServiceProviderProfileImageReview:
+      type: "object"
+      required:
+      - "serviceProvider"
+      - "profileImageReview"
+      - "identityVerification"
+      properties:
+        serviceProvider:
+          $ref: "#/components/schemas/ProfileImageReviewProvider"
+        profileImageReview:
+          $ref: "#/components/schemas/ProfileImageReviewSubmission"
+        identityVerification:
+          $ref: "#/components/schemas/ProfileImageReviewIdentityVerification"
+    ProfileImageReviewProvider:
+      type: "object"
+      required:
+      - "id"
+      - "userId"
+      - "user"
+      - "phoneNumber"
+      - "city"
+      - "district"
+      - "status"
+      - "currentProfileImageId"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        city:
+          type: "string"
+          format: "uuid"
+        district:
+          type: "string"
+          format: "uuid"
+        quarter:
+          type: "string"
+          format: "uuid"
+        about:
+          type: "string"
+        status:
+          $ref: "#/components/schemas/ServiceProviderStatus"
+        currentProfileImageId:
+          type: "string"
+          format: "uuid"
+        userServices:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/UserService"
+        createdAt:
+          type: "string"
+          format: "date-time"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+    ProfileImageReviewSubmission:
+      type: "object"
+      required:
+      - "status"
+      - "pendingProfileImageId"
+      properties:
+        status:
+          $ref: "#/components/schemas/ProfileImageReviewStatus"
+        pendingProfileImageId:
+          type: "string"
+          format: "uuid"
+        rejectionReason:
+          $ref: "#/components/schemas/RejectionReason"
+        submittedAt:
+          type: "string"
+          format: "date-time"
+    CreateProviderService:
+      type: "object"
+      required:
+      - "serviceTypeId"
+      - "yearOfExperience"
+      - "document"
+      properties:
+        serviceTypeId:
+          type: "string"
+          format: "uuid"
+        yearOfExperience:
+          type: "integer"
+          minimum: 0
+        document:
+          type: "string"
+          format: "uuid"
     ServiceProviderPaginate:
       type: "object"
       required:
@@ -571,13 +1190,13 @@ components:
       required:
       - "id"
       - "userId"
-      - "lastname"
+      - "user"
       - "city"
       - "district"
       - "quarter"
       - "userIsProviderClient"
       - "userHasFavorited"
-      - "serviceProviderStatus"
+      - "profileImageId"
       - "createdAt"
       type: "object"
       properties:
@@ -587,10 +1206,8 @@ components:
         userId:
           type: "string"
           format: "uuid"
-        firstname:
-          type: "string"
-        lastname:
-          type: "string"
+        user:
+          $ref: "#/components/schemas/UserProfile"
         city:
           type: "string"
           format: "uuid"
@@ -614,8 +1231,9 @@ components:
           type: "boolean"
         userHasFavorited:
           type: "boolean"
-        serviceProviderStatus:
-          $ref: "#/components/schemas/ServiceProviderStatus"
+        profileImageId:
+          type: "string"
+          format: "uuid"
         userServices:
           type: "array"
           items:
@@ -628,11 +1246,11 @@ components:
       required:
       - "id"
       - "userId"
-      - "lastname"
+      - "user"
       - "city"
       - "district"
       - "quarter"
-      - "phoneNumber"
+      - "profileImageId"
       - "createdAt"
       type: "object"
       properties:
@@ -642,10 +1260,8 @@ components:
         userId:
           type: "string"
           format: "uuid"
-        firstname:
-          type: "string"
-        lastname:
-          type: "string"
+        user:
+          $ref: "#/components/schemas/UserProfile"
         city:
           type: "string"
           format: "uuid"
@@ -665,6 +1281,9 @@ components:
           format: "date-time"
         phoneNumber:
           $ref: "#/components/schemas/PhoneNumber"
+        profileImageId:
+          type: "string"
+          format: "uuid"
     UserService:
       type: "object"
       required:
@@ -713,6 +1332,28 @@ components:
         document:
           type: "string"
           format: "uuid"
+    UserProfile:
+      type: "object"
+      description: "User identity fields managed by UAM. Email is returned only in\
+        \ private views or to an authorized client."
+      required:
+      - "id"
+      - "lastname"
+      - "createdAt"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        firstname:
+          type: "string"
+        lastname:
+          type: "string"
+        email:
+          type: "string"
+          format: "email"
+        createdAt:
+          type: "string"
+          format: "date-time"
     ServiceProviderStatus:
       type: "string"
       enum:

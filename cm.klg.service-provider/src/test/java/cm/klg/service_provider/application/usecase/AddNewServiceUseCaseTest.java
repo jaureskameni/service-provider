@@ -6,11 +6,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.application.outbound.ServiceProviderRepository;
 import cm.klg.service_provider.application.outbound.ServiceTypeRepository;
 import cm.klg.service_provider.domain.PhoneNumber;
 import cm.klg.service_provider.domain.UserId;
+import cm.klg.service_provider.domain.service_provider.CniRectoMediaId;
+import cm.klg.service_provider.domain.service_provider.CniVersoMediaId;
+import cm.klg.service_provider.domain.service_provider.IdentityDocuments;
+import cm.klg.service_provider.domain.service_provider.ProfileImageMediaId;
 import cm.klg.service_provider.domain.service_provider.ProviderLocation;
 import cm.klg.service_provider.domain.service_provider.ServiceProvider;
 import cm.klg.service_provider.domain.service_provider.UserCityId;
@@ -33,8 +36,6 @@ class AddNewServiceUseCaseTest {
 
   @Mock private ServiceProviderRepository serviceProviderRepository;
   @Mock private ServiceTypeRepository serviceTypeRepository;
-  @Mock private DomainEventPublisher domainEventPublisher;
-
   @InjectMocks private AddNewServiceUseCase objectUnderTest;
 
   @Test
@@ -58,7 +59,11 @@ class AddNewServiceUseCaseTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
+    serviceProvider.approve(UserId.from(UUID.randomUUID()));
 
     when(serviceProviderRepository.loadByUserId(userId)).thenReturn(serviceProvider);
     when(serviceTypeRepository.existsById(serviceTypeId)).thenReturn(true);

@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -64,6 +65,21 @@ public class ServiceProviderJpa extends AggregateRootEntity<UUID> {
 
   @Column(name = "c_about")
   private String about;
+
+  @Column(name = "c_profile_image_media_id")
+  private UUID profileImageId;
+
+  @Column(name = "c_pending_profile_image_media_id")
+  private UUID pendingProfileImageId;
+
+  @Column(name = "c_profile_image_review_status")
+  private String profileImageReviewStatus;
+
+  @Column(name = "c_profile_image_rejection_reason")
+  private String profileImageRejectionReason;
+
+  @OneToOne(mappedBy = "serviceProvider", cascade = CascadeType.ALL, orphanRemoval = true)
+  private IdentityVerificationJpa identityVerification;
 
   @Column(name = "c_created_at")
   private LocalDateTime createdAt;

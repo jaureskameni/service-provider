@@ -5,13 +5,9 @@ import static cm.klg.service_provider.adapter.messaging.outbound.EventTopics.DES
 import cm.klg.generated.service.provider.adapter.messaging.outbound.dto.DomainEventType;
 import cm.klg.service_provider.application.outbound.DomainEventPublisher;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderApprovedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderCreatedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPortfolioItemAddedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPortfolioItemDeletedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderPortfolioItemUpdatedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderProfileUpdatedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderProfileImageApprovedEvent;
+import cm.klg.service_provider.domain.service_provider.event.ServiceProviderProfileImageRejectedEvent;
 import cm.klg.service_provider.domain.service_provider.event.ServiceProviderRejectedEvent;
-import cm.klg.service_provider.domain.service_provider.event.ServiceProviderServiceAddedEvent;
 import com.emb.domain.outboxevent.EventCommand;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -30,14 +26,6 @@ public class EventPublisher implements DomainEventPublisher {
   }
 
   @Override
-  public void serviceProviderCreatedEvent(@NonNull ServiceProviderCreatedEvent event) {
-    publish(
-        DomainEventType.SERVICE_PROVIDER_CREATED,
-        event.serviceProviderId().value().toString(),
-        outboxPublisherMapper.toServiceProviderCreatedEventDTO(event));
-  }
-
-  @Override
   public void serviceProviderRejectedEvent(@NonNull ServiceProviderRejectedEvent event) {
     publish(
         DomainEventType.SERVICE_PROVIDER_REJECTED,
@@ -46,47 +34,21 @@ public class EventPublisher implements DomainEventPublisher {
   }
 
   @Override
-  public void serviceProviderServiceAddedEvent(@NonNull ServiceProviderServiceAddedEvent event) {
+  public void serviceProviderProfileImageApprovedEvent(
+      @NonNull ServiceProviderProfileImageApprovedEvent event) {
     publish(
-        DomainEventType.SERVICE_PROVIDER_SERVICE_ADDED,
+        DomainEventType.SERVICE_PROVIDER_PROFILE_IMAGE_APPROVED,
         event.serviceProviderId().value().toString(),
-        outboxPublisherMapper.toServiceProviderServiceAddedEventDTO(event));
+        outboxPublisherMapper.toServiceProviderProfileImageApprovedEventDTO(event));
   }
 
   @Override
-  public void serviceProviderPortfolioItemAddedEvent(
-      @NonNull ServiceProviderPortfolioItemAddedEvent event) {
+  public void serviceProviderProfileImageRejectedEvent(
+      @NonNull ServiceProviderProfileImageRejectedEvent event) {
     publish(
-        DomainEventType.SERVICE_PROVIDER_PORTFOLIO_ITEM_ADDED,
+        DomainEventType.SERVICE_PROVIDER_PROFILE_IMAGE_REJECTED,
         event.serviceProviderId().value().toString(),
-        outboxPublisherMapper.toServiceProviderPortfolioItemAddedEventDTO(event));
-  }
-
-  @Override
-  public void serviceProviderPortfolioItemUpdatedEvent(
-      @NonNull ServiceProviderPortfolioItemUpdatedEvent event) {
-    publish(
-        DomainEventType.SERVICE_PROVIDER_PORTFOLIO_ITEM_UPDATED,
-        event.serviceProviderId().value().toString(),
-        outboxPublisherMapper.toServiceProviderPortfolioItemUpdatedEventDTO(event));
-  }
-
-  @Override
-  public void serviceProviderPortfolioItemDeletedEvent(
-      @NonNull ServiceProviderPortfolioItemDeletedEvent event) {
-    publish(
-        DomainEventType.SERVICE_PROVIDER_PORTFOLIO_ITEM_DELETED,
-        event.serviceProviderId().value().toString(),
-        outboxPublisherMapper.toServiceProviderPortfolioItemDeletedEventDTO(event));
-  }
-
-  @Override
-  public void serviceProviderProfileUpdatedEvent(
-      @NonNull ServiceProviderProfileUpdatedEvent event) {
-    publish(
-        DomainEventType.SERVICE_PROVIDER_PROFILE_UPDATED,
-        event.serviceProviderId().value().toString(),
-        outboxPublisherMapper.toServiceProviderProfileUpdatedEventDTO(event));
+        outboxPublisherMapper.toServiceProviderProfileImageRejectedEventDTO(event));
   }
 
   private void publish(DomainEventType type, String key, Object data) {

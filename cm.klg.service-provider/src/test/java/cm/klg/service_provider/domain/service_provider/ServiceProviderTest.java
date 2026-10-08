@@ -14,6 +14,84 @@ import org.junit.jupiter.api.Test;
 class ServiceProviderTest {
 
   @Test
+  void rejectAndResubmit_shouldResetIdentityVerificationAndReuseAggregate() {
+    var provider = newPendingProvider();
+    var providerId = provider.getId();
+    var adminId = new UserId(UUID.randomUUID());
+    provider.reject(adminId, RejectionReason.CNI_INVALID);
+
+    var nextFront = CniRectoMediaId.from(UUID.randomUUID());
+    var nextBack = CniVersoMediaId.from(UUID.randomUUID());
+    var nextPhoto = ProfileImageMediaId.from(UUID.randomUUID());
+    provider.resubmit(
+        provider.getLocation(),
+        provider.getPhoneNumber(),
+        null,
+        new IdentityDocuments(nextFront, nextBack),
+        nextPhoto);
+
+    assertThat(provider.getId()).isEqualTo(providerId);
+    assertThat(provider.getStatus()).isEqualTo(ServiceProviderStatus.PENDING);
+    assertThat(provider.getIdentityVerification().getStatus())
+        .isEqualTo(IdentityVerificationStatus.PENDING);
+    assertThat(provider.getIdentityVerification().getCniRectoId()).isEqualTo(nextFront);
+    assertThat(provider.getIdentityVerification().getCniVersoId()).isEqualTo(nextBack);
+    assertThat(provider.getIdentityVerification().getRejectionReason()).isNull();
+  }
+
+  @Test
+  void approve_shouldApproveIdentityVerificationAndRecordAdmin() {
+    var provider = newPendingProvider();
+    var adminId = new UserId(UUID.randomUUID());
+
+    provider.approve(adminId);
+
+    assertThat(provider.getIdentityVerification().getStatus())
+        .isEqualTo(IdentityVerificationStatus.APPROVED);
+    assertThat(provider.getIdentityVerification().getVerifiedBy()).isEqualTo(adminId);
+    assertThat(provider.getIdentityVerification().getVerifiedAt()).isNotNull();
+  }
+
+  @Test
+  void approvedPhotoReview_shouldKeepOldPhotoUntilApprovedAndKeepItOnRejection() {
+    var provider = newPendingProvider();
+    provider.approve(new UserId(UUID.randomUUID()));
+    var current = provider.getProfileImageId();
+    var replacement = ProfileImageMediaId.from(UUID.randomUUID());
+
+    provider.submitProfileImageChange(replacement);
+    assertThat(provider.getProfileImageId()).isEqualTo(current);
+    assertThat(provider.getPendingProfileImageId()).isEqualTo(replacement);
+    assertThat(provider.getProfileImageReviewStatus())
+        .isEqualTo(ProfileImageReviewStatus.PENDING_REVIEW);
+    provider.approveProfileImage();
+    assertThat(provider.getProfileImageId()).isEqualTo(replacement);
+    assertThat(provider.getPendingProfileImageId()).isNull();
+
+    var rejectedPhoto = ProfileImageMediaId.from(UUID.randomUUID());
+    provider.submitProfileImageChange(rejectedPhoto);
+    provider.rejectProfileImage(RejectionReason.FACE_UNCLEAR);
+    assertThat(provider.getProfileImageId()).isEqualTo(replacement);
+    assertThat(provider.getPendingProfileImageId()).isNull();
+    assertThat(provider.getProfileImageReviewStatus()).isEqualTo(ProfileImageReviewStatus.REJECTED);
+  }
+
+  private ServiceProvider newPendingProvider() {
+    return ServiceProvider.of(
+        new UserId(UUID.randomUUID()),
+        new ProviderLocation(
+            new UserCityId(UUID.randomUUID()),
+            new UserDistrictId(UUID.randomUUID()),
+            new UserQuarterId(UUID.randomUUID())),
+        new PhoneNumber("+237", "678901234"),
+        null,
+        IdentityDocuments.of(
+            CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+        ProfileImageMediaId.from(UUID.randomUUID()),
+        new ArrayList<>());
+  }
+
+  @Test
   void approve_shouldSetStatusToApproved_whenStatusIsPending() {
     // Given
     UserId adminId = new UserId(UUID.randomUUID());
@@ -26,6 +104,9 @@ class ServiceProviderTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
 
     // When
@@ -41,7 +122,7 @@ class ServiceProviderTest {
   void reject_shouldSetStatusToRejected_whenStatusIsPending() {
     // Given
     UserId adminId = new UserId(UUID.randomUUID());
-    RejectionReason reason = new RejectionReason("Invalid documents");
+    RejectionReason reason = RejectionReason.CNI_INVALID;
     ServiceProvider serviceProvider =
         ServiceProvider.of(
             new UserId(UUID.randomUUID()),
@@ -51,6 +132,9 @@ class ServiceProviderTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
 
     // When
@@ -59,7 +143,7 @@ class ServiceProviderTest {
     // Then
     assertThat(serviceProvider.getStatus()).isEqualTo(ServiceProviderStatus.REJECTED);
     assertThat(serviceProvider.getRejectedBy()).isEqualTo(adminId);
-    assertThat(serviceProvider.getRejectionReason()).isEqualTo(reason);
+    assertThat(serviceProvider.getIdentityVerification().getRejectionReason()).isEqualTo(reason);
     assertThat(serviceProvider.getUpdatedAt()).isNotNull();
   }
 
@@ -71,17 +155,24 @@ class ServiceProviderTest {
         ServiceProvider.reconstitute(
             ServiceProviderId.generate(),
             new UserId(UUID.randomUUID()),
-            new ProviderContact(
-                new ProviderLocation(
-                    new UserCityId(UUID.randomUUID()),
-                    new UserDistrictId(UUID.randomUUID()),
-                    new UserQuarterId(UUID.randomUUID())),
-                new PhoneNumber("+237", "678901234")),
-            new ProviderReview(
-                ServiceProviderStatus.REJECTED, null, new UserId(UUID.randomUUID()), null),
-            new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
-            null,
-            new ServiceCollections(new ArrayList<>(), new ArrayList<>()));
+            ServiceProviderState.from(
+                new ProviderProfile(
+                    new ProviderContact(
+                        new ProviderLocation(
+                            new UserCityId(UUID.randomUUID()),
+                            new UserDistrictId(UUID.randomUUID()),
+                            new UserQuarterId(UUID.randomUUID())),
+                        new PhoneNumber("+237", "678901234")),
+                    null),
+                new ProviderReview(
+                    ServiceProviderStatus.REJECTED, null, new UserId(UUID.randomUUID()), null),
+                new ProviderAudit(CreatedAt.from(LocalDateTime.now()), null),
+                IdentityDocuments.of(
+                    CniRectoMediaId.from(UUID.randomUUID()),
+                    CniVersoMediaId.from(UUID.randomUUID())),
+                ProviderImages.from(
+                    ProfileImageMediaId.from(UUID.randomUUID()), ProfileImageReview.none()),
+                new ServiceCollections(new ArrayList<>(), new ArrayList<>())));
 
     assertThatThrownBy(() -> serviceProvider.approve(adminId))
         .isInstanceOf(InvalidServiceProviderStatusException.class);
@@ -99,6 +190,9 @@ class ServiceProviderTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
 
     var userServices = serviceProvider.getUserServices();
@@ -126,6 +220,9 @@ class ServiceProviderTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
 
     var nonExistentId = new PortfolioItemId(UUID.randomUUID());
@@ -134,9 +231,11 @@ class ServiceProviderTest {
     PortfolioItemMediaId mediaId = new PortfolioItemMediaId(UUID.randomUUID());
 
     // When & Then
+    serviceProvider.approve(new UserId(UUID.randomUUID()));
+
     assertThatThrownBy(
             () -> serviceProvider.updatePortfolioItem(nonExistentId, title, description, mediaId))
-        .isInstanceOf(ServiceProviderNotFoundException.class);
+        .isInstanceOf(PortfolioItemNotFoundException.class);
   }
 
   @Test
@@ -151,6 +250,9 @@ class ServiceProviderTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
     serviceProvider.approve(new UserId(UUID.randomUUID()));
 
@@ -180,13 +282,17 @@ class ServiceProviderTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
 
     var nonExistentId = new PortfolioItemId(UUID.randomUUID());
+    serviceProvider.approve(new UserId(UUID.randomUUID()));
 
     // When & Then
     assertThatThrownBy(() -> serviceProvider.deletePortfolioItem(nonExistentId))
-        .isInstanceOf(ServiceProviderNotFoundException.class);
+        .isInstanceOf(PortfolioItemNotFoundException.class);
   }
 
   @Test
@@ -201,6 +307,9 @@ class ServiceProviderTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
     serviceProvider.approve(new UserId(UUID.randomUUID()));
 
@@ -235,6 +344,9 @@ class ServiceProviderTest {
                 new UserQuarterId(UUID.randomUUID())),
             new PhoneNumber("+237", "678901234"),
             null,
+            IdentityDocuments.of(
+                CniRectoMediaId.from(UUID.randomUUID()), CniVersoMediaId.from(UUID.randomUUID())),
+            ProfileImageMediaId.from(UUID.randomUUID()),
             new ArrayList<>());
 
     var portfolioItems = serviceProvider.getPortfolioItems();
