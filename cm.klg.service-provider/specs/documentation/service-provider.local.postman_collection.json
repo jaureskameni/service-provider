@@ -1,0 +1,1141 @@
+{
+  "info": {
+    "name": "Z-Link · Service Provider API (local)",
+    "description": "Collection générée depuis specs/openapi/inbound/main.yml. Base locale: http://localhost:8085. Les requêtes protégées utilisent les variables de token de l’environnement; les exemples UUID doivent être remplacés par des IDs existants dans tes services. Le dossier « Admin · candidatures » contient la lecture de vérification (scope service-provider:verify). Le dossier « Admin · revue des photos » permet de consulter la file, examiner une demande, puis approuver ou rejeter la photo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8085",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminReadToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminApproveToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminRejectToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminVerifyToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "serviceProviderId",
+      "value": "00000000-0000-0000-0000-000000000001",
+      "type": "string"
+    },
+    {
+      "key": "serviceTypeId",
+      "value": "00000000-0000-0000-0000-000000000002",
+      "type": "string"
+    },
+    {
+      "key": "cityId",
+      "value": "00000000-0000-0000-0000-000000000003",
+      "type": "string"
+    },
+    {
+      "key": "districtId",
+      "value": "00000000-0000-0000-0000-000000000004",
+      "type": "string"
+    },
+    {
+      "key": "quarterId",
+      "value": "00000000-0000-0000-0000-000000000005",
+      "type": "string"
+    },
+    {
+      "key": "profileImageId",
+      "value": "00000000-0000-0000-0000-000000000006",
+      "type": "string"
+    },
+    {
+      "key": "cniRectoId",
+      "value": "00000000-0000-0000-0000-000000000007",
+      "type": "string"
+    },
+    {
+      "key": "cniVersoId",
+      "value": "00000000-0000-0000-0000-000000000008",
+      "type": "string"
+    },
+    {
+      "key": "mediaId",
+      "value": "00000000-0000-0000-0000-000000000009",
+      "type": "string"
+    },
+    {
+      "key": "documentMediaId",
+      "value": "00000000-0000-0000-0000-00000000000a",
+      "type": "string"
+    },
+    {
+      "key": "portfolioId",
+      "value": "00000000-0000-0000-0000-00000000000b",
+      "type": "string"
+    },
+    {
+      "key": "page",
+      "value": "0",
+      "type": "string"
+    },
+    {
+      "key": "limit",
+      "value": "20",
+      "type": "string"
+    },
+    {
+      "key": "profileImageRejectionReason",
+      "value": "PROFILE_IMAGE_UNCLEAR",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Mon profil prestataire",
+      "item": [
+        {
+          "name": "Become Service Provider [POST /service-provider]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/service-provider",
+            "description": "Become Service Provider\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"city\": \"{{cityId}}\",\n  \"district\": \"{{districtId}}\",\n  \"quarter\": \"{{quarterId}}\",\n  \"about\": \"Profil de test créé depuis Postman.\",\n  \"phoneNumber\": {\n    \"countryCode\": \"+237\",\n    \"number\": \"670000000\"\n  },\n  \"serviceType\": {\n    \"id\": \"{{mediaId}}\",\n    \"yearOfExperience\": 4,\n    \"document\": \"{{documentMediaId}}\"\n  },\n  \"cniRectoId\": \"{{cniRectoId}}\",\n  \"cniVersoId\": \"{{cniVersoId}}\",\n  \"profileImageId\": \"{{profileImageId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [201];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });",
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.newId) pm.environment.set(\"serviceProviderId\", body.newId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get my service provider application [GET /me/service-provider]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/me/service-provider",
+            "description": "Get my service provider application\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get my rejected identity documents [GET /me/service-provider/identity]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/me/service-provider/identity",
+            "description": "Retourne les références CNI recto/verso, la photo de profil et le motif de rejet uniquement lorsque la vérification d'identité est REJECTED. Réponse 409 si elle ne l'est pas.\n\nAuthentification requise : userToken du prestataire concerné.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200, 409];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });",
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  pm.test(\"Identité retournée uniquement au statut REJECTED\", function () { pm.expect(body.status).to.eql(\"REJECTED\"); });",
+                  "  pm.test(\"Références et motif présents\", function () { pm.expect(body).to.include.keys(\"providerId\", \"cniRectoId\", \"cniVersoId\", \"profileImageId\", \"status\", \"rejectionReason\"); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resubmit a rejected service provider application [PUT /me/service-provider]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/me/service-provider",
+            "description": "Updates the rejected provider profile and identity documents, then returns the same ServiceProvider and IdentityVerification to PENDING. User account details remain managed by UAM.\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"city\": \"{{cityId}}\",\n  \"district\": \"{{districtId}}\",\n  \"about\": \"Profil de test créé depuis Postman.\",\n  \"phoneNumber\": {\n    \"countryCode\": \"+237\",\n    \"number\": \"670000000\"\n  },\n  \"cniRectoId\": \"{{cniRectoId}}\",\n  \"cniVersoId\": \"{{cniVersoId}}\",\n  \"profileImageId\": \"{{profileImageId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update an approved service provider profile [PUT /me/service-provider/profile]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/me/service-provider/profile",
+            "description": "Updates approved profile fields without changing IdentityVerification. A changed profile photo remains pending admin review. User identity information is managed separately by UAM.\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"city\": \"{{cityId}}\",\n  \"district\": \"{{districtId}}\",\n  \"about\": \"Profil de test créé depuis Postman.\",\n  \"phoneNumber\": {\n    \"countryCode\": \"+237\",\n    \"number\": \"670000000\"\n  },\n  \"profileImageId\": \"{{profileImageId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recherche et profils publics",
+      "item": [
+        {
+          "name": "Search providers with location priority [GET /service-provider/search]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/search?serviceTypeId={{serviceTypeId}}&cityId={{cityId}}&districtId={{districtId}}&quarterId={{quarterId}}&page={{page}}&limit={{limit}}",
+            "description": "Search providers with location priority (Quarter > District > City). Phone number and email are omitted from search results; they are available on the provider detail only to an authenticated client of that provider.\n\nRoute publique : aucun token requis.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Service Provider By Id [GET /service-provider/{serviceProviderId}]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/{{serviceProviderId}}",
+            "description": "Returns the public profile without the provider's phone number or the user's email. Public endpoints do not return contact details.\n\nRoute publique : aucun token requis.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin · candidatures",
+      "item": [
+        {
+          "name": "Get service provider verification details [GET /service-provider/{serviceProviderId}/verification]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/{{serviceProviderId}}/verification",
+            "description": "Retourne les informations du prestataire, ses services, son portfolio et les données privées de vérification. Pour un prestataire APPROVED, identityVerification est omis.\n\nAuthentification requise : ****** (scope service-provider:verify).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminVerifyToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  pm.test(\"Identité absente si prestataire APPROVED\", function () {",
+                  "    if (body.status === \"APPROVED\") pm.expect(body).not.to.have.property(\"identityVerification\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approve Service Provider Request [PUT /service-provider/{serviceProviderId}/approve]",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/{{serviceProviderId}}/approve",
+            "description": "Approve Service Provider Request\n\nAuthentification requise : Bearer {{adminApproveToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminApproveToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Service Provider Request [PUT /service-provider/{serviceProviderId}/reject]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/service-provider/{{serviceProviderId}}/reject",
+            "description": "Reject Service Provider Request\n\nAuthentification requise : Bearer {{adminRejectToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminRejectToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "\"NAME_MISMATCH\"",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Service Provider [GET /service-provider]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider?status=PENDING&page={{page}}&limit={{limit}}",
+            "description": "Get All Service Provider\n\nAuthentification requise : Bearer {{adminReadToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminReadToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin · revue des photos",
+      "item": [
+        {
+          "name": "Lister les photos en attente [GET /service-provider/profile-image-reviews]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/profile-image-reviews?page={{page}}&limit={{limit}}",
+            "description": "Liste paginée des photos en attente de validation, avec totalElements pour afficher un compteur dans l’interface admin. Consulter ensuite le détail avec le serviceProviderId retourné.\n\nAuthentification requise : Bearer {{adminReadToken}} (scope service-provider:read:all).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminReadToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulter le détail de la revue [GET /service-provider/{serviceProviderId}/profile-image-review]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/{{serviceProviderId}}/profile-image-review",
+            "description": "Affiche les informations du prestataire, la photo actuelle et la photo proposée, ainsi que les références privées des documents CNI pour la revue admin.\n\nAuthentification requise : Bearer {{adminReadToken}} (scope service-provider:read:all).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminReadToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approuver la photo [PUT /service-provider/{serviceProviderId}/profile-image/approve]",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/{{serviceProviderId}}/profile-image/approve",
+            "description": "Approuve la photo en attente; elle devient la photo publique du prestataire.\n\nAuthentification requise : Bearer {{adminApproveToken}} (scope service-provider:approve).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminApproveToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rejeter la photo [PUT /service-provider/{serviceProviderId}/profile-image/reject]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/service-provider/{{serviceProviderId}}/profile-image/reject",
+            "description": "Rejette la photo en attente. La photo publique actuelle reste active. La raison doit être une valeur de l’énumération RejectionReason.\n\nAuthentification requise : Bearer {{adminRejectToken}} (scope service-provider:reject).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminRejectToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "\"{{profileImageRejectionReason}}\"",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "Get my services [GET /service-provider/services]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/services",
+            "description": "Get my services\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add a service to provide [POST /service-provider/services]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/service-provider/services",
+            "description": "Add a service to provide\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceTypeId\": \"{{serviceTypeId}}\",\n  \"yearOfExperience\": 4,\n  \"document\": \"{{documentMediaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [201];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove a provided service type [DELETE /service-provider/services/{serviceTypeId}]",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/services/{{serviceTypeId}}",
+            "description": "Remove a provided service type\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get a service provider's services [GET /service-provider/{serviceProviderId}/services]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/{{serviceProviderId}}/services",
+            "description": "Get a service provider's services\n\nRoute publique : aucun token requis.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Portfolio",
+      "item": [
+        {
+          "name": "Add Provider's Portfolio [POST /service-provider/portfolio]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/service-provider/portfolio",
+            "description": "Add Provider's Portfolio\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Exemple de prestation\",\n  \"description\": \"Description de test pour cette prestation.\",\n  \"mediaId\": \"{{mediaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Provider's Portfolio [GET /service-provider/portfolio]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/portfolio",
+            "description": "Get All Provider's Portfolio\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get provider portfolio [GET /service-provider/{serviceProviderId}/portfolio]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/{{serviceProviderId}}/portfolio",
+            "description": "Retrieve all portfolio items of the specified service provider.\n\nRoute publique : aucun token requis.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update a portfolio item [PUT /service-provider/portfolio/{portfolioId}]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/service-provider/portfolio/{{portfolioId}}",
+            "description": "Update a portfolio item\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Exemple de prestation\",\n  \"description\": \"Description de test pour cette prestation.\",\n  \"mediaId\": \"{{mediaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete a portfolio item [DELETE /service-provider/portfolio/{portfolioId}]",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/service-provider/portfolio/{{portfolioId}}",
+            "description": "Delete a portfolio item\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Favoris",
+      "item": [
+        {
+          "name": "List my favorite service providers [GET /me/favorites/service-providers]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/me/favorites/service-providers?page={{page}}&limit={{limit}}",
+            "description": "List service providers favorited by the authenticated user\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add service provider to favorites [POST /me/favorites/service-providers/{serviceProviderId}]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/me/favorites/service-providers/{{serviceProviderId}}",
+            "description": "Add a service provider to the authenticated user's favorites\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove service provider from favorites [DELETE /me/favorites/service-providers/{serviceProviderId}]",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/me/favorites/service-providers/{{serviceProviderId}}",
+            "description": "Remove a service provider from the authenticated user's favorites\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [204];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Catalogue",
+      "item": [
+        {
+          "name": "Get the complete service catalog grouped by categories [GET /service-catalog]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/service-catalog",
+            "description": "Get the complete service catalog grouped by categories\n\nRoute publique : aucun token requis.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

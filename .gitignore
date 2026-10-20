@@ -11,3 +11,4 @@ gradle.prefs
 **/*.log
 .pgpass
 **/application-local.yml
+**/SERVICE_PROVIDER_REST_API_DOCUMENTATION.md
