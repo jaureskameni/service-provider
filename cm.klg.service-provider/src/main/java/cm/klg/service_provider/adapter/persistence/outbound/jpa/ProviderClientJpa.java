@@ -1,5 +1,6 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
+import cm.klg.common.base.domain.AggregateRootEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -19,7 +20,7 @@ import lombok.experimental.FieldNameConstants;
 @NoArgsConstructor
 @Entity
 @Table(name = "t_provider_client")
-public class ProviderClientJpa {
+public class ProviderClientJpa extends AggregateRootEntity<UUID> {
   @Id
   @Column(name = "c_id")
   private UUID id;

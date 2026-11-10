@@ -1,5 +1,6 @@
 package cm.klg.service_provider.adapter.persistence.outbound.jpa;
 
+import cm.klg.common.base.entity.PhoneNumberJpa;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -12,8 +13,7 @@ public record ProfileImageReviewView(
     String lastname,
     @Nullable String emailAddress,
     LocalDateTime userCreatedAt,
-    String phoneCountryCode,
-    String phoneNumber,
+    PhoneNumberJpa phoneNumber,
     UUID cityId,
     UUID districtId,
     @Nullable UUID quarterId,

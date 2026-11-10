@@ -6,6 +6,7 @@ import cm.klg.service_provider.domain.provider_client.ProviderClient;
 import cm.klg.service_provider.domain.service_provider.ServiceProviderId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -14,13 +15,14 @@ public class ProviderClientJpaRepository implements ProviderClientRepository {
   private final JpaMapper jpaMapper;
 
   @Override
-  public boolean existsByUserIdAndProviderId(UserId userId, ServiceProviderId providerId) {
+  public boolean existsByUserIdAndProviderId(
+      @NonNull UserId userId, @NonNull ServiceProviderId providerId) {
     return providerClientSpringRepository.existsByUserIdAndProviderId(
         userId.value(), providerId.value());
   }
 
   @Override
-  public void insertIfAbsent(ProviderClient providerClient) {
+  public void insertIfAbsent(@NonNull ProviderClient providerClient) {
     ProviderClientJpa providerClientJpa = jpaMapper.toJpa(providerClient);
     int insertedRows =
         providerClientSpringRepository.insertIfAbsent(
