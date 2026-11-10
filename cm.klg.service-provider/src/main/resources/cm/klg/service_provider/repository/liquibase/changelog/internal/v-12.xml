@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+	<changeSet id="SP-56:1" author="kameni.nguematcha">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="t_user" columnName="c_deleted" />
+			</not>
+		</preConditions>
+		<addColumn tableName="t_user">
+			<column name="c_deleted" type="boolean"
+				defaultValueBoolean="false" />
+			<column name="c_version" type="int8" defaultValueNumeric="0" />
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="SP-56:2" author="kameni.nguematcha">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="t_favorite_provider"
+					columnName="c_deleted" />
+			</not>
+		</preConditions>
+		<addColumn tableName="t_favorite_provider">
+			<column name="c_deleted" type="boolean"
+				defaultValueBoolean="false" />
+			<column name="c_version" type="int8" defaultValueNumeric="0" />
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="SP-56:3" author="kameni.nguematcha">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="t_provider_client"
+					columnName="c_deleted" />
+			</not>
+		</preConditions>
+		<addColumn tableName="t_provider_client">
+			<column name="c_deleted" type="boolean"
+				defaultValueBoolean="false" />
+			<column name="c_version" type="int8" defaultValueNumeric="0" />
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="SP-56:4" author="kameni.nguematcha">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="t_service_type"
+					columnName="c_deleted" />
+			</not>
+		</preConditions>
+		<addColumn tableName="t_service_type">
+			<column name="c_deleted" type="boolean"
+				defaultValueBoolean="false" />
+			<column name="c_version" type="int8" defaultValueNumeric="0" />
+		</addColumn>
+	</changeSet>
+</databaseChangeLog>

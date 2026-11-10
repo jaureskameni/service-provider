@@ -301,7 +301,7 @@ public record ServiceProviderJpaRepository(
             view.lastname(),
             view.emailAddress(),
             view.userCreatedAt()),
-        PhoneNumber.from(view.phoneCountryCode(), view.phoneNumber()),
+        PhoneNumber.from(view.phoneNumber().getCountryCode(), view.phoneNumber().getNumber()),
         view.cityId(),
         view.districtId(),
         view.quarterId(),
