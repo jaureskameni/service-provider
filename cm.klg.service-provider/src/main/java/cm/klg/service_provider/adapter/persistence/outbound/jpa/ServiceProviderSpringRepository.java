@@ -15,6 +15,9 @@ public interface ServiceProviderSpringRepository
     extends JpaRepository<@NonNull ServiceProviderJpa, @NonNull UUID> {
   boolean existsByUserId(UUID userId);
 
+  @Query("SELECT s.status FROM ServiceProviderJpa s WHERE s.userId = :userId")
+  Optional<String> findStatusByUserId(@Param("userId") UUID userId);
+
   boolean existsByPhoneNumber(PhoneNumberJpa phoneNumberJpa);
 
   boolean existsByPhoneNumberAndUserIdNot(PhoneNumberJpa phoneNumberJpa, UUID userId);

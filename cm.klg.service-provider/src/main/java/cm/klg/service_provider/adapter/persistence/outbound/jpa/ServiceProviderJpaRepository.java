@@ -67,6 +67,13 @@ public record ServiceProviderJpaRepository(
   }
 
   @Override
+  public Optional<ServiceProviderStatus> findStatusByUserId(@NonNull UserId userId) {
+    return serviceProviderSpringRepository
+        .findStatusByUserId(userId.value())
+        .map(ServiceProviderStatus::valueOf);
+  }
+
+  @Override
   public boolean existsByPhoneNumber(@NonNull PhoneNumber phoneNumber) {
     return serviceProviderSpringRepository.existsByPhoneNumber(
         new PhoneNumberJpa(phoneNumber.countryCode(), phoneNumber.number()));

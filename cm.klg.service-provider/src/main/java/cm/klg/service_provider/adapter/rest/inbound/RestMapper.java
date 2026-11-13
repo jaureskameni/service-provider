@@ -3,6 +3,8 @@ package cm.klg.service_provider.adapter.rest.inbound;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreateProviderServiceDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.IdentityVerificationStatusDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.MyServiceProviderApplicationStatusDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.MyServiceProviderApplicationStatusDTO.StateEnum;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.MyServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemDTO;
@@ -90,6 +92,13 @@ import org.mapstruct.ReportingPolicy;
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RestMapper {
 
+  default MyServiceProviderApplicationStatusDTO toMyServiceProviderApplicationStatusDTO(
+      Optional<ServiceProviderStatus> status) {
+    return new MyServiceProviderApplicationStatusDTO()
+        .state(
+            status.map(value -> StateEnum.fromValue(value.name())).orElse(StateEnum.NOT_APPLIED));
+  }
+
   default BecomeServiceProviderCommand toBecomeServiceProviderCommand(
       ServiceProviderRegisterDTO dto, UUID currentUserId) {
     return new BecomeServiceProviderCommand(
@@ -135,14 +144,7 @@ public interface RestMapper {
   default UpdateApprovedServiceProviderUseCase.Command toUpdateApprovedServiceProviderCommand(
       UpdateApprovedServiceProviderProfileDTO dto, UUID currentUserId) {
     return new UpdateApprovedServiceProviderUseCase.Command(
-        UserId.from(currentUserId),
-        toProviderProfile(
-            dto.getCity(),
-            dto.getDistrict(),
-            dto.getQuarter(),
-            dto.getAbout(),
-            dto.getPhoneNumber()),
-        ProfileImageMediaId.from(dto.getProfileImageId()));
+        UserId.from(currentUserId), ProfileImageMediaId.from(dto.getProfileImageId()));
   }
 
   private ProviderProfile toProviderProfile(

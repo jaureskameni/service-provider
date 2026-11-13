@@ -142,8 +142,7 @@ public class ServiceProvider {
     this.location = location;
     this.phoneNumber = phoneNumber;
     this.about = about;
-    updatedAt();
-    submitProfileImageChange(requestedProfileImageId);
+    updateProfileImage(requestedProfileImageId);
   }
 
   public void resubmit(
@@ -172,10 +171,12 @@ public class ServiceProvider {
     updatedAt();
   }
 
-  public void submitProfileImageChange(ProfileImageMediaId pendingProfileImageId) {
+  public void updateProfileImage(ProfileImageMediaId pendingProfileImageId) {
+    ensureStatus(ServiceProviderStatus.APPROVED);
     this.pendingProfileImageId = pendingProfileImageId;
     this.profileImageReviewStatus = ProfileImageReviewStatus.PENDING_REVIEW;
     this.profileImageRejectionReason = null;
+    updatedAt();
   }
 
   public void approveProfileImage() {

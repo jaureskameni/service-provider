@@ -59,7 +59,7 @@ class ServiceProviderTest {
     var current = provider.getProfileImageId();
     var replacement = ProfileImageMediaId.from(UUID.randomUUID());
 
-    provider.submitProfileImageChange(replacement);
+    provider.updateProfileImage(replacement);
     assertThat(provider.getProfileImageId()).isEqualTo(current);
     assertThat(provider.getPendingProfileImageId()).isEqualTo(replacement);
     assertThat(provider.getProfileImageReviewStatus())
@@ -69,7 +69,7 @@ class ServiceProviderTest {
     assertThat(provider.getPendingProfileImageId()).isNull();
 
     var rejectedPhoto = ProfileImageMediaId.from(UUID.randomUUID());
-    provider.submitProfileImageChange(rejectedPhoto);
+    provider.updateProfileImage(rejectedPhoto);
     provider.rejectProfileImage(RejectionReason.FACE_UNCLEAR);
     assertThat(provider.getProfileImageId()).isEqualTo(replacement);
     assertThat(provider.getPendingProfileImageId()).isNull();

@@ -9,6 +9,7 @@ import cm.klg.generated.service.provider.adapter.rest.inbound.api.ServiceProvide
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreateProviderServiceDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.MyServiceProviderApplicationStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.MyServiceProviderDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ProfileImageReviewPageDTO;
@@ -32,6 +33,7 @@ import cm.klg.service_provider.application.usecase.DeleteProviderServiceUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetMyServiceProviderApplicationStatusUseCase;
 import cm.klg.service_provider.application.usecase.GetMyServiceProviderIdentityUseCase;
 import cm.klg.service_provider.application.usecase.GetMyServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetProfileImageReviewUseCase;
@@ -76,6 +78,8 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
   private final GetAllMyServicesUseCase getAllMyServicesUseCase;
   private final GetProviderServicesUseCase getProviderServicesUseCase;
   private final GetMyServiceProviderUseCase getMyServiceProviderUseCase;
+  private final GetMyServiceProviderApplicationStatusUseCase
+      getMyServiceProviderApplicationStatusUseCase;
   private final GetMyServiceProviderIdentityUseCase getMyServiceProviderIdentityUseCase;
   private final GetServiceProviderVerificationUseCase getServiceProviderVerificationUseCase;
   private final GetProfileImageReviewsUseCase getProfileImageReviewsUseCase;
@@ -225,6 +229,17 @@ public class ServiceProviderController implements ServiceProviderApi, WithAuthen
         useCaseExecutor.executeQuery(
             () -> getMyServiceProviderUseCase.execute(UserId.from(getCurrentUserId())));
     return ResponseEntity.ok(restMapper.toMyServiceProviderDTO(providerView));
+  }
+
+  @Override
+  public ResponseEntity<MyServiceProviderApplicationStatusDTO>
+      getMyServiceProviderApplicationStatus() {
+    var status =
+        useCaseExecutor.executeQuery(
+            () ->
+                getMyServiceProviderApplicationStatusUseCase.execute(
+                    UserId.from(getCurrentUserId())));
+    return ResponseEntity.ok(restMapper.toMyServiceProviderApplicationStatusDTO(status));
   }
 
   @Override

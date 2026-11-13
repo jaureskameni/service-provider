@@ -246,14 +246,30 @@ paths:
           description: "SERVICE_PROVIDER-409-002 | SERVICE_PROVIDER-409-004 | SERVICE_PROVIDER-409-005"
         "400":
           description: "SERVICE_PROVIDER-400-003 | SERVICE_PROVIDER-400-005"
+  /me/service-provider/application-status:
+    get:
+      tags:
+      - "ServiceProvider"
+      summary: "Get my service provider application status"
+      description: "Always returns the application state. NOT_APPLIED means the user\
+        \ has never submitted an application."
+      operationId: "getMyServiceProviderApplicationStatus"
+      security:
+      - bearerAuth: []
+      responses:
+        "200":
+          description: "Application state for the authenticated user."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyServiceProviderApplicationStatus"
   /me/service-provider/profile:
     put:
       tags:
       - "ServiceProvider"
-      summary: "Update an approved service provider profile"
-      description: "Updates approved profile fields without changing IdentityVerification.\
-        \ A changed profile photo remains pending admin review. User identity information\
-        \ is managed separately by UAM."
+      summary: "Update an approved service provider profile image"
+      description: "Submits a new profile image for an approved provider without changing\
+        \ IdentityVerification. The image remains pending admin review."
       operationId: "updateApprovedServiceProvider"
       security:
       - bearerAuth: []
@@ -269,9 +285,7 @@ paths:
         "404":
           description: "SERVICE-PROVIDER_404_001"
         "409":
-          description: "SERVICE_PROVIDER-409-002 | SERVICE_PROVIDER-409-004 | SERVICE_PROVIDER-409-005"
-        "400":
-          description: "SERVICE_PROVIDER-400-003"
+          description: "SERVICE_PROVIDER-409-004"
   /me/service-provider/identity:
     get:
       tags:
@@ -768,30 +782,15 @@ components:
     UpdateApprovedServiceProviderProfile:
       type: "object"
       required:
-      - "phoneNumber"
-      - "city"
-      - "district"
       - "profileImageId"
       description: "Updates an APPROVED provider without changing identity verification.\
         \ Provider phone may differ from the user's Keycloak username phone. User\
         \ account details are managed through UAM."
       properties:
-        city:
-          type: "string"
-          format: "uuid"
-        district:
-          type: "string"
-          format: "uuid"
-        quarter:
-          type: "string"
-          format: "uuid"
-        about:
-          type: "string"
-        phoneNumber:
-          $ref: "#/components/schemas/PhoneNumber"
         profileImageId:
           type: "string"
           format: "uuid"
+          description: "Identifier of the new profile image to submit for review."
     RejectionReason:
       type: "string"
       enum:
@@ -889,6 +888,19 @@ components:
           type: "array"
           items:
             $ref: "#/components/schemas/UserService"
+    MyServiceProviderApplicationStatus:
+      type: "object"
+      required:
+      - "state"
+      properties:
+        state:
+          type: "string"
+          description: "NOT_APPLIED, PENDING, APPROVED, or REJECTED."
+          enum:
+          - "NOT_APPLIED"
+          - "PENDING"
+          - "APPROVED"
+          - "REJECTED"
     ProfileImageReviewIdentityVerification:
       type: "object"
       description: "Private identity data for authorized admin review."

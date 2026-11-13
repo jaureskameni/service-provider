@@ -164,12 +164,12 @@
           ]
         },
         {
-          "name": "Get my service provider application [GET /me/service-provider]",
+          "name": "Get my service provider application status [GET /me/service-provider/application-status]",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/me/service-provider",
-            "description": "Get my service provider application\n\nAuthentification requise : Bearer {{userToken}}.",
+            "url": "{{baseUrl}}/me/service-provider/application-status",
+            "description": "Returns NOT_APPLIED when the authenticated user has never submitted an application; otherwise returns PENDING, APPROVED, or REJECTED. Use this endpoint to choose the frontend flow without receiving a 404 for a missing application.\n\nAuthentification requise : Bearer {{userToken}}.",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -188,7 +188,40 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const accepted = [200];",
+                  "pm.test(\"Réponse HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"État de candidature présent\", function () { pm.expect([\"NOT_APPLIED\", \"PENDING\", \"APPROVED\", \"REJECTED\"]).to.include(body.state); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get my service provider application [GET /me/service-provider]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/me/service-provider",
+            "description": "Returns the detailed provider application/profile. Call GET /me/service-provider/application-status first; this endpoint returns 404 if the user has never submitted an application.\n\nAuthentification requise : Bearer {{userToken}}.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = [200, 404];",
                   "pm.test(\"Réponse HTTP attendue\", function () { pm.expect(accepted).to.include(pm.response.code); });"
                 ]
               }
@@ -279,7 +312,7 @@
           ]
         },
         {
-          "name": "Update an approved service provider profile [PUT /me/service-provider/profile]",
+          "name": "Update an approved service provider profile image [PUT /me/service-provider/profile]",
           "request": {
             "method": "PUT",
             "header": [
@@ -289,7 +322,7 @@
               }
             ],
             "url": "{{baseUrl}}/me/service-provider/profile",
-            "description": "Updates approved profile fields without changing IdentityVerification. A changed profile photo remains pending admin review. User identity information is managed separately by UAM.\n\nAuthentification requise : Bearer {{userToken}}.",
+            "description": "Submits only a new profileImageId for an approved provider. Other profile fields and IdentityVerification are unchanged; the new photo remains pending admin review. The image must already exist in Media.\n\nAuthentification requise : Bearer {{userToken}}.",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -302,7 +335,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"city\": \"{{cityId}}\",\n  \"district\": \"{{districtId}}\",\n  \"about\": \"Profil de test créé depuis Postman.\",\n  \"phoneNumber\": {\n    \"countryCode\": \"+237\",\n    \"number\": \"670000000\"\n  },\n  \"profileImageId\": \"{{profileImageId}}\"\n}",
+              "raw": "{\n  \"profileImageId\": \"{{profileImageId}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
