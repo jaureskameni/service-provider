@@ -55,7 +55,10 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.POST, "/service-provider")
                     .authenticated()
                     .requestMatchers(
-                        HttpMethod.GET, "/me/service-provider", "/me/service-provider/identity")
+                        HttpMethod.GET,
+                        "/me/service-provider",
+                        "/me/service-provider/identity",
+                        "/me/service-provider/application-status")
                     .authenticated()
                     .requestMatchers(
                         HttpMethod.PUT,
