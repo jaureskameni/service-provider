@@ -25,6 +25,7 @@ import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceTypesUseCase;
 import cm.klg.service_provider.application.usecase.GetMyFavoriteServiceProvidersUseCase;
+import cm.klg.service_provider.application.usecase.GetMyServiceProviderApplicationStatusUseCase;
 import cm.klg.service_provider.application.usecase.GetMyServiceProviderIdentityUseCase;
 import cm.klg.service_provider.application.usecase.GetMyServiceProviderUseCase;
 import cm.klg.service_provider.application.usecase.GetProfileImageReviewUseCase;
@@ -154,6 +155,12 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
   }
 
   @Bean
+  public GetMyServiceProviderApplicationStatusUseCase getMyServiceProviderApplicationStatusUseCase(
+      ServiceProviderRepository repository) {
+    return new GetMyServiceProviderApplicationStatusUseCase(repository);
+  }
+
+  @Bean
   public GetMyServiceProviderIdentityUseCase getMyServiceProviderIdentityUseCase(
       ServiceProviderRepository repository) {
     return new GetMyServiceProviderIdentityUseCase(repository);
@@ -185,8 +192,8 @@ public class ServiceProviderBeans implements TransactionBeansProvider {
 
   @Bean
   public UpdateApprovedServiceProviderUseCase updateApprovedServiceProviderUseCase(
-      ServiceProviderRepository providerRepository, UserRepository userRepository) {
-    return new UpdateApprovedServiceProviderUseCase(providerRepository, userRepository);
+      ServiceProviderRepository providerRepository) {
+    return new UpdateApprovedServiceProviderUseCase(providerRepository);
   }
 
   @Bean

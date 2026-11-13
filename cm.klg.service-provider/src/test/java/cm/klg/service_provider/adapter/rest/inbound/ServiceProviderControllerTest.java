@@ -11,6 +11,7 @@ import cm.klg.common.base.transaction.UseCaseExecutor;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreatePortfolioItemRequestDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreateProviderServiceDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.CreationResponseDTO;
+import cm.klg.generated.service.provider.adapter.rest.inbound.dto.MyServiceProviderApplicationStatusDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PhoneNumberDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.PortfolioItemDTO;
 import cm.klg.generated.service.provider.adapter.rest.inbound.dto.ServiceProviderDTO;
@@ -28,6 +29,7 @@ import cm.klg.service_provider.application.usecase.DeletePortfolioItemUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetAllMyServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetAllServiceProviderUseCase;
+import cm.klg.service_provider.application.usecase.GetMyServiceProviderApplicationStatusUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderPortfolioUseCase;
 import cm.klg.service_provider.application.usecase.GetProviderServicesUseCase;
 import cm.klg.service_provider.application.usecase.GetServiceProviderByIdUseCase;
@@ -52,6 +54,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
@@ -84,6 +87,9 @@ class ServiceProviderControllerTest {
   @Mock private DeletePortfolioItemUseCase deletePortfolioItemUseCase;
   @Mock private GetAllMyServicesUseCase getAllMyServicesUseCase;
   @Mock private GetProviderServicesUseCase getProviderServicesUseCase;
+
+  @Mock
+  private GetMyServiceProviderApplicationStatusUseCase getMyServiceProviderApplicationStatusUseCase;
 
   @InjectMocks private ServiceProviderController objectUnderTest;
 
@@ -124,6 +130,39 @@ class ServiceProviderControllerTest {
         // spotless:on
     // Then
     assertThat(result.getNewId()).isEqualTo(serviceProviderId.value());
+  }
+
+  @Test
+  void getMyServiceProviderApplicationStatus_shouldReturnNotApplied_whenNoApplicationExists() {
+    UUID userId = UUID.randomUUID();
+    var jwtAuth = mock(JwtAuthenticationToken.class);
+    Map<String, Object> attrs = new HashMap<>();
+    attrs.put(JwtClaimNames.SUB, userId.toString());
+    when(jwtAuth.getTokenAttributes()).thenReturn(attrs);
+    SecurityContextHolder.getContext().setAuthentication(jwtAuth);
+
+    when(useCaseExecutor.executeQuery(any()))
+        .thenAnswer(invocation -> invocation.<Supplier<?>>getArgument(0).get());
+    when(getMyServiceProviderApplicationStatusUseCase.execute(new UserId(userId)))
+        .thenReturn(Optional.empty());
+    when(restMapper.toMyServiceProviderApplicationStatusDTO(Optional.empty()))
+        .thenReturn(
+            new MyServiceProviderApplicationStatusDTO()
+                .state(MyServiceProviderApplicationStatusDTO.StateEnum.NOT_APPLIED));
+
+    var result =
+        given()
+            .standaloneSetup(objectUnderTest)
+            .when()
+            .get("/me/service-provider/application-status")
+            .then()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .as(MyServiceProviderApplicationStatusDTO.class);
+
+    assertThat(result.getState())
+        .isEqualTo(MyServiceProviderApplicationStatusDTO.StateEnum.NOT_APPLIED);
+    verify(getMyServiceProviderApplicationStatusUseCase).execute(new UserId(userId));
   }
 
   @Test

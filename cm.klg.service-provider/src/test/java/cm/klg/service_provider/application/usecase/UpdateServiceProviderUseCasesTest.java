@@ -2,6 +2,7 @@ package cm.klg.service_provider.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,32 +52,31 @@ class UpdateServiceProviderUseCasesTest {
   }
 
   @Test
-  void approvedProfileUpdateLeavesIdentityVerificationApproved() {
+  void approvedProfileImageUpdateChangesDomainAndPersistsProvider() {
     var provider = newProvider();
     provider.approve(new UserId(UUID.randomUUID()));
-    var identityVerification = provider.getIdentityVerification();
     var command = approvedCommand(provider.getUserId());
     when(serviceProviderRepository.loadByUserId(provider.getUserId())).thenReturn(provider);
 
     approvedUseCase().execute(command);
 
-    assertThat(provider.getStatus()).isEqualTo(ServiceProviderStatus.APPROVED);
-    assertThat(provider.getIdentityVerification()).isSameAs(identityVerification);
-    assertThat(provider.getIdentityVerification().getStatus())
-        .isEqualTo(IdentityVerificationStatus.APPROVED);
+    assertThat(provider.getProfileImageId()).isNotEqualTo(command.profileImageId());
     assertThat(provider.getPendingProfileImageId()).isEqualTo(command.profileImageId());
     assertThat(provider.getProfileImageReviewStatus())
         .isEqualTo(ProfileImageReviewStatus.PENDING_REVIEW);
+    assertThat(provider.getUpdatedAt()).isNotNull();
     verify(serviceProviderRepository).update(provider);
   }
 
   @Test
-  void approvedUpdateIsRejectedForNonApprovedProvider() {
+  void approvedUpdatePropagatesInvalidStatus() {
     var provider = newProvider();
+    var command = approvedCommand(provider.getUserId());
     when(serviceProviderRepository.loadByUserId(provider.getUserId())).thenReturn(provider);
 
-    assertThatThrownBy(() -> approvedUseCase().execute(approvedCommand(provider.getUserId())))
+    assertThatThrownBy(() -> approvedUseCase().execute(command))
         .isInstanceOf(InvalidServiceProviderStatusException.class);
+    verify(serviceProviderRepository, never()).update(provider);
   }
 
   private ResubmitRejectedServiceProviderUseCase resubmitUseCase() {
@@ -84,7 +84,7 @@ class UpdateServiceProviderUseCasesTest {
   }
 
   private UpdateApprovedServiceProviderUseCase approvedUseCase() {
-    return new UpdateApprovedServiceProviderUseCase(serviceProviderRepository, userRepository);
+    return new UpdateApprovedServiceProviderUseCase(serviceProviderRepository);
   }
 
   private ServiceProvider newProvider() {
@@ -110,7 +110,7 @@ class UpdateServiceProviderUseCasesTest {
 
   private UpdateApprovedServiceProviderUseCase.Command approvedCommand(UserId userId) {
     return new UpdateApprovedServiceProviderUseCase.Command(
-        userId, providerProfile(), ProfileImageMediaId.from(UUID.randomUUID()));
+        userId, ProfileImageMediaId.from(UUID.randomUUID()));
   }
 
   private ProviderProfile providerProfile() {

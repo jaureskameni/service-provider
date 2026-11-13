@@ -21,12 +21,15 @@ import cm.klg.service_provider.domain.service_provider.UserDistrictId;
 import cm.klg.service_provider.domain.service_provider.UserQuarterId;
 import cm.klg.service_provider.domain.service_type.ServiceTypeId;
 import java.util.List;
+import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 public interface ServiceProviderRepository {
   void insert(ServiceProvider serviceProvider);
 
   boolean existsByUserId(UserId userId);
+
+  Optional<ServiceProviderStatus> findStatusByUserId(UserId userId);
 
   boolean existsByPhoneNumber(PhoneNumber phoneNumber);
 
